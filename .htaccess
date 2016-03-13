@@ -1,0 +1,7 @@
+RewriteEngine On
+#RewriteBase /bootphp/
+RewriteBase /bootcms2/
+# 重新路由所有传入的非现有目录或文件请求
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule .* index.php?u=$0 [L]

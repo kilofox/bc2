@@ -1,0 +1,14 @@
+ALTER TABLE bc_roles DROP INDEX uniq_name;
+# 注意：角色修改或添加时，要判断角色名是否重复。
+
+
+ALTER TABLE `bc_node_categories` CHANGE `name` `name` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `bc_node_categories` CHANGE `slug` `slug` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL AFTER `title`;
+ALTER TABLE `bc_node_categories` CHANGE `description` `description` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `bc_node_categories` RENAME `bc_article_categories`;
+
+ALTER TABLE `bc_nodes` CHANGE `slug` `slug` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `bc_nodes` CHANGE `node_title` `title` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `bc_nodes` CHANGE `node_content` `content` MEDIUMTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `bc_nodes` CHANGE `node_intro` `introduce` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `bc_nodes` RENAME `bc_articles`;
