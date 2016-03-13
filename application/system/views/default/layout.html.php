@@ -92,9 +92,9 @@
 				<div class="row" style="min-height: 100%">
 					<div class="cell size-x200" id="cell-sidebar" style="background-color: #71b1d1;">
 						<ul class="sidebar">
-							<?php foreach( $menus[$application]['child'] as $k => $menu ): ?>
+							<?php foreach( $menus[$application]['subMenus'] as $k => $menu ): ?>
 								<li<?php if ( $k == $tab ): ?> class="active"<?php endif; ?>>
-									<a href="<?php echo $baseUrl; ?>/<?php echo $application; ?>/<?php echo $menus[$application]['controller']; ?>/<?php echo $k; ?>">
+									<a href="<?php echo $baseUrl; ?>/<?php echo $application; ?>/<?php echo $k; ?>/<?php echo $menu['action']; ?>">
 										<span class="mif-apps icon"></span>
 										<span class="title"><?php echo $menu['name']; ?></span>
 									</a>

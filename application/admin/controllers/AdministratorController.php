@@ -50,16 +50,21 @@ class AdministratorController extends \Bootphp\Controller
 	 */
 	final public function getMenus($controller = '')
 	{
-		$menus = array(
-			'admin' => array(
+		$menus = [
+			'system' => [
 				'name' => '系统',
-				'controller' => 'index',
-				'action' => 'index',
-				'child' => array(
-					'index' => array('name' => '概览'),
-					'settings' => array('name' => '网站设置'),
-				)
-			),
+				'subMenus' => [
+					'index' => [
+						'index' => '概览',
+					],
+					'settings' => [
+						'index' => '网站设置',
+					],
+					'menus' => [
+						'index' => '菜单',
+					]
+				],
+			],
 			'users' => array(
 				'name' => '用户',
 				'controller' => 'admin',
@@ -78,7 +83,7 @@ class AdministratorController extends \Bootphp\Controller
 					'categories' => array('name' => '分类'),
 				)
 			),
-		);
+		];
 		return $menus;
 		// 获取主菜单
 		$where['pid'] = 0;
