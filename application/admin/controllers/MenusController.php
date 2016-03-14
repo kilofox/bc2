@@ -7,14 +7,14 @@ use Bootphp\Model;
 use Bootphp\Database\DB;
 use Bootphp\Cookie;
 /**
- * 后台首页控制器。
+ * 后台菜单控制器。
  *
  * @package BootCMS
  * @category 控制器
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class SystemController extends AdministratorController
+class MenusController extends AdministratorController
 {
 	/**
 	 * Before 方法
@@ -44,6 +44,8 @@ class SystemController extends AdministratorController
 		$this->assign('articles', $articles);
 		$this->assign('comments', $comments);
 		$this->assign('dbVersion', $dbVersion);
+		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/settings/';
+		$this->template = 'menus';
 	}
 	/*
 	 * 系统设置

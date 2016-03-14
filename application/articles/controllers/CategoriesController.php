@@ -6,14 +6,14 @@ use App\articles\models\ArticleModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
 /**
- * 后台文章控制器。
+ * 后台分类控制器。
  *
  * @package BootCMS
  * @category 控制器
  * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @copyright (C) 2005-2016 Kilofox Studio
  */
-class AdminController extends AdministratorController
+class CategoriesController extends AdministratorController
 {
 	/**
 	 * Before 方法
@@ -39,88 +39,7 @@ class AdminController extends AdministratorController
 	 */
 	public function indexAction()
 	{
-		$this->articlesAction();
-	}
-	/**
-	 * 文章列表
-	 */
-	public function articlesAction()
-	{
-		// 文章列表
-		$articles = Model::factory('article', 'articles')->findAll();
-		foreach( $articles as &$node )
-		{
-			$node->created = \Bootphp\Date::unixToHuman($node->created);
-			switch( $node->status )
-			{
-				case '0':
-					$node->status = '垃圾筒';
-					break;
-				case '1':
-					$node->status = '已发布';
-					break;
-				case '2':
-					$node->status = '草稿';
-					break;
-				case '3':
-					$node->status = '待审核';
-					break;
-			}
-		}
-		$this->template = 'articles';
-		$this->assign('nodes', $articles);
-	}
-	/**
-	 * 编辑文章
-	 */
-	public function editAction()
-	{
-		$articleId = intval($this->request->param('id'));
-		$oArticle = Model::factory('article', 'articles');
-		$article = $oArticle->find($articleId);
-		if ( $this->request->isAjax() )
-		{
-			$status = 0;
-			$info = '您没有足够的权限进行此项操作。';
-			if ( !$article )
-			{
-				$status = 3;
-				$info = '请求的文章不存在。';
-				$this->ajaxReturn($status, $info);
-			}
-			try
-			{
-				$update = [
-					'title' => $this->request->param('title'),
-					'content' => $this->request->param('content'),
-					'keywords' => $this->request->param('keywords'),
-					'descript' => $this->request->param('descript'),
-				];
-				if ( $oArticle->update($update, ['id', '=', $article->id]) )
-				{
-					$status = 1;
-					$info = '文章已经更新成功。';
-				}
-				else
-				{
-					$status = 5;
-					$info = '文章没有更新。';
-				}
-			}
-			catch( Validation_Exception $e )
-			{
-				$errors = $e->errors('models');
-				foreach( $errors as $ev )
-				{
-					$status = 4;
-					$info = $ev;
-					break;
-				}
-			}
-			$this->ajaxReturn($status, $info);
-		}
-		$this->tab = 'articles';
-		$this->assign('node', $article);
+		$this->categoriesAction();
 	}
 	/*
 	 * 分类列表
@@ -130,6 +49,8 @@ class AdminController extends AdministratorController
 		// 角色列表
 		$categories = Model::factory('category', 'articles')->findAll();
 		$this->assign('nodes', $categories);
+		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/admin/';
+		$this->template = 'categories';
 	}
 	/**
 	 * 创建一个新的分类

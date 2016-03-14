@@ -23,7 +23,7 @@
 					<td><?php echo $node->description; ?></td>
 					<td class="align-center">
 						<a href="<?php echo $baseUrl; ?>/articles/admin/category/<?php echo $node->id; ?>/edit">编辑</a>
-						<a href="<?php echo $baseUrl; ?>/articles/admin/category/<?php echo $node->id; ?>/delete" data-del="<?php echo $node->id; ?>">删除</a>
+						<a href="<?php echo $baseUrl; ?>/articles/admin/category/<?php echo $node->id; ?>/delete">删除</a>
 					</td>
 				</tr>
 			<?php endforeach; ?>
