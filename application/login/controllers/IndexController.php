@@ -1,6 +1,6 @@
 <?php
 
-namespace App\admin\controllers;
+namespace App\login\controllers;
 use Bootphp\Auth\Auth;
 /**
  * 后台首页控制器。
@@ -10,7 +10,7 @@ use Bootphp\Auth\Auth;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class PublicController extends \Bootphp\Controller
+class IndexController extends \Bootphp\Controller
 {
 	/**
 	 * Before 方法
@@ -30,7 +30,7 @@ class PublicController extends \Bootphp\Controller
 	 * 默认方法
 	 * 该方法将节点加载到一个页面中。
 	 */
-	public function loginAction()
+	public function indexAction()
 	{
 		if ( $this->request->isAjax() )
 		{
@@ -51,17 +51,6 @@ class PublicController extends \Bootphp\Controller
 		}
 		Auth::instance()->logout();
 		$this->view->layout(false);
-	}
-	/**
-	 * 用户退出
-	 *
-	 * @return	void
-	 */
-	public function logoutAction()
-	{
-		// 注销用户
-		Auth::instance()->logout();
-		// 重定向到登录页
-		$this->redirect('admin/public/login');
+		$this->template = 'login';
 	}
 }

@@ -74,13 +74,13 @@
 					$('button[type="submit"]').attr('disabled', true);
 					$('button[type="submit"]').addClass('loading-cube');
 					$.ajax({
-						url: baseUrl + '/admin/public/login',
+						url: baseUrl + '/admin/login',
 						type: 'post',
 						dataType: 'json',
 						data: $('#login').serialize(),
 						success: function(r){
 							if ( r.status === 1 ){
-								window.location.href = baseUrl + '/admin';
+								location.href = baseUrl + '/admin';
 							}else{
 								$('#dialog > h1').text(r.info[0]);
 								$('#dialog > p').text(r.info[1]);

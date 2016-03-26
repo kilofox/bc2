@@ -24,7 +24,7 @@ class AdministratorController extends \Bootphp\Controller
 		$this->layoutPath = APP_PATH . '/admin/views/default/';
 		$this->user = Auth::instance()->get_user();
 		if ( !$this->user )
-			$this->redirect('admin/public/login');
+			$this->redirect('admin/login');
 	}
 	/**
 	 * After 方法
@@ -50,11 +50,11 @@ class AdministratorController extends \Bootphp\Controller
 	 */
 	final public function menus()
 	{
-		//$menus = \Bootphp\Model::factory('menu', 'system')->findAll();
-		//print_r($menus);
+		$menus = Model::factory('menu', 'admin')->menus();
 		$menus = [
 			'admin' => [
 				'name' => '系统',
+				'application' => 'admin',
 				'controller' => 'index',
 				'action' => 'index',
 				'subMenus' => [
@@ -74,10 +74,11 @@ class AdministratorController extends \Bootphp\Controller
 			],
 			'users' => [
 				'name' => '用户',
+				'application' => 'users',
 				'controller' => 'admin',
 				'action' => 'index',
 				'subMenus' => [
-					'admin' => [
+					'users' => [
 						'name' => '用户',
 						'action' => 'index',
 					],
@@ -89,10 +90,11 @@ class AdministratorController extends \Bootphp\Controller
 			],
 			'articles' => [
 				'name' => '文章',
-				'controller' => 'admin',
+				'application' => 'admin',
+				'controller' => 'articles',
 				'action' => 'index',
 				'subMenus' => [
-					'admin' => [
+					'artiles' => [
 						'name' => '文章',
 						'action' => 'index',
 					],

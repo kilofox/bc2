@@ -64,7 +64,7 @@
 			<span class="app-bar-divider"></span>
 			<ul class="app-bar-menu">
 				<?php foreach( $menus as $k => $menu ): ?>
-					<li<?php if ( $k == $application ): ?> class="active"<?php endif; ?>><a href="<?php echo $baseUrl; ?>/<?php echo $k; ?>/<?php echo $menu['controller']; ?>/<?php echo $menu['action']; ?>"><?php echo $menu['name']; ?></a></li>
+					<li<?php if ( $k == $controller ): ?> class="active"<?php endif; ?>><a href="<?php echo $baseUrl; ?>/<?php echo $menu['application']; ?>/<?php echo $menu['controller']; ?>/<?php echo $menu['action']; ?>"><?php echo $menu['name']; ?></a></li>
 				<?php endforeach; ?>
 				<li>
 					<a href="javascript:void(0);" class="dropdown-toggle">帮助</a>
@@ -82,7 +82,7 @@
 					<ul class="d-menu place-right" data-role="dropdown">
 						<li><a href="<?php echo $baseUrl; ?>/admin/public/edit_user">个人资料</a></li>
 						<li><a href="javascript:void(0);" onclick="pushMessage('info')">安全</a></li>
-						<li><a href="<?php echo $baseUrl; ?>/admin/public/logout">退出</a></li>
+						<li><a href="<?php echo $baseUrl; ?>/admin/logout">退出</a></li>
 					</ul>
 				</li>
 			</ul>

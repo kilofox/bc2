@@ -1,6 +1,6 @@
 <?php
 
-namespace App\system\models;
+namespace App\admin\models;
 use Bootphp\Model;
 use Bootphp\Database\DB;
 /**
@@ -24,5 +24,17 @@ class MenuModel extends Model
 	public static function factory($name, $application = 'core')
 	{
 		return parent::factory($name, $application);
+	}
+	/**
+	 *
+	 */
+	public function menus()
+	{
+		$menus = \Bootphp\Model::factory('menu', 'admin')->findAll();
+		//print_r($menus);
+		foreach( $menus as $menu )
+		{
+
+		}
 	}
 }
