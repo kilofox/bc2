@@ -5,11 +5,11 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 		<title>登录 - BootCMS</title>
 		<link rel="shortcut icon" type="image/x-icon" href="<?php echo $baseUrl; ?>/favicon.ico"/>
-		<link href="<?php echo $baseUrl; ?>/assets/admin/css/metro.css" rel="stylesheet"/>
-		<link href="<?php echo $baseUrl; ?>/assets/admin/css/metro-icons.css" rel="stylesheet"/>
-		<link href="<?php echo $baseUrl; ?>/assets/admin/css/metro-responsive.css" rel="stylesheet"/>
-		<script src="<?php echo $baseUrl; ?>/assets/admin/js/jquery-2.2.1.min.js"></script>
-		<script src="<?php echo $baseUrl; ?>/assets/admin/js/metro.js"></script>
+		<link href="<?php echo $baseUrl; ?>/assets/system/css/metro.css" rel="stylesheet"/>
+		<link href="<?php echo $baseUrl; ?>/assets/system/css/metro-icons.css" rel="stylesheet"/>
+		<link href="<?php echo $baseUrl; ?>/assets/system/css/metro-responsive.css" rel="stylesheet"/>
+		<script src="<?php echo $baseUrl; ?>/assets/system/js/jquery-2.2.1.min.js"></script>
+		<script src="<?php echo $baseUrl; ?>/assets/system/js/metro.js"></script>
 		<script>var baseUrl = '<?php echo $baseUrl; ?>';</script>
 		<style>
 			.login-form {
@@ -74,13 +74,13 @@
 					$('button[type="submit"]').attr('disabled', true);
 					$('button[type="submit"]').addClass('loading-cube');
 					$.ajax({
-						url: baseUrl + '/admin/login',
+						url: baseUrl + '/system/login',
 						type: 'post',
 						dataType: 'json',
 						data: $('#login').serialize(),
 						success: function(r){
 							if ( r.status === 1 ){
-								location.href = baseUrl + '/admin';
+								location.href = baseUrl + '/system';
 							}else{
 								$('#dialog > h1').text(r.info[0]);
 								$('#dialog > p').text(r.info[1]);

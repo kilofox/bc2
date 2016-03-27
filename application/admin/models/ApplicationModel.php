@@ -1,7 +1,6 @@
 <?php
 
 namespace App\admin\models;
-use Bootphp\Model;
 use Bootphp\Database\DB;
 /**
  * 菜单模型。
@@ -11,11 +10,11 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright	(C) 2005-2016 Kilofox Studio
  */
-class MenuModel extends Model
+class ApplicationModel extends \Bootphp\Model
 {
 	private $_values = NULL;
 	private $_loaded = false;
-	protected $tableName = 'region_blocks';
+	protected $tableName = 'applications';
 	/**
 	 * 创建并返回一个新的模型对象。
 	 *
@@ -28,13 +27,31 @@ class MenuModel extends Model
 	/**
 	 *
 	 */
-	public function menus()
+	public function menu($current = '')
 	{
-		$menus = \Bootphp\Model::factory('menu', 'admin')->findAll();
-		//print_r($menus);
-		foreach( $menus as $menu )
+		$applications = $this->findAll();
+		$menu = ['tabs' => [], 'subMenu' => []];
+		$defaultId = 0;
+		foreach( $applications as $app )
 		{
-
+			if ( $app->parent == 0 )
+			{
+				$menu['tabs'][$app->id] = $app;
+				$menu['tabs'][$app->id]->subMenu[$app->application] = $app;
+				if ( $app->application == $current )
+					$defaultId = $app->id;
+			}
+			else
+			{
+				$menu['tabs'][$app->parent]->subMenu[$app->application] = $app;
+				if ( $app->application == $current )
+					$defaultId = $app->parent;
+			}
 		}
+		if ( !empty($menu['tabs'][$defaultId]->subMenu) )
+		{
+			$menu['subMenu'] = $menu['tabs'][$defaultId]->subMenu;
+		}
+		return $menu;
 	}
 }

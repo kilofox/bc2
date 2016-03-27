@@ -1,7 +1,6 @@
 <?php
 
-namespace App\admin\models;
-use Bootphp\Model;
+namespace App\system\models;
 use Bootphp\Database\DB;
 /**
  * 菜单模型。
@@ -11,11 +10,11 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright	(C) 2005-2016 Kilofox Studio
  */
-class MenuModel extends Model
+class MenuModel extends \Bootphp\Model
 {
 	private $_values = NULL;
 	private $_loaded = false;
-	protected $tableName = 'region_blocks';
+	protected $tableName = 'system_menu';
 	/**
 	 * 创建并返回一个新的模型对象。
 	 *
@@ -28,13 +27,39 @@ class MenuModel extends Model
 	/**
 	 *
 	 */
-	public function menus()
+	public function menu($current = '')
 	{
-		$menus = \Bootphp\Model::factory('menu', 'admin')->findAll();
-		//print_r($menus);
-		foreach( $menus as $menu )
+		$menus = $this->findAll();
+		$menu = ['tabs' => [], 'subMenu' => []];
+		$defaultId = 0;
+		$subMenu = [];
+		foreach( $menus as $node )
 		{
-
+			if ( $node->parent_id == 0 )
+			{
+				$menu['tabs'][$node->id] = $node;
+				$menu['tabs'][$node->id]->subMenu[$node->application] = $node;
+				if ( $node->application == $current )
+					$defaultId = $node->id;
+			}
+			else
+			{
+				$subMenu[] = $node;
+			}
 		}
+		foreach( $subMenu as $node )
+		{
+			if ( isset($menu['tabs'][$node->parent_id]) )
+			{
+				$menu['tabs'][$node->parent_id]->subMenu[$node->application] = $node;
+				if ( $node->application == $current )
+					$defaultId = $node->parent_id;
+			}
+		}
+		if ( !empty($menu['tabs'][$defaultId]->subMenu) )
+		{
+			$menu['subMenu'] = $menu['tabs'][$defaultId]->subMenu;
+		}
+		return $menu;
 	}
 }

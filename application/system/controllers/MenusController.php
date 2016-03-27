@@ -1,7 +1,7 @@
 <?php
 
-namespace App\admin\controllers;
-use App\admin\controllers\AdminController;
+namespace App\system\controllers;
+use App\system\controllers\AdminController;
 use App\articles\models\ArticleModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
@@ -35,16 +35,8 @@ class MenusController extends AdministratorController
 	 */
 	public function indexAction()
 	{
-		// 统计文章数
-		$articles = Model::factory('article', 'articles')->count();
-		// 统计评论数
-		$comments = Model::factory('comment', 'articles')->count();
-		// 查询数据库版本
-		$dbVersion = DB::select([DB::expr('version()'), 'version'])->execute()->get('version');
-		$this->assign('articles', $articles);
-		$this->assign('comments', $comments);
-		$this->assign('dbVersion', $dbVersion);
-		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/settings/';
+		$menus = Model::factory('menu', 'system')->findAll();
+		$this->assign('nodes', $menus);
 		$this->template = 'menus';
 	}
 	/*

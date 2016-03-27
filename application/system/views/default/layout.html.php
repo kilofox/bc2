@@ -6,12 +6,12 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 		<title><?php echo $baseUrl; ?></title>
 		<link rel="shortcut icon" type="image/x-icon" href="<?php echo $baseUrl; ?>/favicon.ico"/>
-		<link href="<?php echo $baseUrl; ?>/assets/admin/css/metro.css" rel="stylesheet"/>
-		<link href="<?php echo $baseUrl; ?>/assets/admin/css/metro-icons.css" rel="stylesheet"/>
-		<link href="<?php echo $baseUrl; ?>/assets/admin/css/metro-responsive.css" rel="stylesheet"/>
-		<script src="<?php echo $baseUrl; ?>/assets/admin/js/jquery-2.2.1.min.js"></script>
+		<link href="<?php echo $baseUrl; ?>/assets/system/css/metro.css" rel="stylesheet"/>
+		<link href="<?php echo $baseUrl; ?>/assets/system/css/metro-icons.css" rel="stylesheet"/>
+		<link href="<?php echo $baseUrl; ?>/assets/system/css/metro-responsive.css" rel="stylesheet"/>
+		<script src="<?php echo $baseUrl; ?>/assets/system/js/jquery-2.2.1.min.js"></script>
 		<script>window.METRO_CURRENT_LOCALE = 'znCN';</script>
-		<script src="<?php echo $baseUrl; ?>/assets/admin/js/metro.js"></script>
+		<script src="<?php echo $baseUrl; ?>/assets/system/js/metro.js"></script>
 		<style>
 			html, body {
 				height: 100%;
@@ -60,11 +60,11 @@
 	</head>
 	<body class="bg-steel">
 		<div class="app-bar fixed-top darcula" data-role="appbar">
-			<a href="<?php echo $baseUrl; ?>/admin" class="app-bar-element branding">网站管理</a>
+			<a href="<?php echo $baseUrl; ?>/system" class="app-bar-element branding">网站管理</a>
 			<span class="app-bar-divider"></span>
 			<ul class="app-bar-menu">
-				<?php foreach( $menus as $k => $menu ): ?>
-					<li<?php if ( $k == $controller ): ?> class="active"<?php endif; ?>><a href="<?php echo $baseUrl; ?>/<?php echo $menu['application']; ?>/<?php echo $menu['controller']; ?>/<?php echo $menu['action']; ?>"><?php echo $menu['name']; ?></a></li>
+				<?php foreach( $menu['tabs'] as $node ): ?>
+					<li<?php if ( in_array($application, array_keys($node->subMenu)) ): ?> class="active"<?php endif; ?>><a href="<?php echo $baseUrl; ?>/<?php echo $node->application; ?>/<?php echo $node->controller; ?>/<?php echo $node->action; ?>"><?php echo $node->title; ?></a></li>
 				<?php endforeach; ?>
 				<li>
 					<a href="javascript:void(0);" class="dropdown-toggle">帮助</a>
@@ -80,9 +80,9 @@
 				<li>
 					<a class="dropdown-toggle"><span class="mif-cog"></span> <?php echo $user->nickname; ?></a>
 					<ul class="d-menu place-right" data-role="dropdown">
-						<li><a href="<?php echo $baseUrl; ?>/admin/public/edit_user">个人资料</a></li>
+						<li><a href="<?php echo $baseUrl; ?>/system/public/edit_user">个人资料</a></li>
 						<li><a href="javascript:void(0);" onclick="pushMessage('info')">安全</a></li>
-						<li><a href="<?php echo $baseUrl; ?>/admin/logout">退出</a></li>
+						<li><a href="<?php echo $baseUrl; ?>/system/logout">退出</a></li>
 					</ul>
 				</li>
 			</ul>
@@ -92,11 +92,11 @@
 				<div class="row" style="min-height: 100%">
 					<div class="cell size-x200" id="cell-sidebar" style="background-color: #71b1d1;">
 						<ul class="sidebar">
-							<?php foreach( $menus[$application]['subMenus'] as $k => $menu ): ?>
-								<li<?php if ( $k == $tab ): ?> class="active"<?php endif; ?>>
-									<a href="<?php echo $baseUrl; ?>/<?php echo $application; ?>/<?php echo $k; ?>/<?php echo $menu['action']; ?>">
+							<?php foreach( $menu['subMenu'] as $node ): ?>
+								<li<?php if ( $node->application == $application ): ?> class="active"<?php endif; ?>>
+									<a href="<?php echo $baseUrl; ?>/<?php echo $node->application; ?>/<?php echo $node->controller; ?>/<?php echo $node->action; ?>">
 										<span class="mif-apps icon"></span>
-										<span class="title"><?php echo $menu['name']; ?></span>
+										<span class="title"><?php echo $node->title; ?></span>
 									</a>
 								</li>
 							<?php endforeach; ?>

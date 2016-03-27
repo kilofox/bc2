@@ -1,6 +1,6 @@
 <?php
 
-namespace App\admin\controllers;
+namespace App\system\controllers;
 use Bootphp\Auth\Auth;
 /**
  * 后台首页控制器。

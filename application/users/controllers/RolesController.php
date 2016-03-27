@@ -1,7 +1,7 @@
 <?php
 
 namespace App\users\controllers;
-use App\admin\controllers\AdministratorController;
+use App\system\controllers\AdministratorController;
 use App\users\models\UserModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;

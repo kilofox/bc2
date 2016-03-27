@@ -1,7 +1,7 @@
 <?php
 
-namespace App\users\controllers;
-use App\admin\controllers\AdministratorController;
+namespace App\roles\controllers;
+use App\system\controllers\AdministratorController;
 use App\users\models\UserModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
@@ -35,87 +35,14 @@ class AdminController extends AdministratorController
 		parent::after();
 	}
 	/*
-	 * 用户列表
-	 */
-	public function indexAction()
-	{
-		$this->usersAction();
-	}
-	/*
-	 * 用户列表
-	 */
-	public function usersAction()
-	{
-		// 用户列表
-		$users = Model::factory('user', 'users')->findAll();
-		foreach( $users as &$node )
-		{
-			$node->created = \Bootphp\Date::unixToHuman($node->created);
-		}
-		//$this->tab = 'users';
-		$this->template = 'users';
-		$this->assign('nodes', $users);
-	}
-	/**
-	 * 编辑用户
-	 */
-	public function editAction()
-	{
-
-		$userId = intval($this->request->param('id'));
-		$oUser = Model::factory('user', 'users');
-		$user = $oUser->find($userId);
-		if ( $this->request->isAjax() )
-		{
-			$status = 0;
-			$info = '您没有足够的权限进行此项操作。';
-			if ( !$user )
-			{
-				$status = 3;
-				$info = '请求的用户不存在。';
-				$this->ajaxReturn($status, $info);
-			}
-			try
-			{
-				$update = [
-					'nickname' => $this->request->param('nickname'),
-					'email' => $this->request->param('email'),
-					'address' => $this->request->param('address'),
-				];
-				if ( $oUser->update($update, ['id', '=', $user->id]) )
-				{
-					$status = 1;
-					$info = '用户已经更新成功。';
-				}
-				else
-				{
-					$status = 5;
-					$info = '用户没有更新。';
-				}
-			}
-			catch( Validation_Exception $e )
-			{
-				$errors = $e->errors('models');
-				foreach( $errors as $ev )
-				{
-					$status = 4;
-					$info = $ev;
-					break;
-				}
-			}
-			$this->ajaxReturn($status, $info);
-		}
-		$this->tab = 'index';
-		$this->assign('node', $user);
-	}
-	/*
 	 * 角色列表
 	 */
-	public function rolesAction()
+	public function indexAction()
 	{
 		// 角色列表
 		$roles = Model::factory('role', 'users')->findAll();
 		$this->assign('nodes', $roles);
+		$this->template = 'roles';
 	}
 	/**
 	 * 创建一个新的角色

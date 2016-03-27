@@ -1,6 +1,6 @@
 <?php
 
-namespace App\admin\controllers;
+namespace App\system\controllers;
 use Bootphp\Auth\Auth;
 use Bootphp\Model;
 use Bootphp\Date;
@@ -21,10 +21,10 @@ class AdministratorController extends \Bootphp\Controller
 	public function before()
 	{
 		parent::before();
-		$this->layoutPath = APP_PATH . '/admin/views/default/';
+		$this->layoutPath = APP_PATH . '/system/views/default/';
 		$this->user = Auth::instance()->get_user();
 		if ( !$this->user )
-			$this->redirect('admin/login');
+			$this->redirect('system/login');
 	}
 	/**
 	 * After 方法
@@ -32,7 +32,7 @@ class AdministratorController extends \Bootphp\Controller
 	public function after()
 	{
 		$this->assign('user', $this->user);
-		$this->assign('menus', $this->menus());
+		$this->assign('menu', $this->menu($this->application));
 		$this->assign('tab', $this->tab ? $this->tab : $this->controller);
 		parent::after();
 	}
@@ -48,63 +48,10 @@ class AdministratorController extends \Bootphp\Controller
 	/**
 	 * 获取控制器菜单数组,二级菜单元素位于一级菜单的'_child'元素中
 	 */
-	final public function menus()
+	final public function menu($default = '')
 	{
-		$menus = Model::factory('menu', 'admin')->menus();
-		$menus = [
-			'admin' => [
-				'name' => '系统',
-				'application' => 'admin',
-				'controller' => 'index',
-				'action' => 'index',
-				'subMenus' => [
-					'index' => [
-						'name' => '概览',
-						'action' => 'index'
-					],
-					'settings' => [
-						'name' => '网站设置',
-						'action' => 'index',
-					],
-					'menus' => [
-						'name' => '菜单',
-						'action' => 'index',
-					]
-				],
-			],
-			'users' => [
-				'name' => '用户',
-				'application' => 'users',
-				'controller' => 'admin',
-				'action' => 'index',
-				'subMenus' => [
-					'users' => [
-						'name' => '用户',
-						'action' => 'index',
-					],
-					'roles' => [
-						'name' => '角色',
-						'action' => 'index',
-					]
-				],
-			],
-			'articles' => [
-				'name' => '文章',
-				'application' => 'admin',
-				'controller' => 'articles',
-				'action' => 'index',
-				'subMenus' => [
-					'artiles' => [
-						'name' => '文章',
-						'action' => 'index',
-					],
-					'categories' => [
-						'name' => '分类',
-						'action' => 'index',
-					]
-				],
-			],
-		];
-		return $menus;
+		$menu = Model::factory('menu', 'system')->menu($default);
+		//print_r($menu);
+		return $menu;
 	}
 }
