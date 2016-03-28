@@ -21,6 +21,7 @@ class MenusController extends AdministratorController
 	 */
 	public function before()
 	{
+		$this->routes['<id>/edit'] = 'edit';
 		parent::before();
 	}
 	/**
@@ -35,54 +36,40 @@ class MenusController extends AdministratorController
 	 */
 	public function indexAction()
 	{
+		if ( $this->request->method() == 'POST' )
+		{
+			$this->creationAction();
+		}
 		$menus = Model::factory('menu', 'system')->findAll();
 		$this->assign('nodes', $menus);
 		$this->template = 'menus';
 	}
-	/*
-	 * 系统设置
+	/**
+	 * 创建新菜单
 	 */
-	public function settingsAction()
+	public function creationAction()
 	{
 		if ( $this->request->isAjax() )
 		{
 			$status = 0;
 			$info = '您没有足够的权限进行此项操作。';
-			//	$this->accessLevel = Admin::minimumLevel('setting_general');
-			//	if ( $this->user->role_id >= $this->accessLevel )
-			//	{
-			$siteId = intval($this->request->post('sid'));
-			$oSite = Model::factory('site', 'admin');
-			$site = $oSite->find($siteId);
-			if ( !$site )
-			{
-				$status = 3;
-				$info = '请求的站点不存在。';
-				$this->ajaxReturn($status, $info);
-			}
+			$oItem = Model::factory('menu', 'system');
 			try
 			{
-				$update = [
-					'site_title' => $this->request->post('site_title'),
-					'site_description' => $this->request->post('site_description'),
-					'meta_keywords' => $this->request->post('meta_keywords'),
-					'meta_description' => $this->request->post('meta_description'),
-					'admin_email' => $this->request->post('admin_email'),
-					'company' => $this->request->post('company'),
-					'phone' => $this->request->post('phone'),
-					'address' => $this->request->post('address'),
-					'date_format' => $this->request->post('date_format'),
-					'timezone' => $this->request->post('timezone'),
+				$creation = [
+					'title' => $this->request->post('title', ''),
+					'parent_id' => $this->request->post('parent_id', ''),
+					'sort' => $this->request->post('sort', ''),
 				];
-				if ( $oSite->update($update, ['id', '=', $site->id]) )
+				if ( $oItem->create($creation) )
 				{
 					$status = 1;
-					$info = '网站信息已经更新成功。';
+					$info = '菜单已经创建成功。';
 				}
 				else
 				{
 					$status = 5;
-					$info = '网站信息没有更新。';
+					$info = '菜单创建失败。';
 				}
 			}
 			catch( Validation_Exception $e )
@@ -95,11 +82,58 @@ class MenusController extends AdministratorController
 					break;
 				}
 			}
-			//}
 			$this->ajaxReturn($status, $info);
 		}
-		// 加载站点信息
-		$site = Model::factory('site', 'admin')->find(1);
-		$this->assign('site', $site);
+	}
+	/**
+	 * 编辑菜单
+	 */
+	public function editAction()
+	{
+		$itemId = intval($this->request->param('id'));
+		$oItem = Model::factory('menu', 'system');
+		$item = $oItem->find($itemId);
+		if ( $this->request->isAjax() )
+		{
+			$status = 0;
+			$info = '您没有足够的权限进行此项操作。';
+			if ( !$item )
+			{
+				$status = 3;
+				$info = '请求的菜单不存在。';
+				$this->ajaxReturn($status, $info);
+			}
+			try
+			{
+				$update = [
+					'title' => $this->request->param('title', ''),
+					'parent_id' => $this->request->param('parent_id', ''),
+					'sort' => $this->request->param('sort', ''),
+				];
+				if ( $oItem->update($update, ['id', '=', $item->id]) )
+				{
+					$status = 1;
+					$info = '菜单已经更新成功。';
+				}
+				else
+				{
+					$status = 5;
+					$info = '菜单没有更新。';
+				}
+			}
+			catch( Validation_Exception $e )
+			{
+				$errors = $e->errors('models');
+				foreach( $errors as $ev )
+				{
+					$status = 4;
+					$info = $ev;
+					break;
+				}
+			}
+			$this->ajaxReturn($status, $info);
+		}
+		$this->tab = 'menus';
+		$this->assign('node', $item);
 	}
 }

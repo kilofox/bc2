@@ -1,7 +1,7 @@
 <div class="cell auto-size padding20 bg-white" id="cell-content">
 	<h1 class="text-light">菜单 <span class="mif-drive-eta place-right"></span></h1>
 	<hr class="thin bg-grayLighter">
-	<button class="button success" onclick="pushMessage('success')"><span class="mif-play"></span> 新增</button>
+	<button class="button success"><span class="mif-play"></span> 新增</button>
 	<button class="button warning" onclick="pushMessage('warning')"><span class="mif-loop2"></span> 排序</button>
 	<hr class="thin bg-grayLighter">
 	<div class="dataTables_length">
@@ -54,3 +54,10 @@
 		<a class="paginate_button next" tabindex="0">下一页</a>
 	</div>
 </div>
+<script>
+	$(function(){
+		$('button.success').click(function(){
+			location.href = baseUrl + '/system/menus/creation';
+		});
+	});
+</script>
