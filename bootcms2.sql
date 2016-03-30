@@ -7,6 +7,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 
+DROP TABLE IF EXISTS `bc_applications`;
 CREATE TABLE IF NOT EXISTS `bc_applications` (
   `id` int(10) NOT NULL,
   `author` varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
@@ -20,18 +21,19 @@ CREATE TABLE IF NOT EXISTS `bc_applications` (
   `enabled` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `update_check` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
   `update_last_check` int(10) unsigned NOT NULL DEFAULT '0',
-  `update_version` text COLLATE utf8mb4_unicode_ci COMMENT 'Json array of the latest version info returned by the update check URL',
+  `update_version` text COLLATE utf8_general_ci,
   `app_default` tinyint(1) unsigned DEFAULT '0',
   `application` varchar(120) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `controller` varchar(120) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `action` varchar(120) CHARACTER SET utf8 NOT NULL DEFAULT ''
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='应用';
 
 INSERT INTO `bc_applications` (`id`, `author`, `version`, `name`, `alias`, `created`, `parent`, `main`, `protected`, `enabled`, `update_check`, `update_last_check`, `update_version`, `app_default`, `application`, `controller`, `action`) VALUES
 (1, 'Kilofox Studio', '2.0.0.0', 'system', '系统', 1458466071, 0, 1, 1, 1, NULL, 1458565024, '{"longversion":101017,"version":"4.1.4.1","released":1449370500,"security":false,"releasenotes":"","updateurl":""}', 0, 'system', 'index', 'index'),
 (2, 'Kilofox Studio', '2.0.0.0', 'users', '用户', 1458466073, 0, 1, 0, 1, NULL, 0, NULL, 0, 'users', 'admin', 'index'),
 (3, 'Kilofox Studio', '2.0.0.0', 'articles', '文章', 1458466074, 0, 1, 0, 1, NULL, 0, NULL, 0, 'articles', 'admin', 'index');
 
+DROP TABLE IF EXISTS `bc_articles`;
 CREATE TABLE IF NOT EXISTS `bc_articles` (
   `id` int(10) unsigned NOT NULL,
   `author_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -49,23 +51,24 @@ CREATE TABLE IF NOT EXISTS `bc_articles` (
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL DEFAULT '0',
   `last_edited` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='节点';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='节点';
 
 INSERT INTO `bc_articles` (`id`, `author_id`, `slug`, `type`, `title`, `introduce`, `content`, `category`, `submenu`, `sidebar`, `commenting`, `keywords`, `descript`, `status`, `created`, `last_edited`) VALUES
-(1, 1, 'homepage', 2, '欢迎2', '', '<p>\r\n	欢迎来到 BootCMS 世界！\r\n</p>\r\n<p>\r\n	<img src="assets/uploads/attachment/image/20131010/20131010153650_42884.png" alt="" /> \r\n</p>\r\n<p>\r\n	热烈庆祝中华民国国庆节102周年！\r\n</p>', 7, 0, 5, 0, 'BootCMS', 'BootCMS', 1, 1375941480, 1375941608),
-(2, 1, 'demo', 1, '单页示范', '', '这是一个单页示范。它可以显示在菜单中。<br />\r\n作为一个新的 BootCMS 的使用者，您应当去<a href="manage/">后台</a>删除此页，并根据您的内容创建新的单页。玩得开心！', 2, 0, 5, 1, 'BootCMS', 'BootCMS演示页', 1, 1377162480, 1377162508);
+(1, 1, 'homepage', 2, '欢迎', '', '<p>\r\n	欢迎来到 BootCMS 世界！\r\n</p>\r\n<p>\r\n	<img src="assets/uploads/attachment/image/20131010/20131010153650_42884.png" alt="" />\r\n</p>\r\n<p>\r\n	热烈庆祝中华民国国庆节102周年！\r\n</p>', 0, 0, 5, 0, 'BootCMS', 'BootCMS s', 1, 1375941480, 1375941608),
+(2, 1, 'demo', 1, '单页示范', '', '这是一个单页示范。它可以显示在菜单中。<br />\n作为一个新的 BootCMS 的使用者，您应当去<a href="manage/">后台</a>删除此页，并根据您的内容创建新的单页。玩得开心！', 0, 0, 5, 1, 'BootCMS', 'BootCMS演示页', 1, 1377162480, 1377162508);
 
+DROP TABLE IF EXISTS `bc_article_categories`;
 CREATE TABLE IF NOT EXISTS `bc_article_categories` (
   `id` int(10) unsigned NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `title` varchar(255) NOT NULL,
   `slug` varchar(255) NOT NULL,
   `description` text NOT NULL
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COMMENT='分类';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='分类';
 
-INSERT INTO `bc_article_categories` (`id`, `name`, `slug`, `description`) VALUES
-(7, 'cate2', 'cate1', '分类一呀啦'),
-(8, '分类一', 'slug4', '默认不可以发表文章。.....');
+INSERT INTO `bc_article_categories` (`id`, `title`, `slug`, `description`) VALUES
+(1, '默认分类', 'default-category2', '默认分类');
 
+DROP TABLE IF EXISTS `bc_carts`;
 CREATE TABLE IF NOT EXISTS `bc_carts` (
   `id` smallint(4) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -73,14 +76,15 @@ CREATE TABLE IF NOT EXISTS `bc_carts` (
   `price` decimal(6,2) unsigned NOT NULL DEFAULT '0.00',
   `quantity` smallint(4) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `bc_linkages`;
 CREATE TABLE IF NOT EXISTS `bc_linkages` (
   `id` smallint(4) unsigned NOT NULL,
   `name` varchar(30) NOT NULL DEFAULT '',
   `parent_id` smallint(4) unsigned NOT NULL DEFAULT '0',
   `has_child` tinyint(1) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=3272 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `bc_linkages` (`id`, `name`, `parent_id`, `has_child`) VALUES
 (1, '中国', 0, 1),
@@ -3353,9 +3357,9 @@ INSERT INTO `bc_linkages` (`id`, `name`, `parent_id`, `has_child`) VALUES
 (3267, '福海县', 477, 0),
 (3268, '哈巴河县', 477, 0),
 (3269, '青河县', 477, 0),
-(3270, '吉木乃县', 477, 0),
-(3271, '双河市', 32, 0);
+(3270, '吉木乃县', 477, 0);
 
+DROP TABLE IF EXISTS `bc_logs`;
 CREATE TABLE IF NOT EXISTS `bc_logs` (
   `id` int(10) unsigned NOT NULL,
   `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -3367,8 +3371,9 @@ CREATE TABLE IF NOT EXISTS `bc_logs` (
   `created` int(10) unsigned NOT NULL DEFAULT '0',
   `trashed` int(10) unsigned NOT NULL DEFAULT '0',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='日志';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='日志';
 
+DROP TABLE IF EXISTS `bc_media`;
 CREATE TABLE IF NOT EXISTS `bc_media` (
   `id` int(10) unsigned NOT NULL,
   `file_name` varchar(20) NOT NULL DEFAULT '',
@@ -3377,7 +3382,7 @@ CREATE TABLE IF NOT EXISTS `bc_media` (
   `group` int(10) unsigned NOT NULL DEFAULT '0',
   `image_id` int(10) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COMMENT='媒体';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='媒体';
 
 INSERT INTO `bc_media` (`id`, `file_name`, `thumb_name`, `type`, `group`, `image_id`, `created`) VALUES
 (1, '13082212000042.jpg', '13082212000042-t.jpg', 0, 1, 0, 1377144000),
@@ -3388,6 +3393,7 @@ INSERT INTO `bc_media` (`id`, `file_name`, `thumb_name`, `type`, `group`, `image
 (6, '13082212000315.jpg', '13082212000315-t.jpg', 0, 1, 0, 1377144004),
 (7, '13101022252796.jpg', '13101022252796-t.jpg', 0, 2, 0, 1381415127);
 
+DROP TABLE IF EXISTS `bc_media_groups`;
 CREATE TABLE IF NOT EXISTS `bc_media_groups` (
   `id` smallint(4) unsigned NOT NULL,
   `slug` varchar(30) NOT NULL DEFAULT '',
@@ -3397,12 +3403,13 @@ CREATE TABLE IF NOT EXISTS `bc_media_groups` (
   `tn_width` smallint(4) unsigned NOT NULL DEFAULT '0',
   `tn_height` smallint(4) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='媒体分组';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='媒体分组';
 
 INSERT INTO `bc_media_groups` (`id`, `slug`, `group_name`, `rs_width`, `rs_height`, `tn_width`, `tn_height`, `created`) VALUES
 (1, 'product', '产品图片', 595, 397, 150, 100, 1372316861),
 (2, 'shop', '店铺图片', 595, 397, 150, 100, 1372316872);
 
+DROP TABLE IF EXISTS `bc_node_comments`;
 CREATE TABLE IF NOT EXISTS `bc_node_comments` (
   `id` int(10) unsigned NOT NULL,
   `node_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -3412,15 +3419,17 @@ CREATE TABLE IF NOT EXISTS `bc_node_comments` (
   `created` int(10) unsigned NOT NULL DEFAULT '0',
   `last_edited` int(10) unsigned NOT NULL DEFAULT '0',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='评论';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='评论';
 
+DROP TABLE IF EXISTS `bc_node_likes`;
 CREATE TABLE IF NOT EXISTS `bc_node_likes` (
   `id` int(10) unsigned NOT NULL,
   `node_id` int(10) unsigned NOT NULL DEFAULT '0',
   `like_time` int(10) unsigned NOT NULL DEFAULT '0',
   `ip` varchar(39) NOT NULL DEFAULT ''
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='喜欢';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='喜欢';
 
+DROP TABLE IF EXISTS `bc_orders`;
 CREATE TABLE IF NOT EXISTS `bc_orders` (
   `id` int(10) unsigned NOT NULL,
   `order_no` varchar(15) NOT NULL DEFAULT '',
@@ -3438,8 +3447,9 @@ CREATE TABLE IF NOT EXISTS `bc_orders` (
   `trade_no` varchar(30) NOT NULL DEFAULT '',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='订单';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单';
 
+DROP TABLE IF EXISTS `bc_order_products`;
 CREATE TABLE IF NOT EXISTS `bc_order_products` (
   `id` int(11) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -3450,8 +3460,9 @@ CREATE TABLE IF NOT EXISTS `bc_order_products` (
   `quantity` smallint(4) unsigned NOT NULL DEFAULT '0',
   `freight` decimal(5,2) unsigned NOT NULL DEFAULT '0.00',
   `created` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='订单产品';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单产品';
 
+DROP TABLE IF EXISTS `bc_pay_payments`;
 CREATE TABLE IF NOT EXISTS `bc_pay_payments` (
   `id` tinyint(2) unsigned NOT NULL,
   `name` varchar(120) NOT NULL DEFAULT '',
@@ -3468,11 +3479,12 @@ CREATE TABLE IF NOT EXISTS `bc_pay_payments` (
   `author` varchar(60) NOT NULL DEFAULT '',
   `website` varchar(100) NOT NULL DEFAULT '',
   `version` varchar(10) NOT NULL DEFAULT ''
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='支付方式';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='支付方式';
 
 INSERT INTO `bc_pay_payments` (`id`, `name`, `pay_name`, `pay_code`, `pay_desc`, `pay_method`, `pay_fee`, `config`, `is_cod`, `is_online`, `list_order`, `enabled`, `author`, `website`, `version`) VALUES
 (1, '支付宝', '支付宝', 'Alipay', '支付宝（中国）网络技术有限公司是国内领先的独立第三方支付平台，是阿里巴巴集团的关联公司。支付宝致力于为中国电子商务提供“简单、安全、快速”的在线支付解决方案。【<a href="https://b.alipay.com/order/productSet.htm" target="_blank"><strong>立即在线申请</strong></a>】', 0, '0', 'array (\n  ''alipay_account'' => \n  array (\n    ''name'' => ''支付宝帐户'',\n    ''type'' => ''text'',\n    ''value'' => ''kilofox'',\n  ),\n  ''alipay_key'' => \n  array (\n    ''name'' => ''交易安全校验码(key)'',\n    ''type'' => ''text'',\n    ''value'' => ''kkkkkkeyyyyyyyyyyyyy'',\n  ),\n  ''alipay_partner'' => \n  array (\n    ''name'' => ''合作者身份(parterID)'',\n    ''type'' => ''text'',\n    ''value'' => ''2222222222222'',\n  ),\n  ''service_type'' => \n  array (\n    ''name'' => ''选择接口类型'',\n    ''type'' => ''select'',\n    ''value'' => ''2'',\n    ''range'' => \n    array (\n      0 => ''使用担保交易接口'',\n      1 => ''使用标准双接口'',\n      2 => ''使用即时到账交易接口'',\n    ),\n  ),\n)', 0, 1, 0, 1, '千狐工作室', 'http://www.alipay.com', '1.0.0');
 
+DROP TABLE IF EXISTS `bc_products`;
 CREATE TABLE IF NOT EXISTS `bc_products` (
   `id` mediumint(8) unsigned NOT NULL,
   `product_name` varchar(120) NOT NULL DEFAULT '',
@@ -3495,31 +3507,34 @@ CREATE TABLE IF NOT EXISTS `bc_products` (
   `item10` varchar(250) NOT NULL DEFAULT '',
   `pictures` varchar(250) NOT NULL DEFAULT '',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='产品';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='产品';
 
 INSERT INTO `bc_products` (`id`, `product_name`, `category`, `introduce`, `commodity_price`, `promotion_price`, `promote`, `list_order`, `created`, `item1`, `item2`, `item3`, `item4`, `item5`, `item6`, `item7`, `item8`, `item9`, `item10`, `pictures`, `status`) VALUES
 (1, '苹果 iPhone 5（16GB）', 1, '优点：屏幕升级为4英寸，支持全景拍摄；听筒降噪功能有助于提升通话质量；siri 在 iOS 6 中已经实现汉语支持。\n缺点：自带地图软件尚待完善；铝合金材质容易刮花掉漆。', '4599.00', '4099.00', 1, 0, 1374762807, 'a:2:{i:0;s:12:"网络模式";i:1;s:17:"GSM，WCDMA，LTE";}', 'a:2:{i:0;s:12:"网络类型";i:1;s:12:"单卡双模";}', 'a:2:{i:0;s:12:"主屏尺寸";i:1;s:26:"4.0英寸，1136x640像素";}', 'a:2:{i:0;s:9:"CPU型号";i:1;s:9:"苹果 A6";}', 'a:2:{i:0;s:9:"CPU频率";i:1;s:14:"1066MHz 双核";}', 'a:2:{i:0;s:9:"触摸屏";i:1;s:24:"电容屏，多点触摸";}', 'a:2:{i:0;s:12:"键盘类型";i:1;s:18:"虚拟触摸键盘";}', 'a:2:{i:0;s:12:"内置容量";i:1;s:4:"16GB";}', 'a:2:{i:0;s:9:"摄像头";i:1;s:12:"800万像素";}', 'a:2:{i:0;s:12:"副摄像头";i:1;s:12:"120万像素";}', 'a:6:{i:0;s:1:"1";i:1;s:1:"2";i:2;s:1:"3";i:3;s:1:"4";i:4;s:1:"5";i:5;s:1:"6";}', 0);
 
+DROP TABLE IF EXISTS `bc_product_categories`;
 CREATE TABLE IF NOT EXISTS `bc_product_categories` (
   `id` smallint(5) unsigned NOT NULL,
   `name` varchar(40) NOT NULL DEFAULT '',
   `parent` smallint(5) unsigned NOT NULL DEFAULT '0',
   `list_order` smallint(5) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='产品分类';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='产品分类';
 
 INSERT INTO `bc_product_categories` (`id`, `name`, `parent`, `list_order`) VALUES
 (1, '手机', 0, 1);
 
+DROP TABLE IF EXISTS `bc_regions`;
 CREATE TABLE IF NOT EXISTS `bc_regions` (
   `id` smallint(3) unsigned NOT NULL,
   `type` varchar(32) NOT NULL DEFAULT '',
   `region_title` tinytext NOT NULL
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='区域';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='区域';
 
 INSERT INTO `bc_regions` (`id`, `type`, `region_title`) VALUES
 (1, '0', '主菜单'),
 (2, '1', '侧边栏');
 
+DROP TABLE IF EXISTS `bc_region_blocks`;
 CREATE TABLE IF NOT EXISTS `bc_region_blocks` (
   `id` smallint(3) unsigned NOT NULL,
   `region_id` smallint(5) unsigned NOT NULL DEFAULT '0',
@@ -3527,7 +3542,7 @@ CREATE TABLE IF NOT EXISTS `bc_region_blocks` (
   `block_content` text NOT NULL,
   `list_order` smallint(3) unsigned NOT NULL DEFAULT '0',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 COMMENT='块';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='块';
 
 INSERT INTO `bc_region_blocks` (`id`, `region_id`, `block_title`, `block_content`, `list_order`, `status`) VALUES
 (1, 1, '首页', '', 1, 0),
@@ -3536,21 +3551,22 @@ INSERT INTO `bc_region_blocks` (`id`, `region_id`, `block_title`, `block_content
 (4, 1, '店铺', 'shop', 4, 0),
 (5, 2, 'AdSense', '<script type="text/javascript">\ngoogle_ad_client = "ca-pub-3247088052200757";\ngoogle_ad_slot = "5148538461";\ngoogle_ad_width = 180;\ngoogle_ad_height = 150;\n</script>\n<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">\n</script>', 5, 0);
 
+DROP TABLE IF EXISTS `bc_roles`;
 CREATE TABLE IF NOT EXISTS `bc_roles` (
   `id` tinyint(2) unsigned NOT NULL,
   `name` varchar(32) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
   `authorization_code` varchar(8) NOT NULL DEFAULT ''
-) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COMMENT='用户角色';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户角色';
 
 INSERT INTO `bc_roles` (`id`, `name`, `description`, `authorization_code`) VALUES
 (1, '订阅者', '默认不可以发表文章。', '0xvl3v'),
 (2, '投稿者', '默认可以发表需要审核的文章。', 'aml66t'),
 (3, '作者', '默认可以发表不经审核的文章。', 'iqib61'),
-(9, 'cate3', '分类一呀', ''),
 (4, '编辑', '默认可以修改他人的文章。', 'knvilx'),
 (5, '管理员', '高级账户，用户可以撰写和编辑自己的文章。', 'qdrgjr');
 
+DROP TABLE IF EXISTS `bc_shippings`;
 CREATE TABLE IF NOT EXISTS `bc_shippings` (
   `id` tinyint(2) unsigned NOT NULL,
   `shipping_name` varchar(60) NOT NULL DEFAULT '',
@@ -3565,7 +3581,7 @@ CREATE TABLE IF NOT EXISTS `bc_shippings` (
   `support_cod` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `list_order` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `bc_shippings` (`id`, `shipping_name`, `shipping_desc`, `areas`, `base_weight`, `step_weight`, `price_type`, `base_price`, `step_price`, `insurance`, `support_cod`, `list_order`, `status`) VALUES
 (1, 'EMS', '', '', 1000, 500, 0, '0.00', '0.00', '0.00', 0, 1, 1),
@@ -3580,6 +3596,7 @@ INSERT INTO `bc_shippings` (`id`, `shipping_name`, `shipping_desc`, `areas`, `ba
 (10, '天天快递', '', '', 1000, 500, 0, '0.00', '0.00', '0.00', 0, 10, 1),
 (11, '全峰快递', '', '', 1000, 500, 0, '0.00', '0.00', '0.00', 0, 11, 1);
 
+DROP TABLE IF EXISTS `bc_shops`;
 CREATE TABLE IF NOT EXISTS `bc_shops` (
   `id` mediumint(8) unsigned NOT NULL,
   `shop_name` varchar(120) NOT NULL DEFAULT '',
@@ -3588,11 +3605,12 @@ CREATE TABLE IF NOT EXISTS `bc_shops` (
   `pictures` varchar(250) NOT NULL DEFAULT '',
   `list_order` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `created` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='店铺';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='店铺';
 
 INSERT INTO `bc_shops` (`id`, `shop_name`, `content`, `media`, `pictures`, `list_order`, `created`) VALUES
 (1, '永兴美术社', '<h4>\n	经营项目\n</h4>\n<ul>\n	<li>\n		印章制作：光敏印章、原子印章、红胶印章、条章\n	</li>\n	<li>\n		室内写真喷绘\n	</li>\n	<li>\n		图标设计\n	</li>\n	<li>\n		打印、复印、扫描、传真\n	</li>\n	<li>\n		彩喷\n	</li>\n	<li>\n		条幅、X展架、易拉宝制作\n	</li>\n	<li>\n		快照\n	</li>\n	<li>\n		展板制作\n	</li>\n	<li>\n		名片制作\n	</li>\n	<li>\n		CAD/效果图大幅面输出\n	</li>\n	<li>\n		工程复印\n	</li>\n	<li>\n		装订、印刷\n	</li>\n	<li>\n		刻字\n	</li>\n	<li>\n		锦旗、标牌制作\n	</li>\n	<li>\n		批量加工、订做广告衫、T恤衫等\n	</li>\n</ul>\n<h4>\n	地址\n</h4>\n<p>\n	黑龙江省哈尔滨市香坊区大庆副路125号\n</p>\n<h4>电话</h4>\n<p>0451-82106850、13804524270</p>\n<h4>\n	营业时间\n</h4>\n<p>\n	星期一至星期日 8:00 - 17:00\n</p>', 7, '', 1, 1377144573);
 
+DROP TABLE IF EXISTS `bc_sites`;
 CREATE TABLE IF NOT EXISTS `bc_sites` (
   `id` tinyint(2) unsigned NOT NULL,
   `site_title` varchar(40) NOT NULL DEFAULT '',
@@ -3608,37 +3626,33 @@ CREATE TABLE IF NOT EXISTS `bc_sites` (
   `comment_default` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `comment_email` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `version` varchar(15) NOT NULL DEFAULT ''
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='站点';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='站点';
 
 INSERT INTO `bc_sites` (`id`, `site_title`, `site_description`, `meta_keywords`, `meta_description`, `admin_email`, `company`, `phone`, `address`, `date_format`, `timezone`, `comment_default`, `comment_email`, `version`) VALUES
 (1, 'BootCMS 2.0', '完全面向对象的开源内容管理系统', 'bootcms,cms,open source,开源,内容管理,内容管理系统', 'BootCMS 是中国第一款完全面向对象的开源内容管理系统。', 'admin@domain.com', '千狐工作室', '0451-88888888', '哈尔滨市香坊区进乡街120号', 'Y年n月j日 H:i', 8, 0, 0, '1.1.2');
 
+DROP TABLE IF EXISTS `bc_system_menu`;
 CREATE TABLE IF NOT EXISTS `bc_system_menu` (
-  `id` int(10) unsigned NOT NULL COMMENT '文档ID',
+  `id` int(10) unsigned NOT NULL COMMENT 'ID',
   `title` varchar(50) NOT NULL DEFAULT '' COMMENT '标题',
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '上级分类ID',
   `sort` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '排序（同级有效）',
   `application` varchar(255) NOT NULL DEFAULT '' COMMENT '链接地址',
   `controller` varchar(255) NOT NULL DEFAULT '',
   `action` varchar(255) NOT NULL DEFAULT '',
-  `hide` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否隐藏',
-  `tip` varchar(255) NOT NULL DEFAULT '' COMMENT '提示',
-  `group` varchar(50) DEFAULT '' COMMENT '分组',
-  `is_dev` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否仅开发者模式可见'
-) ENGINE=MyISAM AUTO_INCREMENT=122 DEFAULT CHARSET=utf8;
+  `hide` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `icon` char(15) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `bc_system_menu` (`id`, `title`, `parent_id`, `sort`, `application`, `controller`, `action`, `hide`, `tip`, `group`, `is_dev`) VALUES
-(1, '系统', 0, 1, 'system', 'index', 'index', 0, '', '', 0),
-(2, '用户', 0, 2, 'users', 'admin', 'index', 0, '', '', 0),
-(3, '文章', 0, 0, 'articles', 'admin', 'index', 1, '', '内容', 0),
-(4, '菜单', 1, 0, 'system', 'menus', 'index', 0, '', '', 0),
-(5, '编辑', 3, 0, 'article/edit', '', '', 0, '', '', 0),
-(6, '改变状态', 3, 0, 'article/setStatus', '', '', 0, '', '', 0),
-(7, '保存', 3, 0, 'article/update', '', '', 0, '', '', 0),
-(8, '保存草稿', 3, 0, 'article/autoSave', '', '', 0, '', '', 0),
-(9, '移动', 3, 0, 'article/move', '', '', 0, '', '', 0),
-(10, '复制', 3, 0, 'article/copy', '', '', 0, '', '', 0);
+INSERT INTO `bc_system_menu` (`id`, `title`, `parent_id`, `sort`, `application`, `controller`, `action`, `hide`, `icon`) VALUES
+(1, '系统', 0, 1, 'system', 'index', 'index', 0, ''),
+(2, '概览', 1, 1, 'system', 'index', 'index', 0, 'looks'),
+(3, '菜单', 1, 2, 'system', 'menus', 'index', 0, 'menu'),
+(4, '设置', 1, 3, 'system', 'settings', 'index', 0, 'cogs'),
+(30, '文章', 0, 3, 'articles', 'admin', 'index', 0, ''),
+(20, '用户', 0, 2, 'users', 'admin', 'index', 0, '');
 
+DROP TABLE IF EXISTS `bc_users`;
 CREATE TABLE IF NOT EXISTS `bc_users` (
   `id` int(10) unsigned NOT NULL,
   `username` varchar(32) NOT NULL DEFAULT '',
@@ -3656,11 +3670,12 @@ CREATE TABLE IF NOT EXISTS `bc_users` (
   `last_reset` int(10) unsigned NOT NULL DEFAULT '0',
   `logins` int(10) unsigned NOT NULL DEFAULT '0',
   `last_login` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='用户';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户';
 
 INSERT INTO `bc_users` (`id`, `username`, `password`, `email`, `role_id`, `nickname`, `company`, `first_name`, `secondary_email`, `phone`, `address`, `created`, `resets`, `last_reset`, `logins`, `last_login`) VALUES
-(1, 'admin', '6918ea3efd6c7e37b5250b78536f48029980b87fa9df83ddde2601b9dc5caa61', 'a@a.com', 9, 'admin', '', '', '', '18900012345', '无2', 1385886938, 0, 0, 31, 1387201817);
+(1, 'admin', '6918ea3efd6c7e37b5250b78536f48029980b87fa9df83ddde2601b9dc5caa61', 'a@a.com', 9, 'admin', '', '', '', '18900012345', '无2', 1385886938, 0, 0, 27, 1387201817);
 
+DROP TABLE IF EXISTS `bc_user_tokens`;
 CREATE TABLE IF NOT EXISTS `bc_user_tokens` (
   `id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -3669,14 +3684,8 @@ CREATE TABLE IF NOT EXISTS `bc_user_tokens` (
   `type` varchar(100) NOT NULL DEFAULT '',
   `created` int(10) unsigned NOT NULL DEFAULT '0',
   `expires` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='用户自动登录令牌';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户自动登录令牌';
 
-
-ALTER TABLE `bc_applications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `app_directory` (`name`(191)),
-  ADD KEY `app_position` (`main`),
-  ADD KEY `app_default` (`app_default`);
 
 ALTER TABLE `bc_articles`
   ADD PRIMARY KEY (`id`),
@@ -3756,8 +3765,7 @@ ALTER TABLE `bc_sites`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `bc_system_menu`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `pid` (`parent_id`);
+  ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `bc_users`
   ADD PRIMARY KEY (`id`),
@@ -3770,22 +3778,20 @@ ALTER TABLE `bc_user_tokens`
   ADD KEY `user_id` (`user_id`);
 
 
-ALTER TABLE `bc_applications`
-  MODIFY `id` int(10) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=4;
 ALTER TABLE `bc_articles`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=3;
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_article_categories`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=9;
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_carts`
   MODIFY `id` smallint(4) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_linkages`
-  MODIFY `id` smallint(4) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=3272;
+  MODIFY `id` smallint(4) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_logs`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_media`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=8;
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_media_groups`
-  MODIFY `id` smallint(4) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=3;
+  MODIFY `id` smallint(4) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_node_comments`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_node_likes`
@@ -3795,27 +3801,27 @@ ALTER TABLE `bc_orders`
 ALTER TABLE `bc_order_products`
   MODIFY `id` int(11) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_pay_payments`
-  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_products`
-  MODIFY `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_product_categories`
-  MODIFY `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_regions`
-  MODIFY `id` smallint(3) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=3;
+  MODIFY `id` smallint(3) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_region_blocks`
-  MODIFY `id` smallint(3) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=6;
+  MODIFY `id` smallint(3) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_roles`
-  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=10;
+  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_shippings`
-  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=12;
+  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_shops`
-  MODIFY `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_sites`
-  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_system_menu`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文档ID',AUTO_INCREMENT=122;
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID';
 ALTER TABLE `bc_users`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_user_tokens`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

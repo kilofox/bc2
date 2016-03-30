@@ -20,6 +20,10 @@
 				<td class="sortable-column">名称</td>
 				<td class="sortable-column">上级</td>
 				<td class="sortable-column">排序</td>
+				<td class="sortable-column">应用</td>
+				<td class="sortable-column">控制器</td>
+				<td class="sortable-column">动作</td>
+				<td class="sortable-column align-center">隐藏</td>
 				<td class="align-center">操作</td>
 			</tr>
 		</thead>
@@ -34,9 +38,13 @@
 						</label>
 					</td>
 					<td><?php echo $node->id; ?></td>
-					<td><?php echo $node->title; ?></td>
+					<td><a href="<?php echo $baseUrl; ?>/system/menus/<?php echo $node->id; ?>/submenus"><?php echo $node->title; ?></a></td>
 					<td><?php echo $node->parent_id; ?></td>
 					<td><?php echo $node->sort; ?></td>
+					<td><?php echo $node->application; ?></td>
+					<td><?php echo $node->controller; ?></td>
+					<td><?php echo $node->action; ?></td>
+					<td class="align-center"><?php echo $node->hide; ?></td>
 					<td class="align-center">
 						<a href="<?php echo $baseUrl; ?>/system/menus/<?php echo $node->id; ?>/edit">编辑</a>
 					</td>

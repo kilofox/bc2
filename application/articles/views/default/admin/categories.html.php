@@ -18,7 +18,7 @@
 			<?php foreach( $nodes as $node ): ?>
 				<tr>
 					<td><?php echo $node->id; ?></td>
-					<td><?php echo $node->name; ?></td>
+					<td><?php echo $node->title; ?></td>
 					<td><?php echo $node->slug; ?></td>
 					<td><?php echo $node->description; ?></td>
 					<td class="align-center">

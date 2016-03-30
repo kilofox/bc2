@@ -10,7 +10,7 @@
 				<div class="frame" id="frame_1">
 					<lable>分类名</lable>
 					<div class="input-control text full-size">
-						<input type="text" name="name" value="<?php echo $node->name; ?>"/>
+						<input type="text" name="title" value="<?php echo $node->title; ?>"/>
 					</div>
 					<lable>别名</lable>
 					<div class="input-control text full-size">

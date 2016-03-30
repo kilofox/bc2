@@ -1,10 +1,9 @@
 <?php
 
 namespace App\system\controllers;
-use App\system\controllers\AdministratorController;
-use App\users\models\UserModel;
+use App\system\controllers\AdminController;
 use Bootphp\Model;
-use Bootphp\Database\DB;
+use App\users\models\UserModel;
 /**
  * 后台用户控制器。
  *
@@ -13,7 +12,7 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class UsersController extends AdministratorController
+class UsersController extends AdminrController
 {
 	/**
 	 * Before 方法

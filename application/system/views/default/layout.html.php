@@ -64,7 +64,9 @@
 			<span class="app-bar-divider"></span>
 			<ul class="app-bar-menu">
 				<?php foreach( $menu['tabs'] as $node ): ?>
-					<li<?php if ( in_array($application, array_keys($node->subMenu)) ): ?> class="active"<?php endif; ?>><a href="<?php echo $baseUrl; ?>/<?php echo $node->application; ?>/<?php echo $node->controller; ?>/<?php echo $node->action; ?>"><?php echo $node->title; ?></a></li>
+					<li<?php if ( in_array($application, $node->apps) ): ?> class="active"<?php endif; ?>>
+						<a href="<?php echo $baseUrl; ?>/<?php echo $node->application; ?>/<?php echo $node->controller; ?>/<?php echo $node->action; ?>"><?php echo $node->title; ?></a>
+					</li>
 				<?php endforeach; ?>
 				<li>
 					<a href="javascript:void(0);" class="dropdown-toggle">帮助</a>
@@ -92,10 +94,10 @@
 				<div class="row" style="min-height: 100%">
 					<div class="cell size-x200" id="cell-sidebar" style="background-color: #71b1d1;">
 						<ul class="sidebar">
-							<?php foreach( $menu['subMenu'] as $node ): ?>
-								<li<?php if ( $node->application == $application ): ?> class="active"<?php endif; ?>>
+							<?php foreach( $menu['tabs'][$menu['default']]->subMenu as $node ): ?>
+								<li<?php if ( $node->controller == $controller ): ?> class="active"<?php endif; ?>>
 									<a href="<?php echo $baseUrl; ?>/<?php echo $node->application; ?>/<?php echo $node->controller; ?>/<?php echo $node->action; ?>">
-										<span class="mif-apps icon"></span>
+										<span class="mif-<?php echo $node->icon; ?> icon"></span>
 										<span class="title"><?php echo $node->title; ?></span>
 									</a>
 								</li>

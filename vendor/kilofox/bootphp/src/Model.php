@@ -76,6 +76,14 @@ abstract class Model
 		return $this->db->execute()->asArray();
 	}
 	/**
+	 * 排序
+	 */
+	public function order($column, $direction = NULL)
+	{
+		$this->db->orderBy($column, $direction);
+		return $this;
+	}
+	/**
 	 * 统计总数
 	 *
 	 * @return	integer 数值

@@ -12,6 +12,10 @@
 					<div class="input-control text full-size">
 						<input type="text" name="title" value="<?php echo $node->title; ?>"/>
 					</div>
+					<lable>图标</lable>
+					<div class="input-control text full-size">
+						<input type="text" name="icon" value="<?php echo $node->icon; ?>"/>
+					</div>
 					<lable>上级菜单</lable>
 					<div class="input-control text full-size">
 						<input type="text" name="parent_id" value="<?php echo $node->parent_id; ?>"/>
@@ -19,6 +23,18 @@
 					<lable>排序</lable>
 					<div class="input-control textarea full-size">
 						<input type="text" name="sort" value="<?php echo $node->sort; ?>"/>
+					</div>
+					<lable>应用</lable>
+					<div class="input-control textarea full-size">
+						<input type="text" name="application" value="<?php echo $node->application; ?>"/>
+					</div>
+					<lable>控制器</lable>
+					<div class="input-control textarea full-size">
+						<input type="text" name="controller" value="<?php echo $node->controller; ?>"/>
+					</div>
+					<lable>动作</lable>
+					<div class="input-control textarea full-size">
+						<input type="text" name="action" value="<?php echo $node->action; ?>"/>
 					</div>
 				</div>
 			</div>

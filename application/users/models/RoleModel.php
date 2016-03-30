@@ -21,7 +21,7 @@ class RoleModel extends Model
 	 *
 	 * @return	对象
 	 */
-	public static function factory($name, $application = 'core')
+	public static function factory($name, $application = 'system')
 	{
 		return parent::factory($name, $application);
 	}

@@ -2,10 +2,7 @@
 
 namespace App\system\controllers;
 use App\system\controllers\AdminController;
-use App\articles\models\ArticleModel;
 use Bootphp\Model;
-use Bootphp\Database\DB;
-use Bootphp\Cookie;
 /**
  * 后台菜单控制器。
  *
@@ -14,7 +11,7 @@ use Bootphp\Cookie;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class MenusController extends AdministratorController
+class MenusController extends AdminController
 {
 	/**
 	 * Before 方法
@@ -22,6 +19,7 @@ class MenusController extends AdministratorController
 	public function before()
 	{
 		$this->routes['<id>/edit'] = 'edit';
+		$this->routes['<id>/submenus'] = 'submenus';
 		parent::before();
 	}
 	/**
@@ -40,7 +38,17 @@ class MenusController extends AdministratorController
 		{
 			$this->creationAction();
 		}
-		$menus = Model::factory('menu', 'system')->findAll();
+		$menus = Model::factory('menu', 'system')->order('sort')->findAll(['parent_id', 0]);
+		$this->assign('nodes', $menus);
+		$this->template = 'menus';
+	}
+	/*
+	 * 默认方法
+	 */
+	public function submenusAction()
+	{
+		$parentId = $this->request->param('id');
+		$menus = Model::factory('menu', 'system')->order('sort')->findAll(['parent_id', $parentId]);
 		$this->assign('nodes', $menus);
 		$this->template = 'menus';
 	}
@@ -57,9 +65,13 @@ class MenusController extends AdministratorController
 			try
 			{
 				$creation = [
-					'title' => $this->request->post('title', ''),
-					'parent_id' => $this->request->post('parent_id', ''),
-					'sort' => $this->request->post('sort', ''),
+					'title' => $this->request->post('title'),
+					'parent_id' => $this->request->post('parent_id'),
+					'sort' => $this->request->post('sort'),
+					'application' => $this->request->post('application'),
+					'controller' => $this->request->post('controller'),
+					'action' => $this->request->post('action'),
+					'icon' => $this->request->post('icon')
 				];
 				if ( $oItem->create($creation) )
 				{
@@ -106,9 +118,13 @@ class MenusController extends AdministratorController
 			try
 			{
 				$update = [
-					'title' => $this->request->param('title', ''),
-					'parent_id' => $this->request->param('parent_id', ''),
-					'sort' => $this->request->param('sort', ''),
+					'title' => $this->request->param('title'),
+					'parent_id' => $this->request->param('parent_id'),
+					'sort' => $this->request->param('sort'),
+					'application' => $this->request->param('application'),
+					'controller' => $this->request->param('controller'),
+					'action' => $this->request->param('action'),
+					'icon' => $this->request->param('icon')
 				];
 				if ( $oItem->update($update, ['id', '=', $item->id]) )
 				{

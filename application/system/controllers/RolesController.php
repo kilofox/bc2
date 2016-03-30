@@ -1,10 +1,8 @@
 <?php
 
 namespace App\system\controllers;
-use App\system\controllers\AdministratorController;
-use App\users\models\UserModel;
+use App\system\controllers\AdminController;
 use Bootphp\Model;
-use Bootphp\Database\DB;
 /**
  * 后台角色控制器。
  *
@@ -13,7 +11,7 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright (C) 2005-2016 Kilofox Studio
  */
-class RolesController extends AdministratorController
+class RolesController extends AdminController
 {
 	/**
 	 * Before 方法

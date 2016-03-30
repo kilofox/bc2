@@ -42,7 +42,6 @@ class App
 		$paths = explode('/', $requestPath);
 		$application = $paths[0] ? $paths[0] : 'index';
 		$controller = isset($paths[1]) && $paths[1] ? $paths[1] : 'index';
-		//$action = isset($paths[2]) && $paths[2] ? $paths[2] : 'index';
 		$controllerClass = 'App\\' . $application . '\\controllers\\' . ucfirst($controller) . 'Controller';
 		if ( !class_exists($controllerClass) )
 		{
@@ -59,7 +58,6 @@ class App
 		$ctrler = $class->newInstance($request, $response);
 		$ctrler->application = $application;
 		$ctrler->controller = $controller;
-		//$ctrler->action = $action;
 		$ctrler->paths = $paths;
 		$requestUri = $request->uri();
 		$ctrler->baseUrl = '/' . trim(mb_substr($requestUri, 0, mb_strrpos($requestUri, $requestPath)), '/');

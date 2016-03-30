@@ -2,10 +2,7 @@
 
 namespace App\system\controllers;
 use App\system\controllers\AdminController;
-use App\articles\models\ArticleModel;
 use Bootphp\Model;
-use Bootphp\Database\DB;
-use Bootphp\Cookie;
 /**
  * 后台首页控制器。
  *
@@ -14,7 +11,7 @@ use Bootphp\Cookie;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class SettingsController extends AdministratorController
+class SettingsController extends AdminController
 {
 	/**
 	 * Before 方法
@@ -90,7 +87,7 @@ class SettingsController extends AdministratorController
 			$this->ajaxReturn($status, $info);
 		}
 		// 加载站点信息
-		$site = Model::factory('site', 'admin')->find(1);
+		$site = Model::factory('site', 'system')->find(1);
 		$this->assign('site', $site);
 	}
 }

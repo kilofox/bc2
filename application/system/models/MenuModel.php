@@ -14,23 +14,23 @@ class MenuModel extends \Bootphp\Model
 {
 	private $_values = NULL;
 	private $_loaded = false;
-	protected $tableName = 'system_menu';
+	protected $tableName = 'system_menus';
 	/**
 	 * 创建并返回一个新的模型对象。
 	 *
 	 * @return	对象
 	 */
-	public static function factory($name, $application = 'core')
+	public static function factory($name, $application = 'system')
 	{
 		return parent::factory($name, $application);
 	}
 	/**
-	 *
+	 * 系统菜单
 	 */
 	public function menu($current = '')
 	{
-		$menus = $this->findAll();
-		$menu = ['tabs' => [], 'subMenu' => []];
+		$menus = $this->order('sort')->findAll();
+		$menu = ['tabs' => [], 'default' => 0];
 		$defaultId = 0;
 		$subMenu = [];
 		foreach( $menus as $node )
@@ -38,9 +38,10 @@ class MenuModel extends \Bootphp\Model
 			if ( $node->parent_id == 0 )
 			{
 				$menu['tabs'][$node->id] = $node;
-				$menu['tabs'][$node->id]->subMenu[$node->application] = $node;
+				$menu['tabs'][$node->id]->apps[] = $node->application;
+				$menu['tabs'][$node->id]->subMenu = [];
 				if ( $node->application == $current )
-					$defaultId = $node->id;
+					$menu['default'] = $node->id;
 			}
 			else
 			{
@@ -51,14 +52,9 @@ class MenuModel extends \Bootphp\Model
 		{
 			if ( isset($menu['tabs'][$node->parent_id]) )
 			{
-				$menu['tabs'][$node->parent_id]->subMenu[$node->application] = $node;
-				if ( $node->application == $current )
-					$defaultId = $node->parent_id;
+				$menu['tabs'][$node->parent_id]->apps[] = $node->application;
+				$menu['tabs'][$node->parent_id]->subMenu[] = $node;
 			}
-		}
-		if ( !empty($menu['tabs'][$defaultId]->subMenu) )
-		{
-			$menu['subMenu'] = $menu['tabs'][$defaultId]->subMenu;
 		}
 		return $menu;
 	}
