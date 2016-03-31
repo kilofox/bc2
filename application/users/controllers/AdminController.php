@@ -1,7 +1,7 @@
 <?php
 
 namespace App\users\controllers;
-use App\system\controllers\AdministratorController;
+use App\system\controllers\AdministrationController;
 use App\users\models\UserModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
@@ -13,19 +13,16 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class AdminController extends AdministratorController
+class AdminController extends AdministrationController
 {
 	/**
 	 * Before 方法
 	 */
 	public function before()
 	{
-		$this->routes['role/<id>/edit'] = 'roleEdit';
-		$this->routes['role/edit'] = 'roleEdit';
-		$this->routes['role/create'] = 'roleCreate';
-		$this->routes['role/<id>/delete'] = 'roleDelete';
 		$this->routes['<id>/edit'] = 'edit';
 		parent::before();
+		$this->layoutPath = APP_PATH . '/system/views/default/';
 	}
 	/**
 	 * After 方法
@@ -46,22 +43,23 @@ class AdminController extends AdministratorController
 	 */
 	public function usersAction()
 	{
+		$this->keyList = [
+			'id' => ['alias' => 'ID'],
+			'nickname' => ['alias' => '昵称', 'align' => 'center'],
+			'email' => ['alias' => 'E-mail'],
+			'created' => ['alias' => '注册时间'],
+			'operation' => ['alias' => '操作'],
+		];
 		// 用户列表
-		$users = Model::factory('user', 'users')->findAll();
-		foreach( $users as &$node )
-		{
-			$node->created = \Bootphp\Date::unixToHuman($node->created);
-		}
-		//$this->tab = 'users';
-		$this->template = 'users';
-		$this->assign('nodes', $users);
+		$list = Model::factory('user', 'users')->userList(3, $this->baseUrl);
+		$this->commonList($list);
 	}
 	/**
 	 * 编辑用户
 	 */
 	public function editAction()
 	{
-
+		$this->templatePath = APP_PATH . '/user/views/default/admin/';
 		$userId = intval($this->request->param('id'));
 		$oUser = Model::factory('user', 'users');
 		$user = $oUser->find($userId);

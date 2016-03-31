@@ -29,7 +29,7 @@ return array(
 			 * string	password	数据库密码
 			 * boolean	persistent	是否使用持久连接
 			 */
-			'dsn' => 'mysql:host=localhost;dbname=kilofoxx_bootcms',
+			'dsn' => 'mysql:host=localhost;dbname=kilofoxx_bootcms2',
 			'username' => 'kilofoxx_bootcms',
 			'password' => 'bootcms2014',
 			'persistent' => false

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\users\controllers;
-use App\system\controllers\AdministratorController;
+use App\system\controllers\AdministrationController;
 use App\users\models\UserModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
@@ -13,18 +13,15 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright (C) 2005-2016 Kilofox Studio
  */
-class RolesController extends AdministratorController
+class RolesController extends AdministrationController
 {
 	/**
 	 * Before 方法
 	 */
 	public function before()
 	{
-		$this->routes['role/<id>/edit'] = 'roleEdit';
-		$this->routes['role/edit'] = 'roleEdit';
-		$this->routes['role/create'] = 'roleCreate';
-		$this->routes['role/<id>/delete'] = 'roleDelete';
 		$this->routes['<id>/edit'] = 'edit';
+		$this->routes['<id>/delete'] = 'delete';
 		parent::before();
 	}
 	/**
@@ -47,15 +44,20 @@ class RolesController extends AdministratorController
 	public function rolesAction()
 	{
 		// 角色列表
-		$roles = Model::factory('role', 'users')->findAll();
-		$this->assign('nodes', $roles);
-		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/admin/';
-		$this->template = 'roles';
+		$this->keyList = [
+			'id' => ['alias' => 'ID'],
+			'name' => ['alias' => '昵称'],
+			'description' => ['alias' => '描述'],
+			'operation' => ['alias' => '操作'],
+		];
+		// 角色列表
+		$list = Model::factory('role', 'users')->roleList(3, $this->baseUrl);
+		$this->commonList($list);
 	}
 	/**
 	 * 创建一个新的角色
 	 */
-	public function roleCreateAction()
+	public function createAction()
 	{
 		if ( $this->request->isAjax() )
 		{
@@ -96,7 +98,7 @@ class RolesController extends AdministratorController
 	/**
 	 * 编辑角色
 	 */
-	public function roleEditAction()
+	public function editAction()
 	{
 		$roleId = intval($this->request->param('id'));
 		$oRole = Model::factory('role', 'users');
@@ -146,7 +148,7 @@ class RolesController extends AdministratorController
 	/**
 	 * 删除角色
 	 */
-	public function roleDeleteAction()
+	public function deleteAction()
 	{
 		if ( $this->request->isAjax() )
 		{

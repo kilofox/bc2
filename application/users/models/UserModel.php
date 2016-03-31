@@ -38,4 +38,26 @@ class UserModel extends Model
 		}
 		return $this->_values;
 	}
+	/**
+	 * 用户列表
+	 */
+	public function userList($itemsPerPage = 10, $baseUrl = '')
+	{
+		$list = ['data' => NULL];
+		$users = Model::factory('user', 'users')->findAll();
+		foreach( $users as &$node )
+		{
+			$node->created = \Bootphp\Date::unixToHuman($node->created);
+			$node->operation = '<a href="' . $baseUrl . '/users/admin/' . $node->id . '/edit">编辑</a>';
+		}
+		$pager = \Bootphp\Pagination::factory(array(
+				'total_items' => count($users),
+				'items_per_page' => $itemsPerPage,
+				'first_page_in_url' => true,
+				'view' => 'metro'
+		));
+		$list['data'] = $users;
+		$list['pager'] = $pager->render();
+		return $list;
+	}
 }

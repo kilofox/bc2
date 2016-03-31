@@ -1,7 +1,7 @@
 <?php
 
 namespace App\articles\controllers;
-use App\system\controllers\AdministratorController;
+use App\system\controllers\AdministrationController;
 use App\articles\models\ArticleModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
@@ -13,7 +13,7 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright (C) 2005-2016 Kilofox Studio
  */
-class CategoriesController extends AdministratorController
+class CategoriesController extends AdministrationController
 {
 	/**
 	 * Before 方法

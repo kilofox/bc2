@@ -10,22 +10,22 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `bc_applications`;
 CREATE TABLE IF NOT EXISTS `bc_applications` (
   `id` int(10) NOT NULL,
-  `author` varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `version` varchar(30) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `name` varchar(250) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `alias` varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+  `author` varchar(255) NOT NULL DEFAULT '',
+  `version` varchar(30) NOT NULL DEFAULT '',
+  `name` varchar(250) NOT NULL DEFAULT '',
+  `alias` varchar(255) NOT NULL DEFAULT '',
   `created` int(10) unsigned NOT NULL DEFAULT '0',
   `parent` int(10) unsigned NOT NULL DEFAULT '0',
   `main` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `protected` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `enabled` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `update_check` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+  `update_check` varchar(255) DEFAULT NULL,
   `update_last_check` int(10) unsigned NOT NULL DEFAULT '0',
-  `update_version` text COLLATE utf8_general_ci,
+  `update_version` text,
   `app_default` tinyint(1) unsigned DEFAULT '0',
-  `application` varchar(120) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `controller` varchar(120) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `action` varchar(120) CHARACTER SET utf8 NOT NULL DEFAULT ''
+  `application` varchar(120) NOT NULL DEFAULT '',
+  `controller` varchar(120) NOT NULL DEFAULT '',
+  `action` varchar(120) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='应用';
 
 INSERT INTO `bc_applications` (`id`, `author`, `version`, `name`, `alias`, `created`, `parent`, `main`, `protected`, `enabled`, `update_check`, `update_last_check`, `update_version`, `app_default`, `application`, `controller`, `action`) VALUES
@@ -3631,8 +3631,8 @@ CREATE TABLE IF NOT EXISTS `bc_sites` (
 INSERT INTO `bc_sites` (`id`, `site_title`, `site_description`, `meta_keywords`, `meta_description`, `admin_email`, `company`, `phone`, `address`, `date_format`, `timezone`, `comment_default`, `comment_email`, `version`) VALUES
 (1, 'BootCMS 2.0', '完全面向对象的开源内容管理系统', 'bootcms,cms,open source,开源,内容管理,内容管理系统', 'BootCMS 是中国第一款完全面向对象的开源内容管理系统。', 'admin@domain.com', '千狐工作室', '0451-88888888', '哈尔滨市香坊区进乡街120号', 'Y年n月j日 H:i', 8, 0, 0, '1.1.2');
 
-DROP TABLE IF EXISTS `bc_system_menu`;
-CREATE TABLE IF NOT EXISTS `bc_system_menu` (
+DROP TABLE IF EXISTS `bc_system_menus`;
+CREATE TABLE IF NOT EXISTS `bc_system_menus` (
   `id` int(10) unsigned NOT NULL COMMENT 'ID',
   `title` varchar(50) NOT NULL DEFAULT '' COMMENT '标题',
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '上级分类ID',
@@ -3644,13 +3644,17 @@ CREATE TABLE IF NOT EXISTS `bc_system_menu` (
   `icon` char(15) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `bc_system_menu` (`id`, `title`, `parent_id`, `sort`, `application`, `controller`, `action`, `hide`, `icon`) VALUES
+INSERT INTO `bc_system_menus` (`id`, `title`, `parent_id`, `sort`, `application`, `controller`, `action`, `hide`, `icon`) VALUES
 (1, '系统', 0, 1, 'system', 'index', 'index', 0, ''),
 (2, '概览', 1, 1, 'system', 'index', 'index', 0, 'looks'),
 (3, '菜单', 1, 2, 'system', 'menus', 'index', 0, 'menu'),
 (4, '设置', 1, 3, 'system', 'settings', 'index', 0, 'cogs'),
+(20, '用户', 0, 2, 'users', 'admin', 'index', 0, ''),
+(21, '用户', 20, 1, 'users', 'admin', 'index', 0, 'user'),
+(22, '角色', 20, 2, 'users', 'roles', 'index', 0, 'organization'),
 (30, '文章', 0, 3, 'articles', 'admin', 'index', 0, ''),
-(20, '用户', 0, 2, 'users', 'admin', 'index', 0, '');
+(31, '文章', 30, 1, 'articles', 'admin', 'index', 0, 'file-text'),
+(32, '分类', 30, 2, 'articles', 'categories', 'index', 0, 'stack');
 
 DROP TABLE IF EXISTS `bc_users`;
 CREATE TABLE IF NOT EXISTS `bc_users` (
@@ -3673,7 +3677,7 @@ CREATE TABLE IF NOT EXISTS `bc_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户';
 
 INSERT INTO `bc_users` (`id`, `username`, `password`, `email`, `role_id`, `nickname`, `company`, `first_name`, `secondary_email`, `phone`, `address`, `created`, `resets`, `last_reset`, `logins`, `last_login`) VALUES
-(1, 'admin', '6918ea3efd6c7e37b5250b78536f48029980b87fa9df83ddde2601b9dc5caa61', 'a@a.com', 9, 'admin', '', '', '', '18900012345', '无2', 1385886938, 0, 0, 27, 1387201817);
+(1, 'admin', '6918ea3efd6c7e37b5250b78536f48029980b87fa9df83ddde2601b9dc5caa61', 'a@a.com', 9, 'admin', '', '', '', '18900012345', '无2', 1385886938, 0, 0, 35, 1387201817);
 
 DROP TABLE IF EXISTS `bc_user_tokens`;
 CREATE TABLE IF NOT EXISTS `bc_user_tokens` (
@@ -3764,7 +3768,7 @@ ALTER TABLE `bc_shops`
 ALTER TABLE `bc_sites`
   ADD PRIMARY KEY (`id`);
 
-ALTER TABLE `bc_system_menu`
+ALTER TABLE `bc_system_menus`
   ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `bc_users`
@@ -3818,7 +3822,7 @@ ALTER TABLE `bc_shops`
   MODIFY `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `bc_sites`
   MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
-ALTER TABLE `bc_system_menu`
+ALTER TABLE `bc_system_menus`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID';
 ALTER TABLE `bc_users`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;

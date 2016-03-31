@@ -1,7 +1,7 @@
 <?php
 
 namespace App\articles\controllers;
-use App\system\controllers\AdministratorController;
+use App\system\controllers\AdministrationController;
 use App\articles\models\ArticleModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
@@ -13,7 +13,7 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class AdminController extends AdministratorController
+class AdminController extends AdministrationController
 {
 	/**
 	 * Before 方法
@@ -47,28 +47,16 @@ class AdminController extends AdministratorController
 	public function articlesAction()
 	{
 		// 文章列表
-		$articles = Model::factory('article', 'articles')->findAll();
-		foreach( $articles as &$node )
-		{
-			$node->created = \Bootphp\Date::unixToHuman($node->created);
-			switch( $node->status )
-			{
-				case '0':
-					$node->status = '垃圾筒';
-					break;
-				case '1':
-					$node->status = '已发布';
-					break;
-				case '2':
-					$node->status = '草稿';
-					break;
-				case '3':
-					$node->status = '待审核';
-					break;
-			}
-		}
-		$this->template = 'articles';
-		$this->assign('nodes', $articles);
+		$this->keyList = [
+			'id' => ['alias' => 'ID'],
+			'title' => ['alias' => '标题'],
+			'created' => ['alias' => '创建时间'],
+			'status' => ['alias' => '状态'],
+			'operation' => ['alias' => '操作'],
+		];
+		// 文章列表
+		$list = Model::factory('article', 'articles')->articleList(3, $this->baseUrl);
+		$this->commonList($list);
 	}
 	/**
 	 * 编辑文章

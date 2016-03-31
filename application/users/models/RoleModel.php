@@ -38,4 +38,27 @@ class RoleModel extends Model
 		}
 		return $this->_values;
 	}
+	/**
+	 * 角色列表
+	 */
+	public function roleList($itemsPerPage = 10, $baseUrl = '')
+	{
+		$list = ['data' => NULL];
+		$roles = $this->limit($itemsPerPage)->findAll();
+		foreach( $roles as &$node )
+		{
+			$node->operation = '<a href="' . $baseUrl . '/users/roles/' . $node->id . '/edit">编辑</a>';
+		}
+		//$count = Model::factory('role', 'users')->count();
+		$count = count($roles);
+		$pager = \Bootphp\Pagination::factory(array(
+				'total_items' => $count,
+				'items_per_page' => $itemsPerPage,
+				'first_page_in_url' => true,
+				'view' => 'metro'
+		));
+		$list['data'] = $roles;
+		$list['pager'] = $pager->render();
+		return $list;
+	}
 }

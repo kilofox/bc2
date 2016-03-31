@@ -36,6 +36,6 @@ class LogoutController extends \Bootphp\Controller
 		// 注销用户
 		Auth::instance()->logout();
 		// 重定向到登录页
-		$this->redirect('admin/login');
+		$this->redirect('system/login');
 	}
 }

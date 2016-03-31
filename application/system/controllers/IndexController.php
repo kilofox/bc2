@@ -1,7 +1,7 @@
 <?php
 
 namespace App\system\controllers;
-use App\system\controllers\AdminController;
+use App\system\controllers\AdministrationController;
 use App\articles\models\ArticleModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
@@ -13,7 +13,7 @@ use Bootphp\Database\DB;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class IndexController extends AdminController
+class IndexController extends AdministrationController
 {
 	/**
 	 * Before 方法
@@ -21,6 +21,7 @@ class IndexController extends AdminController
 	public function before()
 	{
 		parent::before();
+		$this->templatePath = APP_PATH . '/system/views/default/index/';
 	}
 	/**
 	 * After 方法

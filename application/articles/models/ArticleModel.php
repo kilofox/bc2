@@ -48,4 +48,41 @@ class ArticleModel extends Model
 		$values = DB::select()->from($this->tableName)->where('category', '=', $cateId)->execute()->asArray();
 		return $values;
 	}
+	/**
+	 * 文章列表
+	 */
+	public function articleList($itemsPerPage = 10, $baseUrl = '')
+	{
+		$list = ['data' => NULL];
+		$articles = $this->findAll();
+		foreach( $articles as &$node )
+		{
+			$node->created = \Bootphp\Date::unixToHuman($node->created);
+			switch( $node->status )
+			{
+				case '0':
+					$node->status = '垃圾筒';
+					break;
+				case '1':
+					$node->status = '已发布';
+					break;
+				case '2':
+					$node->status = '草稿';
+					break;
+				case '3':
+					$node->status = '待审核';
+					break;
+			}
+			$node->operation = '<a href="' . $baseUrl . '/articles/admin/' . $node->id . '/edit">编辑</a>';
+		}
+		$pager = \Bootphp\Pagination::factory(array(
+				'total_items' => count($articles),
+				'items_per_page' => $itemsPerPage,
+				'first_page_in_url' => true,
+				'view' => 'metro'
+		));
+		$list['data'] = $articles;
+		$list['pager'] = $pager->render();
+		return $list;
+	}
 }

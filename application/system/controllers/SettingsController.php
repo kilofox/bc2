@@ -1,7 +1,7 @@
 <?php
 
 namespace App\system\controllers;
-use App\system\controllers\AdminController;
+use App\system\controllers\AdministrationController;
 use Bootphp\Model;
 /**
  * 后台首页控制器。
@@ -11,7 +11,7 @@ use Bootphp\Model;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class SettingsController extends AdminController
+class SettingsController extends AdministrationController
 {
 	/**
 	 * Before 方法
@@ -19,6 +19,7 @@ class SettingsController extends AdminController
 	public function before()
 	{
 		parent::before();
+		$this->templatePath = APP_PATH . '/system/views/default/settings/';
 	}
 	/**
 	 * After 方法

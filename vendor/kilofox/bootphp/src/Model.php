@@ -84,14 +84,22 @@ abstract class Model
 		return $this;
 	}
 	/**
+	 * 排序
+	 */
+	public function limit($limit)
+	{
+		$this->db->limit($limit);
+		return $this;
+	}
+	/**
 	 * 统计总数
 	 *
 	 * @return	integer 数值
 	 */
 	public function count()
 	{
-		$count = $this->db->cached(0, true)->where('status', '=', 1)->execute()->count();
-		return $count;
+		//$count = $this->db->select([DB::expr('COUNT(1)'), 'count'])->execute();
+		return isset($count['count']) ? $count['count'] : 0;
 	}
 	/**
 	 * 创建信息
@@ -132,5 +140,16 @@ abstract class Model
 			return false;
 		$result = DB::update($this->tableName)->set($data)->where($options[0], $options[1], $options[2])->execute();
 		return $result;
+	}
+	/**
+	 * 分页列表
+	 */
+	public function findPage()
+	{
+		$pager = \Bootphp\Pagination::factory(array(
+				'total_items' => $articles->count_all(),
+				'items_per_page' => 4,
+				'first_page_in_url' => TURE,
+		));
 	}
 }

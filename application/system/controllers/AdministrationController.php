@@ -11,15 +11,17 @@ use Bootphp\Model;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class AdminController extends \Bootphp\Controller
+class AdministrationController extends \Bootphp\Controller
 {
 	public $tab = NULL;
+	protected $keyList = [];
 	/**
 	 * Before 方法
 	 */
 	public function before()
 	{
 		parent::before();
+		$this->templatePath = APP_PATH . '/system/views/default/admin/';
 		$this->layoutPath = APP_PATH . '/system/views/default/';
 		$this->user = Auth::instance()->get_user();
 		if ( !$this->user )
@@ -36,12 +38,21 @@ class AdminController extends \Bootphp\Controller
 		parent::after();
 	}
 	/**
-	 * 获取控制器菜单数组,二级菜单元素位于一级菜单的'_child'元素中
+	 * 控制器菜单数组
 	 */
 	final public function menu($default = '')
 	{
 		$menu = Model::factory('menu', 'system')->menu($default);
 		//print_r($menu);
 		return $menu;
+	}
+	/**
+	 * 公共列表
+	 */
+	public function commonList($list = [])
+	{
+		$this->assign('keyList', $this->keyList);
+		$this->assign('list', $list);
+		$this->template = 'commonList';
 	}
 }

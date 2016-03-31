@@ -105,7 +105,7 @@ abstract class Controller
 		$this->template = $action;
 		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/' . $this->controller . '/';
 		// 默认布局
-		//$this->layoutPath = APP_PATH . '/public/views/default/';
+		$this->layoutPath = APP_PATH . '/index/views/default/';
 	}
 	/**
 	 * 在控制器动作之后自动执行。可以用来对请求的响应实施转换，添加额外输出，执行其它自定义代码。
@@ -118,7 +118,7 @@ abstract class Controller
 		{
 			$this->view->path($this->templatePath);
 			$this->view->file($this->template);
-			//$this->view->layout($this->layout);
+			$this->view->layout($this->layout);
 			$this->view->layoutPath($this->layoutPath);
 			$this->view->set([
 				'application' => $this->application,

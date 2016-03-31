@@ -1,7 +1,7 @@
 <?php
 
 namespace App\system\controllers;
-use App\system\controllers\AdminController;
+use App\system\controllers\AdministrationController;
 use Bootphp\Model;
 /**
  * 后台菜单控制器。
@@ -11,7 +11,7 @@ use Bootphp\Model;
  * @author Tinsh
  * @copyright (C) 2005-2015 Kilofox Studio
  */
-class MenusController extends AdminController
+class MenusController extends AdministrationController
 {
 	/**
 	 * Before 方法
@@ -21,6 +21,7 @@ class MenusController extends AdminController
 		$this->routes['<id>/edit'] = 'edit';
 		$this->routes['<id>/submenus'] = 'submenus';
 		parent::before();
+		$this->templatePath = APP_PATH . '/system/views/default/menus/';
 	}
 	/**
 	 * After 方法
