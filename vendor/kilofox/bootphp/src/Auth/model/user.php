@@ -3,7 +3,7 @@ defined('SYSPATH') || exit('Access Denied.');
 /**
  * 用户模型
  *
- * @package		BootPHP/授权
+ * @package	BootPHP/Auth
  * @category	模型
  * @author		Tinsh
  * @copyright	(C) 2005-2015 Kilofox Studio

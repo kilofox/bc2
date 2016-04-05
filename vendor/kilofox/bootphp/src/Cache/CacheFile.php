@@ -26,9 +26,9 @@ use Bootphp\Exception\ExceptionHandler;
  * driver    | __是__ | (_string_) 使用的驱动类型
  * cache_dir | __否__ | (_string_) 该缓存实例要使用的缓存路径
  *
- * @package BootPHP/缓存
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP/缓存
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class CacheFile extends Cache
 {

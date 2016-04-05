@@ -2,12 +2,13 @@
 
 namespace Bootphp;
 /**
- * HTML 辅助类。提供生成各种 HTML 标签的方法，使输出 HTML 更安全。
+ * HTML helper class. Provides generic methods for generating various HTML
+ * tags and making output HTML safe.
  *
- * @package BootPHP
- * @category 辅助类
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Helpers
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class Html
 {

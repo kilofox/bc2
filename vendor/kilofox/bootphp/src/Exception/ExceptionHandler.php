@@ -6,17 +6,17 @@ use Bootphp\Log;
 use Bootphp\Request;
 use Bootphp\Response;
 /**
- * BootPHP 异常类。
+ * BootPHP exception class.
  *
- * @package BootPHP
- * @category 异常
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Exceptions
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class ExceptionHandler extends \Exception
 {
 	/**
-	 * @var	array PHP错误代码 => 人类可读的名称
+	 * @var  array  PHP error code => human readable name
 	 */
 	public static $phpErrors = array(
 		E_ERROR => 'Fatal Error',
@@ -30,53 +30,61 @@ class ExceptionHandler extends \Exception
 		E_DEPRECATED => 'Deprecated'
 	);
 	/**
-	 * 创建一个新的翻译了的异常。
+	 * Creates a new translated exception.
 	 *
-	 * 	 throw new ExceptionHandler('出现了一些可怕的错误');
+	 * 	 throw new ExceptionHandler('Something went terrible wrong');
 	 *
-	 * @param	string	错误消息
-	 * @param integer|string 异常代码
+	 * @param   string          $message    error message
+	 * @param   integer|string  $code       the exception code
 	 * @return	void
 	 */
 	public function __construct($message, $code = 0)
 	{
-		// 向父类传递消息和整型代码
+		// Pass the message and integer code to the parent
 		parent::__construct($message, (int)$code);
-		// 保存未修改过的代码
+
+		// Save the unmodified code
 		$this->code = $code;
 	}
 	/**
-	 * 内联异常处理器，显示错误消息、异常源码和错误的堆栈跟踪。
+	 * Inline exception handler, displays the error message, source of the
+	 * exception, and the stack trace of the error.
 	 *
-	 * @uses ExceptionHandler::text
-	 * @param object 异常对象
+	 * @uses	ExceptionHandler::text
+	 * @param	Exception	$e
 	 * @return	boolean
 	 */
 	public static function handler(\Exception $e)
 	{
 		try
 		{
-			// 记录异常
+			// Log the exception
 			self::log($e);
-			// 生成响应
+
+			// Generate the response
 			$response = self::response($e);
-			// 向浏览器发送响应
+
+			// Send the response to the browser
 			$response->send();
+
 			exit(1);
 		}
 		catch( Exception $e )
 		{
-			// 事情进展得相当糟糕，我们现在别无选择，直接输出吧。
-			// 清理输出缓存
+			// Things are going *really* badly for us, We now have no choice
+			// but to bail. Hard.
+			// Clean the output buffer if one exists
 			ob_get_level() && ob_clean();
-			// 设置状态码为 500，Content-Type 为 text/plain
+			// Set the Status code to 500, and Content-Type to text/plain.
 			header('Content-Type: text/plain; charset=UTF-8', true, 500);
+
 			echo self::text($e);
+
 			exit(1);
 		}
 	}
 	/**
-	 * 记录一个异常。
+	 * Logs an exception.
 	 *
 	 * @uses ExceptionHandler::text
 	 * @param Exception $e
@@ -86,19 +94,22 @@ class ExceptionHandler extends \Exception
 	public static function log(\Exception $e, $level = Log::EMERGENCY)
 	{
 		$log = Log::instance(APP_PATH . '/logs');
-		// 创建一个异常的文本
+
+		// Create a text version of the exception
 		$error = self::text($e);
-		// 将这个异常添加到日志中
+
+		// Add this exception to the log
 		$log->add($level, $error);
-		// 写入日志
+
+		// Make sure the logs are written
 		$log->write();
 	}
 	/**
-	 * 取得代表异常的单行文本：
+	 * Get a single line of text representing the exception:
 	 *
 	 * Error [ Code ]: Message ~ File [ Line ]
 	 *
-	 * @param object Exception
+	 * @param Exception  $e
 	 * @return	string
 	 */
 	public static function text(\Exception $e)
@@ -106,7 +117,7 @@ class ExceptionHandler extends \Exception
 		return get_class($e) . ' [ ' . $e->getCode() . ' ]: ' . strip_tags($e->getMessage()) . ' ~ ' . \Bootphp\Debug::path($e->getFile()) . ' [ ' . $e->getLine() . ' ]';
 	}
 	/**
-	 * 取得一个代表异常的 Response 对象
+	 * Get a Response object representing the exception.
 	 *
 	 * @uses ExceptionHandler::text
 	 * @param Exception $e
@@ -116,7 +127,7 @@ class ExceptionHandler extends \Exception
 	{
 		try
 		{
-			// 获取异常信息
+			// Get the exception information
 			$class = get_class($e);
 			$code = $e->getCode();
 			$message = $e->getMessage();
@@ -128,30 +139,31 @@ class ExceptionHandler extends \Exception
 			{
 				if ( isset(self::$phpErrors[$code]) )
 				{
-					// 使用人类可读的错误名称
+					// Use the human-readable error name
 					$code = self::$phpErrors[$code];
 				}
 			}
 
-			// 初始化错误视图
+			// Instantiate the error view
 			$view = new \Bootphp\View();
 			$view->path(__DIR__ . '/Views/');
 			$view->file('error');
 			$view->layout(false);
 			$view->set(get_defined_vars());
 
-			// 准备响应对象
+			// Prepare the response object
 			$response = new Response();
 
-			// 设置响应状态
+			// Set the response status
 			$response->status($response->statusText($code) ? $code : 500);
 
-			// 设置响应主体
+			// Set the response body
 			$response->content($view->render());
 		}
 		catch( Exception $e )
 		{
-			// 事情进展得很糟糕，我们来生成一个简单的响应对象，使其可控。
+			// Things are going badly for us, Lets try to keep things under control by
+			// generating a simpler response object.
 			$response = new Response();
 			$response->status(500);
 			$response->header('Content-Type', 'text/plain');

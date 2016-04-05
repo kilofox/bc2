@@ -2,29 +2,33 @@
 
 namespace Bootphp;
 /**
- * 抽象控制器类。控制器应该只能使用 [Request] 来创建。
- * 控制器方法会按下列顺序由请求自动调用：
+ * Abstract controller class. Controllers should only be created using a [Request].
+ *
+ * Controllers methods will be automatically called in the following order by
+ * the request:
  *
  * 	$controller = new FooController($request, $response);
  * 	$controller->before();
  * 	$controller->barAction();
  * 	$controller->after();
  *
- * 控制器动作通常在动作执行期间以 [View] 的形式将创建的输出添加到 `$this->response->body($output)`。
+ * The controller action should add the output it creates to
+ * `$this->response->body($output)`, typically in the form of a [View], during the
+ * "action" part of execution.
  *
- * @package BootPHP
- * @category 控制器
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Controller
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 abstract class Controller
 {
 	/**
-	 * @var	Request 创建控制器的请求
+	 * @var	Request Request that created the controller
 	 */
 	public $request;
 	/**
-	 * @var	Response 从控制器返回的响应
+	 * @var	Response The response that will be returned from controller
 	 */
 	public $response;
 	/**
@@ -72,43 +76,47 @@ abstract class Controller
 	 */
 	public $routes = [];
 	/**
-	 * 创建一个新的控制器实例。每个控制器必须由请求对象与响应对象来构造。
+	 * Creates a new controller instance. Each controller must be constructed
+	 * with the request object that created it.
 	 *
-	 * @param Request $request 创建控制器的请求
-	 * @param Response $response 请求的响应
+	 * @param Request $request Request that created the controller
+	 * @param Response $response The request's response
 	 * @return	void
 	 */
 	public function __construct(Request $request, Response $response)
 	{
-		// 将请求分配给控制器
+		// Assign the request to the controller
 		$this->request = $request;
-		// 将响应分配给控制器
+		// Assign a response to the controller
 		$this->response = $response;
 	}
 	/**
-	 * 在控制器动作之前自动执行。可以用来设置类的属性，执行其它自定义代码。
+	 * Automatically executed before the controller action. Can be used to set
+	 * class properties, do authorization checks, and execute other custom code.
 	 *
 	 * @return	void
 	 */
 	protected function before()
 	{
-		$route = new \Bootphp\Route();
-		$route->set($this->routes);
-		unset($this->paths[0], $this->paths[1]);
-		list($action, $params) = $route->matches(array_values($this->paths));
-		$this->action = $action;
-		foreach( $params as $name => $value )
-			$this->request->{$name} = $value;
+		//$route = new \Bootphp\Route();
+		//$route->set($this->routes);
+		//unset($this->paths[0], $this->paths[1]);
+		//list($action, $params) = $route->matches(array_values($this->paths));
+		//$this->action = $action;
+		//foreach( $params as $name => $value )
+		//	$this->request->{$name} = $value;
 		// 加载视图
 		$this->view = new \Bootphp\View();
 		// 默认模板
-		$this->template = $action;
+		$this->template = $this->action;
 		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/' . $this->controller . '/';
 		// 默认布局
 		$this->layoutPath = APP_PATH . '/index/views/default/';
 	}
 	/**
-	 * 在控制器动作之后自动执行。可以用来对请求的响应实施转换，添加额外输出，执行其它自定义代码。
+	 * Automatically executed after the controller action. Can be used to apply
+	 * transformation to the response, add extra output, and execute
+	 * other custom code.
 	 *
 	 * @return	void
 	 */

@@ -6,10 +6,10 @@ use Bootphp\Cookie;
 /**
  * 本地 PHP Session 类。
  *
- * @package BootPHP
- * @category Session
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Session
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class SessionNative extends Session
 {

@@ -3,44 +3,52 @@
 namespace Bootphp\Auth;
 use Bootphp\Session\Session;
 /**
- * 用户授权库。处理用户登录与退出，还有密码加密。
+ * User authorization library. Handles user login and logout, as well as secure
+ * password hashing.
  *
- * @package BootPHP/授权
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP/Auth
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 abstract class Auth
 {
-	// Auth 实例
+	// Auth instances
 	protected static $_instance;
 	/**
-	 * 单例模式
+	 * Singleton pattern
+	 *
 	 * @return	Auth
 	 */
 	public static function instance()
 	{
 		if ( !isset(self::$_instance) )
 		{
-			// 为该类型加载配置信息
+			// Load the configuration for this type
 			$config = require APP_PATH . '/../configs/auth.php';
+
 			if ( !isset($config['driver']) || (!$type = $config['driver']) )
 				$type = 'db';
-			// 设置 session 类名
+
+			// Set the session class name
 			$class = 'Bootphp\\Auth\\Auth' . ucfirst($type);
-			// 创建一个新的 session 实例
+
+			// Create a new session instance
 			self::$_instance = new $class($config);
 		}
+
 		return self::$_instance;
 	}
 	protected $_session;
 	protected $_config;
 	/**
-	 * 加载 Session 和配置选项
+	 * Loads Session and configuration options.
+	 *
+	 * @param   array  $config  Config Options
 	 * @return	void
 	 */
 	public function __construct($config = array())
 	{
-		// 保存对象中的配置信息
+		// Save the config in the object
 		$this->_config = $config;
 		$this->_session = Session::instance($this->_config['session_type']);
 	}
@@ -48,8 +56,10 @@ abstract class Auth
 	abstract public function password($username);
 	abstract public function check_password($password);
 	/**
-	 * 从 session 中取得当前登录用户
-	 * 如果当前没有用户登录，则返回 NULL
+	 * Gets the currently logged in user from the session.
+	 * Returns NULL if no user is currently logged in.
+	 *
+	 * @param   mixed  $default  Default value to return if the user is currently not logged in.
 	 * @return	mixed
 	 */
 	public function get_user($default = NULL)
@@ -57,42 +67,50 @@ abstract class Auth
 		return $this->_session->get($this->_config['session_key'], $default);
 	}
 	/**
-	 * 尝试登录
-	 * @param	string	要登录的用户名
-	 * @param	string	要校验的密码
-	 * @param	boolean	开启自动登录
-	 * @return	boolean
+	 * Attempt to log in a user by using an ORM object and plain-text password.
+	 *
+	 * @param   string   $username  Username to log in
+	 * @param   string   $password  Password to check against
+	 * @param   boolean  $remember  Enable autologin
+	 * @return  boolean
 	 */
 	public function login($username, $password, $remember = false)
 	{
 		if ( empty($password) )
 			return false;
+
 		return $this->_login($username, $password, $remember);
 	}
 	/**
-	 * 移除相关 session 变量，使用户退出
-	 * @param	boolean	彻底销毁 session
-	 * @return	boolean
+	 * Log out a user by removing the related session variables.
+	 *
+	 * @param   boolean  $destroy     Completely destroy the session
+	 * @param   boolean  $logout_all  Remove all tokens for user
+	 * @return  boolean
 	 */
 	public function logout($destroy = false)
 	{
 		if ( $destroy === true )
 		{
-			// 彻底销毁 session
+			// Destroy the session completely
 			$this->_session->destroy();
 		}
 		else
 		{
-			// 从 session 中移除用户
+			// Remove the user from the session
 			$this->_session->delete($this->_config['session_key']);
-			// 重新生成 session_id
+
+			// Regenerate session_id
 			$this->_session->regenerate();
 		}
-		// 双重验证
+
+		// Double check
 		return !$this->logged_in();
 	}
 	/**
-	 * 检查是否存在一个激活的 session。
+	 * Check if there is an active session. Optionally allows checking for a
+	 * specific role.
+	 *
 	 * @return	mixed
 	 */
 	public function logged_in()
@@ -101,26 +119,31 @@ abstract class Auth
 	}
 	/**
 	 * Perform a hmac hash, using the configured method.
+	 *
 	 * @param	string  string to hash
 	 * @return	string
 	 */
 	public function hash($str)
 	{
 		if ( !$this->_config['hash_key'] )
-			throw new BootPHP_Exception('必须在您的授权配置中设置一个有效的 hash 键。');
+			throw new BootPHP_Exception('A valid hash key must be set in your auth config.');
+
 		return hash_hmac($this->_config['hash_method'], $str, $this->_config['hash_key']);
 	}
 	/**
-	 * 完成登录
-	 * @param	object	用户
+	 * Complete login
+	 *
+	 * @param	object	$user	user object
 	 * @return	boolean
 	 */
 	protected function complete_login($user)
 	{
-		// 重新生成 session_id
+		//  Regenerate session_id
 		$this->_session->regenerate();
-		// 将用户名存入 session
+
+		// Store username in session
 		$this->_session->set($this->_config['session_key'], $user);
+
 		return true;
 	}
 }

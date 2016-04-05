@@ -4,27 +4,28 @@ class AutoloaderInit
 	private static $loader;
 	public static function loadClassLoader($class)
 	{
-		if ( 'Kilofox\Bootphp\AutoloaderClass' === $class )
+		if ( $class === 'Kilofox\Bootphp\ClassLoader' )
 		{
-			require __DIR__ . '/kilofox/bootphp/AutoloaderClass.php';
+			require __DIR__ . '/kilofox/bootphp/ClassLoader.php';
 		}
 	}
 	public static function getLoader()
 	{
-		if ( NULL !== self::$loader )
+		if ( self::$loader !== NULL )
 		{
 			return self::$loader;
 		}
-		spl_autoload_register(array('AutoloaderInit', 'loadClassLoader'), true, true);
-		// 初始化加载器
-		self::$loader = new \Kilofox\Bootphp\AutoloaderClass;
-		// 注册自动加载器
-		self::$loader->register();
-		// 为命名空间前缀注册基目录
-		self::$loader->addNamespace('Bootphp', __DIR__ . '/kilofox/bootphp/src');
-		self::$loader->addNamespace('App', __DIR__ . '/../application');
-		self::$loader->addNamespace('Michelf', __DIR__ . '/michelf');
-		spl_autoload_unregister(array('AutoloaderInit', 'loadClassLoader'));
-		return self::$loader;
+
+		spl_autoload_register(['AutoloaderInit', 'loadClassLoader'], true, true);
+		self::$loader = $loader = new \Kilofox\Bootphp\ClassLoader();
+		spl_autoload_unregister(['AutoloaderInit', 'loadClassLoader']);
+
+		$loader->set('Bootphp', __DIR__ . '/kilofox/bootphp/src');
+		$loader->set('App', __DIR__ . '/../applications');
+
+		$loader->register();
+
+		return $loader;
 	}
 }
+return AutoloaderInit::getLoader();

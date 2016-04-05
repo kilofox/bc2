@@ -6,8 +6,8 @@ namespace Bootphp;
  *
  * 包括响应主体、状态和头等。
  *
- * @package Bootphp
- * @author Tinsh
+ * @package	Bootphp
+ * @author		Tinsh <kilofox2000@gmail.com>
  */
 class Response
 {
@@ -19,11 +19,11 @@ class Response
 	protected $_protocol = 'HTTP/1.1';
 	protected $_headers = [];
 	/**
-	 * 构造方法
+	 * Constructor Function
 	 */
-	public function __construct($content = NULL, $status = 200)
+	public function __construct($content = null, $status = 200)
 	{
-		// 组成响应对象
+		// Allow composition of response objects
 		$class = __CLASS__;
 		if ( $content instanceof $class )
 		{
@@ -38,16 +38,16 @@ class Response
 		$this->_protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'http';
 	}
 	/**
-	 * 设置或取得 HTTP 头
+	 * Set or get HTTP header
 	 *
-	 * @param	string	$type HTTP 头类型
-	 * @param	string	$content 头内容与值
-	 * @param boolean $replace 是否替换已存在的头
-	 * @return	mixed
+	 * @param string $type HTTP header type
+	 * @param string $content header content/value
+	 * @param boolean $replace Whether to replace existing headers
+	 * @return mixed
 	 */
-	public function header($type, $content = NULL, $replace = true)
+	public function header($type, $content = null, $replace = true)
 	{
-		if ( $content === NULL )
+		if ( $content === null )
 		{
 			if ( isset($this->_headers[$type]) )
 			{
@@ -55,12 +55,14 @@ class Response
 			}
 			return false;
 		}
-		// 规范头部，确保大小写正确
-		for( $tmp = explode('-', $type), $i = 0; $i < count($tmp); $i++ )
+
+		// Normalize headers to ensure proper case
+		for( $tmp = explode("-", $type), $i = 0; $i < count($tmp); $i++ )
 		{
 			$tmp[$i] = ucfirst($tmp[$i]);
 		}
-		$type = implode('-', $tmp);
+
+		$type = implode("-", $tmp);
 		if ( $type == 'Content-Type' )
 		{
 			if ( preg_match('/^(.*);\w*charset\w*=\w*(.*)/', $content, $matches) )
@@ -74,6 +76,7 @@ class Response
 			}
 			return $this;
 		}
+
 		if ( $replace )
 		{
 			$this->_headers[$type] = $content;
@@ -82,24 +85,27 @@ class Response
 		{
 			$this->appendHeader($type, $content);
 		}
+
 		return $this;
 	}
 	/**
-	 * 向头列表追加具有相同名称的头。
+	 * Append a header to the list of headers with the same name.
 	 *
-	 * @param	string	$type HTTP 头类型
-	 * @param	string	$content 头内容与值
-	 * @return	\Bootphp\Response
+	 * @param string $type HTTP header type
+	 * @param string $content Header content/value
+	 * @return \Bullet\Response
 	 */
 	protected function appendHeader($type, $content)
 	{
-		// 如果该头还没有设置，将它作为数组放在开始处。
+		// If the header hasn't already been set, make it an array at the start.
 		if ( !isset($this->_headers[$type]) )
 		{
 			$this->_headers[$type] = array($content);
 			return $this;
 		}
-		// 如果该头不是内容与值的数组，将它转换为数组。
+
+		// If the header isn't already an array of content values, turn it into
+		// an array.
 		if ( !is_array($this->_headers[$type]) )
 		{
 			$this->_headers[$type] = array($this->_headers[$type]);
@@ -108,22 +114,22 @@ class Response
 		return $this;
 	}
 	/**
-	 * 取得所有 HTTP 头的数组
+	 * Get array of all HTTP headers
 	 *
-	 * @return	array
+	 * @return array
 	 */
 	public function headers()
 	{
 		return $this->_headers;
 	}
 	/**
-	 * 设置要返回的 HTTP 状态
+	 * Set HTTP status to return
 	 *
-	 * @param int $status HTTP 状态码
+	 * @param int $status HTTP status code
 	 */
-	public function status($status = NULL)
+	public function status($status = null)
 	{
-		if ( $status === NULL )
+		if ( null === $status )
 		{
 			return $this->_status;
 		}
@@ -131,16 +137,17 @@ class Response
 		return $this;
 	}
 	/**
-	 * 设置 HTTP 缓存时间
+	 * Set HTTP cache time
 	 *
-	 * @param mixed $time 布尔型 false, 整数时间, 或 strtotime() 的字符串
+	 * @param mixed $time Boolean false, integer time, or string for strtotime
 	 */
-	public function cache($time = NULL)
+	public function cache($time = null)
 	{
-		if ( $time === NULL )
+		if ( null === $time )
 		{
 			return $this->_cacheTime;
 		}
+
 		if ( $time instanceof \DateTime )
 		{
 			$time = $time->getTimestamp();
@@ -151,34 +158,36 @@ class Response
 		}
 		elseif ( is_int($time) )
 		{
-			// 给定的时间不是时间戳，假设将秒添加到当前时间
+			// Given time not a timestamp, assume seconds to add to current time
 			if ( strlen($time) < 10 )
 			{
 				$time = time() + $time;
 			}
 		}
+
 		if ( $time === false )
 		{
-			// 明确没有缓存
+			// Explicit no cache
 			$this->header('Cache-Control', 'no-cache, no-store');
 		}
 		else
 		{
-			// Max-age 是从现在开始的秒数
+			// Max-age is seconds from now
 			$this->header('Cache-Control', 'public, max-age=' . ($time - time()));
 			$this->header('Expires', gmdate("D, d M Y H:i:s", $time));
 		}
+
 		$this->_cacheTime = $time;
 		return $this;
 	}
 	/**
-	 * 设置 HTTP 要使用的编码
+	 * Set HTTP encoding to use
 	 *
-	 * @param	string	$encoding 要使用的字符编码
+	 * @param string $encoding Charset encoding to use
 	 */
-	public function encoding($encoding = NULL)
+	public function encoding($encoding = null)
 	{
-		if ( $encoding === NULL )
+		if ( null === $encoding )
 		{
 			return $this->_encoding;
 		}
@@ -186,13 +195,13 @@ class Response
 		return $this;
 	}
 	/**
-	 * 设置 HTTP 响应主体
+	 * Set HTTP response body
 	 *
-	 * @param	string	$content 内容
+	 * @param string $content Content
 	 */
-	public function content($content = NULL)
+	public function content($content = null)
 	{
-		if ( $content === NULL )
+		if ( null === $content )
 		{
 			return $this->_content;
 		}
@@ -203,13 +212,13 @@ class Response
 		$this->_content .= $content;
 	}
 	/**
-	 * 设置 HTTP 内容类型
+	 * Set HTTP content type
 	 *
-	 * @param	string	$contentType 响应的内容类型
+	 * @param string $contentType Content-type for response
 	 */
-	public function contentType($contentType = NULL)
+	public function contentType($contentType = null)
 	{
-		if ( $contentType == NULL )
+		if ( null == $contentType )
 		{
 			return $this->_contentType;
 		}
@@ -217,15 +226,15 @@ class Response
 		return $this;
 	}
 	/**
-	 * 清除先前设置的 HTTP 头
+	 * Clear any previously set HTTP headers
 	 */
 	public function clearHeaders()
 	{
-		$this->_headers = [];
+		$this->_headers = array();
 		return $this;
 	}
 	/**
-	 * 清除先前设置的 HTTP 重定向
+	 * Clear any previously set HTTP redirects
 	 */
 	public function clearRedirects()
 	{
@@ -236,19 +245,19 @@ class Response
 		return $this;
 	}
 	/**
-	 * 看看是否有重定向设置
+	 * See if the response has any redirects set
 	 *
-	 * @return	boolean
+	 * @return boolean
 	 */
 	public function hasRedirects()
 	{
 		return isset($this->_headers['Location']);
 	}
 	/**
-	 * 重定向
+	 * See if the response has any redirects set
 	 *
-	 * @param	string	$location URL
-	 * @param int $status 重定向的 HTTP 状态码（3xx）
+	 * @param string $location URL
+	 * @param int $status HTTP status code for redirect (3xx)
 	 */
 	public function redirect($location, $status = 302)
 	{
@@ -257,15 +266,15 @@ class Response
 		return $this;
 	}
 	/**
-	 * 发送 HTTP 状态头
+	 * Send HTTP status header
 	 */
 	protected function sendStatus()
 	{
-		// 发送 HTTP 头
-		header($this->_protocol . ' ' . $this->_status . ' ' . $this->statusText($this->_status));
+		// Send HTTP Header
+		header($this->_protocol . " " . $this->_status . " " . $this->statusText($this->_status));
 	}
 	/**
-	 * 根据状态码取得 HTTP 头响应文本
+	 * Get HTTP header response text from status code
 	 */
 	public function statusText($statusCode)
 	{
@@ -326,15 +335,17 @@ class Response
 			510 => 'Not Extended',
 			511 => 'Network Authentication Required'
 		);
+
 		$statusText = false;
 		if ( isset($responses[$statusCode]) )
 		{
 			$statusText = $responses[$statusCode];
 		}
+
 		return $statusText;
 	}
 	/**
-	 * 发送设置的所有 HTTP 头
+	 * Send all set HTTP headers
 	 */
 	public function sendHeaders()
 	{
@@ -342,10 +353,11 @@ class Response
 		{
 			header('Content-Type: ' . $this->_contentType . "; charset=" . $this->_encoding);
 		}
-		// 发送所有头
+
+		// Send all headers
 		foreach( $this->_headers as $key => $value )
 		{
-			if ( $value === NULL )
+			if ( is_null($value) )
 			{
 				continue;
 			}
@@ -357,29 +369,30 @@ class Response
 				}
 				continue;
 			}
+
 			header($key . ": " . $value);
 		}
 	}
 	/**
-	 * 发送 HTTP 主体内容
+	 * Send HTTP body content
 	 */
 	public function sendBody()
 	{
 		echo $this->_content;
 	}
 	/**
-	 * 发送 HTTP 响应（头和主体）
+	 * Send HTTP response - headers and body
 	 */
 	public function send()
 	{
-		echo $this; // 执行下面的 __toString 方法
+		echo $this; // Executes __toString below
 	}
 	/**
-	 * 发送 HTTP 响应（字符串）
+	 * Send HTTP response on string conversion
 	 */
 	public function __toString()
 	{
-		// 取得要返回的主体内容
+		// Get body content to return
 		try
 		{
 			$content = (string)$this->content();
@@ -389,17 +402,20 @@ class Response
 			$content = (string)$e;
 			$this->status(500);
 		}
-		// 写并关闭会话
+
+		// Write and close session
 		if ( session_id() )
 		{
 			session_write_close();
 		}
-		// 发送头（如果还没有发送）
+
+		// Send headers if not already sent
 		if ( !headers_sent() )
 		{
 			$this->sendStatus();
 			$this->sendHeaders();
 		}
+
 		return $content;
 	}
 }

@@ -28,9 +28,9 @@ use Bootphp\Exception\ExceptionHandler;
  *
  * *  APC PHP 扩展
  *
- * @package BootPHP/缓存
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP/缓存
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class CacheApc extends Cache
 {

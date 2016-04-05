@@ -3,7 +3,7 @@
 mb_internal_encoding('UTF-8');
 
 // 定义应用目录
-define('APP_PATH', __DIR__ . '/application');
+define('APP_PATH', __DIR__ . '/applications');
 // 定义应用的开始时间，用于性能分析。
 defined('START_TIME') || define('START_TIME', microtime(true));
 // 定义应用开始时的内存使用，用于性能分析。
@@ -11,7 +11,6 @@ defined('START_MEMORY') || define('START_MEMORY', memory_get_usage());
 
 // 自动加载器
 require __DIR__ . '/vendor/autoload.php';
-AutoloaderInit::getLoader();
 
 // 引导应用程序
 require APP_PATH . '/bootstrap.php';

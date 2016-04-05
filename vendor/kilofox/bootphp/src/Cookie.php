@@ -2,136 +2,186 @@
 
 namespace Bootphp;
 /**
- * Cookie 辅助类。
+ * Cookie helper.
  *
- * @package BootPHP
- * @category 辅助类
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Helpers
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class Cookie
 {
 	/**
-	 * @var string 添加到 cookie 的加盐
+	 * @var  string  Magic salt to add to the cookie
 	 */
 	public static $salt = NULL;
 	/**
-	 * @var	integer	cookie 过期前的秒数
+	 * @var  integer  Number of seconds before the cookie expires
 	 */
 	public static $expiration = 0;
 	/**
-	 * @var string 限定 cookie 的可用路径
+	 * @var  string  Restrict the path that the cookie is available to
 	 */
 	public static $path = '/';
 	/**
-	 * @var string 限定 cookie 的可用域
+	 * @var  string  Restrict the domain that the cookie is available to
 	 */
 	public static $domain = NULL;
 	/**
-	 * @var	boolean	只通过安全连接传输 cookie
+	 * @var  boolean  Only transmit cookies over secure connections
 	 */
-	public static $secure = false;
+	public static $secure = FALSE;
 	/**
-	 * @var	boolean	只通过 HTTP 传输 cookie，禁用 Javascript 访问
+	 * @var  boolean  Only transmit cookies over HTTP, disabling Javascript access
 	 */
-	public static $httponly = false;
+	public static $httponly = FALSE;
 	/**
-	 * 获得签名的 cookie 的值。没有签名的 cookie 将不会返回。如果 cookie 签名存在，但无效，该 cookie 会被删除。
+	 * Gets the value of a signed cookie. Cookies without signatures will not
+	 * be returned. If the cookie signature is present, but invalid, the cookie
+	 * will be deleted.
 	 *
-	 *     // 获取 "theme" cookie，如果 cookie 不存在，那么用 "blue"
+	 *     // Get the "theme" cookie, or use "blue" if the cookie does not exist
 	 *     $theme = Cookie::get('theme', 'blue');
 	 *
-	 * @param	string	cookie 名称
-	 * @param mixed 要返回的默认值
-	 * @return	string
+	 * @param   string  $key        cookie name
+	 * @param   mixed   $default    default value to return
+	 * @return  string
 	 */
 	public static function get($key, $default = NULL)
 	{
 		if ( !isset($_COOKIE[$key]) )
 		{
-			// cookie 不存在
+			// The cookie does not exist
 			return $default;
 		}
-		// 获得 cookie 值
+
+		// Get the cookie value
 		$cookie = $_COOKIE[$key];
-		// 找到加盐与内容的分割位置
+
+		// Find the position of the split between salt and contents
 		$split = strlen(Cookie::salt($key, NULL));
-		if ( isset($cookie[$split]) && $cookie[$split] === '~' )
+
+		if ( isset($cookie[$split]) AND $cookie[$split] === '~' )
 		{
-			// 将加盐与值分离
+			// Separate the salt and the value
 			list ($hash, $value) = explode('~', $cookie, 2);
-			if ( Cookie::salt($key, $value) === $hash )
+
+			if ( Security::slow_equals(Cookie::salt($key, $value), $hash) )
 			{
-				// Cookie 签名有效
+				// Cookie signature is valid
 				return $value;
 			}
-			// Cookie 签名无效，删除之
-			Cookie::delete($key);
+
+			// The cookie signature is invalid, delete it
+			static::delete($key);
 		}
+
 		return $default;
 	}
 	/**
-	 * 设置一个签名的cookie。注意，所有的 cookie 值必须为字符串，而且不能自动序列化！
+	 * Sets a signed cookie. Note that all cookie values must be strings and no
+	 * automatic serialization will be performed!
 	 *
-	 *     // 设置 cookie "theme"
+	 * [!!] By default, Cookie::$expiration is 0 - if you skip/pass NULL for the optional
+	 *      lifetime argument your cookies will expire immediately unless you have separately
+	 *      configured Cookie::$expiration.
+	 *
+	 *
+	 *     // Set the "theme" cookie
 	 *     Cookie::set('theme', 'red');
 	 *
-	 * @param	string	cookie 名称
-	 * @param	string	cookie 值
-	 * @param integer	以秒为单位的生命周期
-	 * @return	boolean
-	 * @uses Cookie::salt
+	 * @param   string  $name       name of cookie
+	 * @param   string  $value      value of cookie
+	 * @param   integer $lifetime   lifetime in seconds
+	 * @return  boolean
+	 * @uses    Cookie::salt
 	 */
-	public static function set($name, $value, $expiration = NULL)
+	public static function set($name, $value, $lifetime = NULL)
 	{
-		if ( $expiration === NULL )
+		if ( $lifetime === NULL )
 		{
-			// 使用默认过期时间
-			$expiration = Cookie::$expiration;
+			// Use the default expiration
+			$lifetime = Cookie::$expiration;
 		}
-		if ( $expiration !== 0 )
+
+		if ( $lifetime !== 0 )
 		{
-			// 过期时间要求为 UNIX 时间戳
-			$expiration += time();
+			// The expiration is expected to be a UNIX timestamp
+			$lifetime += static::_time();
 		}
+
 		// Add the salt to the cookie value
 		$value = Cookie::salt($name, $value) . '~' . $value;
-		return setcookie($name, $value, $expiration, Cookie::$path, Cookie::$domain, Cookie::$secure, Cookie::$httponly);
+
+		return static::_setcookie($name, $value, $lifetime, Cookie::$path, Cookie::$domain, Cookie::$secure, Cookie::$httponly);
 	}
 	/**
-	 * 通过使值为空且过期来删除。
+	 * Deletes a cookie by making the value NULL and expiring it.
 	 *
 	 *     Cookie::delete('theme');
 	 *
-	 * @param	string	cookie 名称
-	 * @return	boolean
-	 * @uses Cookie::set
+	 * @param   string  $name   cookie name
+	 * @return  boolean
 	 */
 	public static function delete($name)
 	{
-		// 清除 cookie
+		// Remove the cookie
 		unset($_COOKIE[$name]);
-		// 废除 cookie，使其失效
-		return setcookie($name, NULL, -86400, Cookie::$path, Cookie::$domain, Cookie::$secure, Cookie::$httponly);
+
+		// Nullify the cookie and make it expire
+		return static::_setcookie($name, NULL, -86400, Cookie::$path, Cookie::$domain, Cookie::$secure, Cookie::$httponly);
 	}
 	/**
-	 * 根据名称和值，为 cookie 生成一个加盐字符串。
+	 * Generates a salt string for a cookie based on the name and value.
 	 *
 	 *     $salt = Cookie::salt('theme', 'red');
 	 *
-	 * @param	string	cookie 名称
-	 * @param	string	cookie 值
-	 * @return	string
+	 * @param   string $name name of cookie
+	 * @param   string $value value of cookie
+	 *
+	 * @throws Kohana_Exception if Cookie::$salt is not configured
+	 * @return  string
 	 */
 	public static function salt($name, $value)
 	{
-		// 需要一个有效的加盐字符串
+		// Require a valid salt
 		if ( !Cookie::$salt )
 		{
-			throw new BootPHP_Exception('A valid cookie salt is required. Please set Cookie::$salt.');
+			throw new Kohana_Exception('A valid cookie salt is required. Please set Cookie::$salt in your bootstrap.php. For more information check the documentation');
 		}
-		// 确定用户代理
+
+		// Determine the user agent
 		$agent = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : 'unknown';
-		return sha1($agent . $name . $value . Cookie::$salt);
+
+		return hash_hmac('sha1', $agent . $name . $value . Cookie::$salt, Cookie::$salt);
+	}
+	/**
+	 * Proxy for the native setcookie function - to allow mocking in unit tests so that they do not fail when headers
+	 * have been sent.
+	 *
+	 * @param string  $name
+	 * @param string  $value
+	 * @param integer $expire
+	 * @param string  $path
+	 * @param string  $domain
+	 * @param boolean $secure
+	 * @param boolean $httponly
+	 *
+	 * @return bool
+	 * @see setcookie
+	 */
+	protected static function _setcookie($name, $value, $expire, $path, $domain, $secure, $httponly)
+	{
+		return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+	}
+	/**
+	 * Proxy for the native time function - to allow mocking of time-related logic in unit tests
+	 *
+	 * @return int
+	 * @see    time
+	 */
+	protected static function _time()
+	{
+		return time();
 	}
 }

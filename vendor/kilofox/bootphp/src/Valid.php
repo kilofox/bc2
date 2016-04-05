@@ -2,36 +2,37 @@
 
 namespace Bootphp;
 /**
- * 验证规则是否有效。
+ * Validation rules.
  *
- * @package BootPHP
- * @category 安全
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Security
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class Valid
 {
 	/**
-	 * 检查字段是否为空。
+	 * Checks if a field is not empty.
 	 *
-	 * @param	string	值
+	 * @param	string	$value	value
 	 * @return	boolean
 	 */
 	public static function not_empty($value)
 	{
 		if ( is_object($value) && $value instanceof ArrayObject )
 		{
-			// 从 ArrayObject 中得到数组
+			// Get the array from the ArrayObject
 			$value = $value->getArrayCopy();
 		}
-		// 值不能是 NULL、false、'' 或空数组
+
+		// Value cannot be NULL, FALSE, '', or an empty array
 		return !in_array($value, array(NULL, false, '', array()), true);
 	}
 	/**
-	 * 检查字段是否符合正则表达式。
+	 * Checks a field against a regular expression.
 	 *
-	 * @param	string	值
-	 * @param	string	要匹配的正则表达式（包括分隔符）
+	 * @param	string	$value		value
+	 * @param	string	$expression	regular expression to match (including delimiters)
 	 * @return	boolean
 	 */
 	public static function regex($value, $expression)
@@ -39,33 +40,33 @@ class Valid
 		return (bool)preg_match($expression, (string)$value);
 	}
 	/**
-	 * 检查字段是否足够长。
+	 * Checks that a field is long enough.
 	 *
-	 * @param	string	值
-	 * @param	integer	要求的最小长度
-	 * @return	boolean
+	 * @param   string  $value  value
+	 * @param   integer $length minimum length required
+	 * @return  boolean
 	 */
 	public static function min_length($value, $length)
 	{
 		return mb_strlen($value) >= $length;
 	}
 	/**
-	 * 检查字段是否足够短。
+	 * Checks that a field is short enough.
 	 *
-	 * @param	string	值
-	 * @param	integer	要求的最大长度
-	 * @return	boolean
+	 * @param   string  $value  value
+	 * @param   integer $length maximum length required
+	 * @return  boolean
 	 */
 	public static function max_length($value, $length)
 	{
 		return mb_strlen($value) <= $length;
 	}
 	/**
-	 * 检查字段的长度是否完全正确。
+	 * Checks that a field is exactly the right length.
 	 *
-	 * @param	string	值
-	 * @param integer|array 需要检查的长度，或有效长度的数组
-	 * @return	boolean
+	 * @param   string          $value  value
+	 * @param   integer|array   $length exact length required, or array of valid lengths
+	 * @return  boolean
 	 */
 	public static function exact_length($value, $length)
 	{
@@ -81,22 +82,22 @@ class Valid
 		return mb_strlen($value) === $length;
 	}
 	/**
-	 * 检查字段与要求的值是否完全一致。
+	 * Checks that a field is exactly the value required.
 	 *
-	 * @param	string	值
-	 * @param	string	要求的值
-	 * @return	boolean
+	 * @param   string  $value      value
+	 * @param   string  $required   required value
+	 * @return  boolean
 	 */
 	public static function equals($value, $required)
 	{
 		return ($value === $required);
 	}
 	/**
-	 * 检查 E-mail 地址格式的正确性。
+	 * Check an email address for correct format.
 	 *
-	 * @param	string	E-mail 地址
-	 * @param boolean 严格的 RFC 兼容
-	 * @return	boolean
+	 * @param   string  $email  email address
+	 * @param   boolean $strict strict RFC compatibility
+	 * @return  boolean
 	 */
 	public static function email($email, $strict = false)
 	{
@@ -123,308 +124,398 @@ class Valid
 		return (bool)preg_match($expression, (string)$email);
 	}
 	/**
-	 * 验证 E-mail 地址的域，检查域是否为有效的 MX 记录。
+	 * Validate the domain of an email address by checking if the domain has a
+	 * valid MX record.
 	 *
-	 * @link http://php.net/manual/zh/function.checkdnsrr.php
-	 * @param	string	E-mail 地址
-	 * @return	boolean
+	 * @link  http://php.net/checkdnsrr  not added to Windows until PHP 5.3.0
+	 *
+	 * @param   string  $email  email address
+	 * @return  boolean
 	 */
 	public static function email_domain($email)
 	{
-		// 空值对于 checkdnsrr() 会产生问题
+		// Empty fields cause issues with checkdnsrr()
 		if ( !Valid::not_empty($email) )
 			return false;
-		// 检查 E-mail 域是否为有效的 MX 记录
+
+		// Check if the email domain has a valid MX record
 		return (bool)checkdnsrr(preg_replace('/^[^@]++@/', '', $email), 'MX');
 	}
 	/**
-	 * 验证URL。
+	 * Validate a URL.
 	 *
-	 * @param	string	URL
-	 * @return	boolean
+	 * @param   string  $url    URL
+	 * @return  boolean
 	 */
 	public static function url($url)
 	{
-		// 基于 http://tools.ietf.org/html/rfc1738#section-5
+		// Based on http://www.apps.ietf.org/rfc/rfc1738.html#sec-5
 		if ( !preg_match(
 				'~^
-			# 协议
+
+			# scheme
 			[-a-z0-9+.]++://
-			# 用户名:密码（可选）
+
+			# username:password (optional)
 			(?:
-				[-a-z0-9$_.+!*\'(),;?&=%]++ # 用户名
-				(?::[-a-z0-9$_.+!*\'(),;?&=%]++)? # 密码（可选）
+				    [-a-z0-9$_.+!*\'(),;?&=%]++   # username
+				(?::[-a-z0-9$_.+!*\'(),;?&=%]++)? # password (optional)
 				@
 			)?
+
 			(?:
-				# IP地址
+				# ip address
 				\d{1,3}+(?:\.\d{1,3}+){3}+
+
 				| # or
-				# 主机名（捕获的）
+
+				# hostname (captured)
 				(
-					(?!-)[-a-z0-9]{1,63}+(?<!-)
+					     (?!-)[-a-z0-9]{1,63}+(?<!-)
 					(?:\.(?!-)[-a-z0-9]{1,63}+(?<!-)){0,126}+
 				)
 			)
-			# 端口（可选）
+
+			# port (optional)
 			(?::\d{1,5}+)?
-			# 路径（可选）
+
+			# path (optional)
 			(?:/.*)?
+
 			$~iDx', $url, $matches) )
-			return false;
-		// 匹配到了IP地址
+			return FALSE;
+
+		// We matched an IP address
 		if ( !isset($matches[1]) )
-			return true;
-		// 检查整个主机名的最大长度
-		// https://zh.wikipedia.org/wiki/%E5%9F%9F%E5%90%8D#.E5.9F.9F.E5.90.8D.E6.9C.8D.E5.8A.A1.E5.99.A8
+			return TRUE;
+
+		// Check maximum length of the whole hostname
+		// http://en.wikipedia.org/wiki/Domain_name#cite_note-0
 		if ( strlen($matches[1]) > 253 )
-			return false;
-		// 对顶级域名的额外检查
-		// 它必须以字母开头
+			return FALSE;
+
+		// An extra check for the top level domain
+		// It must start with a letter
 		$tld = ltrim(substr($matches[1], (int)strrpos($matches[1], '.')), '.');
 		return ctype_alpha($tld[0]);
 	}
 	/**
-	 * 验证 IP
+	 * Validate an IP.
 	 *
-	 * @param	string	IP地址
-	 * @param boolean 允许私有IP网络
-	 * @return	boolean
+	 * @param   string  $ip             IP address
+	 * @param   boolean $allow_private  allow private IP networks
+	 * @return  boolean
 	 */
-	public static function ip($ip, $allow_private = true)
+	public static function ip($ip, $allow_private = TRUE)
 	{
-		// 不允许保留的地址
+		// Do not allow reserved addresses
 		$flags = FILTER_FLAG_NO_RES_RANGE;
-		if ( $allow_private === false )
+
+		if ( $allow_private === FALSE )
 		{
-			// 不允许私有的和保留的地址
+			// Do not allow private or reserved addresses
 			$flags = $flags | FILTER_FLAG_NO_PRIV_RANGE;
 		}
+
 		return (bool)filter_var($ip, FILTER_VALIDATE_IP, $flags);
 	}
 	/**
-	 * 验证信用卡号码，可带 Luhn 检查。
+	 * Validates a credit card number, with a Luhn check if possible.
 	 *
-	 * @param	integer	信用卡号码
-	 * @param string|array 卡类型，或卡类型的数组
-	 * @return	boolean
-	 * @uses Valid::luhn
+	 * @param   integer         $number credit card number
+	 * @param   string|array    $type   card type, or an array of card types
+	 * @return  boolean
+	 * @uses    Valid::luhn
 	 */
 	public static function credit_card($number, $type = NULL)
 	{
-		// 从卡号中移除所有非数字字符
+		// Remove all non-digit characters from the number
 		if ( ($number = preg_replace('/\D+/', '', $number)) === '' )
-			return false;
+			return FALSE;
+
 		if ( $type == NULL )
 		{
-			// 使用默认类型
+			// Use the default type
 			$type = 'default';
 		}
 		elseif ( is_array($type) )
 		{
 			foreach( $type as $t )
 			{
-				// 测试每种类型的有效性
-				if ( self::credit_card($number, $t) )
-					return true;
+				// Test each type for validity
+				if ( Valid::credit_card($number, $t) )
+					return TRUE;
 			}
-			return false;
+
+			return FALSE;
 		}
-		$cards = BootPHP::$config->load('credit_cards');
-		// 检查卡的类型
+
+		$cards = Kohana::$config->load('credit_cards');
+
+		// Check card type
 		$type = strtolower($type);
+
 		if ( !isset($cards[$type]) )
-			return false;
-		// 检查卡号长度
+			return FALSE;
+
+		// Check card number length
 		$length = strlen($number);
-		// 根据卡的类型验证卡号长度
+
+		// Validate the card length by the card type
 		if ( !in_array($length, preg_split('/\D+/', $cards[$type]['length'])) )
-			return false;
-		// 检查卡号前缀
+			return FALSE;
+
+		// Check card number prefix
 		if ( !preg_match('/^' . $cards[$type]['prefix'] . '/', $number) )
-			return false;
-		// 不需要 Luhn 检查
-		if ( $cards[$type]['luhn'] == false )
-			return true;
+			return FALSE;
+
+		// No Luhn check required
+		if ( $cards[$type]['luhn'] == FALSE )
+			return TRUE;
+
 		return Valid::luhn($number);
 	}
 	/**
-	 * 验证数字是否满足 [Luhn](http://baike.baidu.com/view/7893503.htm) （模10）公式。
+	 * Validate a number against the [Luhn](http://en.wikipedia.org/wiki/Luhn_algorithm)
+	 * (mod10) formula.
 	 *
-	 * @param	string	要检查的数字
-	 * @return	boolean
+	 * @param   string  $number number to check
+	 * @return  boolean
 	 */
 	public static function luhn($number)
 	{
-		// 将值强制转换为字符串，因为这个方法使用字符串函数。
-		// 转换为整数可能超过 PHP_INT_MAX，导致错误！
+		// Force the value to be a string as this method uses string functions.
+		// Converting to an integer may pass PHP_INT_MAX and result in an error!
 		$number = (string)$number;
+
 		if ( !ctype_digit($number) )
 		{
-			// Luhn 只能用在数字上！
-			return false;
+			// Luhn can only be used on numbers!
+			return FALSE;
 		}
-		// 检查数字长度
+
+		// Check number length
 		$length = strlen($number);
-		// 卡号校验
+
+		// Checksum of the card number
 		$checksum = 0;
+
 		for( $i = $length - 1; $i >= 0; $i -= 2 )
 		{
-			// 从右往左，奇数位数字相加
+			// Add up every 2nd digit, starting from the right
 			$checksum += substr($number, $i, 1);
 		}
+
 		for( $i = $length - 2; $i >= 0; $i -= 2 )
 		{
-			// 从右往左，偶数位数字加倍后相加
+			// Add up every 2nd digit doubled, starting from the right
 			$double = substr($number, $i, 1) * 2;
-			// 加倍后的值大于等于 10 时，减去 9
+
+			// Subtract 9 from the double where value is greater than 10
 			$checksum += ($double >= 10) ? ($double - 9) : $double;
 		}
-		// 如果总和是 10 的倍数，这个数字就是有效的
+
+		// If the checksum is a multiple of 10, the number is valid
 		return ($checksum % 10 === 0);
 	}
 	/**
-	 * 检查电话号码是否有效。
+	 * Checks if a phone number is valid.
 	 *
-	 * @param	string	要检查的电话号码
-	 * @param array 电话号码长度范围
-	 * @return	boolean
+	 * @param   string  $number     phone number to check
+	 * @param   array   $lengths
+	 * @return  boolean
 	 */
 	public static function phone($number, $lengths = NULL)
 	{
 		if ( !is_array($lengths) )
 		{
-			$lengths = array(7, 8, 11, 12);
+			$lengths = array(7, 10, 11);
 		}
-		// 从号码中移除所有非数字字符
+
+		// Remove all non-digit characters from the number
 		$number = preg_replace('/\D+/', '', $number);
-		// 检查号码是否在长度范围内
+
+		// Check if the number is within range
 		return in_array(strlen($number), $lengths);
 	}
 	/**
-	 * 检查字符串是否为有效的日期字符串。
+	 * Tests if a string is a valid date string.
 	 *
-	 * @param	string	要检查的日期
-	 * @return	boolean
+	 * @param   string  $str    date to check
+	 * @return  boolean
 	 */
 	public static function date($str)
 	{
-		return (strtotime($str) !== false);
+		return (strtotime($str) !== FALSE);
 	}
 	/**
-	 * 检查字符串是否只包含字母。
+	 * Checks whether a string consists of alphabetical characters only.
 	 *
-	 * @param	string	输入的字符串
-	 * @return	boolean
+	 * @param   string  $str    input string
+	 * @param   boolean $utf8   trigger UTF-8 compatibility
+	 * @return  boolean
 	 */
-	public static function alpha($str)
+	public static function alpha($str, $utf8 = FALSE)
 	{
-		return ctype_alpha((string)$str);
+		$str = (string)$str;
+
+		if ( $utf8 === TRUE )
+		{
+			return (bool)preg_match('/^\pL++$/uD', $str);
+		}
+		else
+		{
+			return ctype_alpha($str);
+		}
 	}
 	/**
-	 * 检查字符串是否只包含字母和数字。
+	 * Checks whether a string consists of alphabetical characters and numbers only.
 	 *
-	 * @param	string	输入的字符串
-	 * @return	boolean
+	 * @param   string  $str    input string
+	 * @param   boolean $utf8   trigger UTF-8 compatibility
+	 * @return  boolean
 	 */
-	public static function alpha_numeric($str)
+	public static function alpha_numeric($str, $utf8 = FALSE)
 	{
-		return ctype_alnum($str);
+		if ( $utf8 === TRUE )
+		{
+			return (bool)preg_match('/^[\pL\pN]++$/uD', $str);
+		}
+		else
+		{
+			return ctype_alnum($str);
+		}
 	}
 	/**
-	 * 检查字符串是否只包含字母、数字、下划线和破折号。
+	 * Checks whether a string consists of alphabetical characters, numbers, underscores and dashes only.
 	 *
-	 * @param	string	输入的字符串
-	 * @return	boolean
+	 * @param   string  $str    input string
+	 * @param   boolean $utf8   trigger UTF-8 compatibility
+	 * @return  boolean
 	 */
-	public static function alpha_dash($str)
+	public static function alpha_dash($str, $utf8 = FALSE)
 	{
-		$regex = '/^[-a-z0-9_]++$/iD';
+		if ( $utf8 === TRUE )
+		{
+			$regex = '/^[-\pL\pN_]++$/uD';
+		}
+		else
+		{
+			$regex = '/^[-a-z0-9_]++$/iD';
+		}
+
 		return (bool)preg_match($regex, $str);
 	}
 	/**
-	 * 检查字符串是否只包含数字（没有点和破折号）。
+	 * Checks whether a string consists of digits only (no dots or dashes).
 	 *
-	 * @param	string	输入的字符串
-	 * @return	boolean
+	 * @param   string  $str    input string
+	 * @param   boolean $utf8   trigger UTF-8 compatibility
+	 * @return  boolean
 	 */
-	public static function digit($str)
+	public static function digit($str, $utf8 = FALSE)
 	{
-		return (is_int($str) && $str >= 0) || ctype_digit($str);
+		if ( $utf8 === TRUE )
+		{
+			return (bool)preg_match('/^\pN++$/uD', $str);
+		}
+		else
+		{
+			return (is_int($str) AND $str >= 0) OR ctype_digit($str);
+		}
 	}
 	/**
-	 * 检查字符串是否是一个有效的数值（允许负数和十进制数）。
+	 * Checks whether a string is a valid number (negative and decimal numbers allowed).
 	 *
-	 * 使用 {@link http://php.net/manual/zh/function.localeconv.php 区域转换} 来指定区域设置的小数点。
+	 * Uses {@link http://www.php.net/manual/en/function.localeconv.php locale conversion}
+	 * to allow decimal point to be locale specific.
 	 *
-	 * @param	string	输入的字符串
-	 * @return	boolean
+	 * @param   string  $str    input string
+	 * @return  boolean
 	 */
 	public static function numeric($str)
 	{
-		// 获取当前区域设置的小数点
+		// Get the decimal point for the current locale
 		list($decimal) = array_values(localeconv());
-		// 使用向前查找，以确保字符串包含至少一个数字（在小数点之前或者之后）
+
+		// A lookahead is used to make sure the string contains at least one digit (before or after the decimal point)
 		return (bool)preg_match('/^-?+(?=.*[0-9])[0-9]*+' . preg_quote($decimal) . '?+[0-9]*+$/D', (string)$str);
 	}
 	/**
-	 * 检查一个数字是否在范围内。
+	 * Tests if a number is within a range.
 	 *
-	 * @param	string	要检查的数字
-	 * @param	integer	最小值
-	 * @param	integer	最大值
-	 * @return	boolean
+	 * @param   string  $number number to check
+	 * @param   integer $min    minimum value
+	 * @param   integer $max    maximum value
+	 * @param   integer $step   increment size
+	 * @return  boolean
 	 */
-	public static function range($number, $min, $max)
+	public static function range($number, $min, $max, $step = NULL)
 	{
-		return $number >= $min && $number <= $max;
+		if ( $number < $min OR $number > $max )
+		{
+			// Number is outside of range
+			return FALSE;
+		}
+
+		if ( !$step )
+		{
+			// Default to steps of 1
+			$step = 1;
+		}
+
+		// Check step requirements
+		return (($number - $min) % $step === 0);
 	}
 	/**
-	 * 检查字符串是否为正确的十进制格式。
-	 * 可选，也可以检查指定的数字位数。
+	 * Checks if a string is a proper decimal format. Optionally, a specific
+	 * number of digits can be checked too.
 	 *
-	 * @param	string	要检查的数字
-	 * @param	integer	小数位数
-	 * @param	integer	数字位数
-	 * @return	boolean
+	 * @param   string  $str    number to check
+	 * @param   integer $places number of decimal places
+	 * @param   integer $digits number of digits
+	 * @return  boolean
 	 */
 	public static function decimal($str, $places = 2, $digits = NULL)
 	{
 		if ( $digits > 0 )
 		{
-			// 指定数字位数
-			$digits = '{' . (int)$digits . '}';
+			// Specific number of digits
+			$digits = '{' . ( (int)$digits) . '}';
 		}
 		else
 		{
-			// 任何数字位数
+			// Any number of digits
 			$digits = '+';
 		}
-		// 获取当前设置的小数点
+
+		// Get the decimal point for the current locale
 		list($decimal) = array_values(localeconv());
-		return (bool)preg_match('/^[+-]?[0-9]' . $digits . preg_quote($decimal) . '[0-9]{' . ((int)$places) . '}$/D', $str);
+
+		return (bool)preg_match('/^[+-]?[0-9]' . $digits . preg_quote($decimal) . '[0-9]{' . ( (int)$places) . '}$/D', $str);
 	}
 	/**
-	 * 检查字符串是否是一个正确的十六进制 HTML 颜色值。
-	 * 这个验证是相当灵活的，它不需要以“#”开始，而且可以使用三个十六制字符的简写形式来代替六个十六制进字符。
+	 * Checks if a string is a proper hexadecimal HTML color value. The validation
+	 * is quite flexible as it does not require an initial "#" and also allows for
+	 * the short notation using only three instead of six hexadecimal characters.
 	 *
-	 * @param	string	输入的字符串
-	 * @return	boolean
+	 * @param   string  $str    input string
+	 * @return  boolean
 	 */
 	public static function color($str)
 	{
 		return (bool)preg_match('/^#?+[0-9a-f]{3}(?:[0-9a-f]{3})?$/iD', $str);
 	}
 	/**
-	 * 检查一个字段的值是否匹配另一个字段的值。
+	 * Checks if a field matches the value of another field.
 	 *
-	 * @param array 值的数组
-	 * @param	string	字段名
-	 * @param	string	要匹配的字段名
-	 * @return	boolean
+	 * @param   array   $array  array of values
+	 * @param   string  $field  field name
+	 * @param   string  $match  field name to match
+	 * @return  boolean
 	 */
 	public static function matches($array, $field, $match)
 	{
-		return $array[$field] === $array[$match];
+		return ($array[$field] === $array[$match]);
 	}
 }

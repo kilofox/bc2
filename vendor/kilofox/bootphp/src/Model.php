@@ -5,9 +5,9 @@ use Bootphp\Database\DB;
 /**
  * 模型基类。所有的模型都应该继承这个类。
  *
- * @package BootPHP
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 abstract class Model
 {

@@ -3,26 +3,26 @@
 namespace Bootphp;
 use Bootphp\Exception\ExceptionHandler;
 /**
- * 应用类
+ * App class.
  *
- * @package Bootphp
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	Bootphp
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class App
 {
-	// 发行版本
+	// Release version
 	const VERSION = '2.0.0';
 	/**
-	 * 实例化应用
+	 * New App instance
 	 *
 	 * @param array $values 传递给容器的配置与对象数组
 	 */
 	public function __construct(array $values = [])
 	{
-		// 启用异常处理，添加堆栈跟踪和错误源。
+		// Enable exception handling, adds stack traces and error source.
 		set_exception_handler(array('Bootphp\Exception\ExceptionHandler', 'handler'));
-		// 启用 Bootphp 错误处理，将所有 PHP 错误转换为异常。
+		// Enable error handling, converts all PHP errors to exceptions.
 		set_error_handler(array('Bootphp\App', 'errorHandler'));
 		// 如果指定了模板配置
 		if ( isset($values['template']) )
@@ -31,17 +31,20 @@ class App
 		}
 	}
 	/**
-	 * 用给定的请求方式和请求URI运行应用
+	 * Run app with given REQUEST_METHOD and REQUEST_URI
 	 *
 	 * @return	void
 	 */
 	public function run(Request $request)
 	{
 		$requestPath = $request->url();
+		$params = $request->process($requestPath);
+		print_r($params);
 		// 分割路径，去掉开头和结尾的斜杠
 		$paths = explode('/', $requestPath);
-		$application = $paths[0] ? $paths[0] : 'index';
-		$controller = isset($paths[1]) && $paths[1] ? $paths[1] : 'index';
+		$application = $params['application'];
+		$controller = $params['controller'];
+		$action = $params['action'];
 		$controllerClass = 'App\\' . $application . '\\controllers\\' . ucfirst($controller) . 'Controller';
 		if ( !class_exists($controllerClass) )
 		{
@@ -58,12 +61,13 @@ class App
 		$ctrler = $class->newInstance($request, $response);
 		$ctrler->application = $application;
 		$ctrler->controller = $controller;
+		$ctrler->action = $action;
 		$ctrler->paths = $paths;
 		$requestUri = $request->uri();
 		$ctrler->baseUrl = '/' . trim(mb_substr($requestUri, 0, mb_strrpos($requestUri, $requestPath)), '/');
 		// 执行 before 方法
 		$class->getMethod('before')->invoke($ctrler);
-		$action = $ctrler->action;
+		//$action = $ctrler->action;
 		// 如果动作不存在，那就是 404
 		if ( !$class->hasMethod($action . 'Action') )
 		{
@@ -75,7 +79,8 @@ class App
 		$class->getMethod('after')->invoke($ctrler);
 	}
 	/**
-	 * PHP错误处理器，将错误转换为 ErrorException。这个处理器关联 error_reporting 设置。
+	 * PHP error handler, converts all errors into ErrorExceptions. This handler
+	 * respects error_reporting settings.
 	 *
 	 * @throws	ErrorException
 	 * @return	true
@@ -84,9 +89,12 @@ class App
 	{
 		if ( error_reporting() & $code )
 		{
-			// 将错误转换成一个 ErrorException。
+			// This error is not suppressed by current error reporting settings
+			// Convert the error into an ErrorException
 			throw new \ErrorException($error, $code, 0, $file, $line);
 		}
+
+		// Do not execute the PHP error handler
 		return true;
 	}
 }

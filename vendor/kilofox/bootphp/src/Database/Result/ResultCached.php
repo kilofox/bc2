@@ -5,9 +5,9 @@ use Bootphp\Database\Result;
 /**
  * 用于缓存 select 查询结果的对象。用法与例子请参阅 [Results](/database/results#select-cached)。
  *
- * @package Bootphp/数据库
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	Bootphp/数据库
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class ResultCached extends Result
 {

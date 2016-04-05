@@ -4,10 +4,10 @@ namespace Bootphp;
 /**
  * 日期辅助类。
  *
- * @package BootPHP
- * @category 辅助类
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	辅助类
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
 
  */
 class Date
