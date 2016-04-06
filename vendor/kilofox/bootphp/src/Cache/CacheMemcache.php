@@ -67,9 +67,9 @@ use Bootphp\Exception\ExceptionHandler;
  * *  Memcache PHP 扩展
  * *  Zlib
  *
- * @package BootPHP/缓存
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP/缓存
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class CacheMemcache extends Cache
 {

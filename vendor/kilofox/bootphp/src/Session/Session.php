@@ -3,10 +3,10 @@
 namespace Bootphp\Session;
 /**
  * 基本 session 类。
- * @package BootPHP
- * @category Session
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Session
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 abstract class Session
 {

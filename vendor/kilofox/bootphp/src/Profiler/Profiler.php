@@ -7,10 +7,10 @@ use Bootphp\Cache\Cache;
  *
  *     \Bootphp\Profiler::view();
  *
- * @package BootPHP
- * @category 辅助类
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	辅助类
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class Profiler
 {

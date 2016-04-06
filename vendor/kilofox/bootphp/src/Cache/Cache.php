@@ -52,9 +52,9 @@ namespace Bootphp\Cache;
  *
  * 每一个特定驱动的文档中，都有配置详情。
  *
- * @package BootPHP/缓存
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP/缓存
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 abstract class Cache
 {

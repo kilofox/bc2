@@ -2,16 +2,18 @@
 
 namespace Bootphp;
 /**
- * 消息日志记录。
+ * Message logging with observer-based log writing.
  *
- * @package BootPHP
- * @category 日志
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * [!!] This class does not support extensions, only additional writers.
+ *
+ * @package	BootPHP
+ * @category	Logging
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class Log
 {
-	// 日志消息级别
+	// Log message levels
 	const EMERGENCY = LOG_EMERG; // 0
 	const ALERT = LOG_ALERT; // 1
 	const CRITICAL = LOG_CRIT; // 2
@@ -20,132 +22,100 @@ class Log
 	const NOTICE = LOG_NOTICE; // 5
 	const INFO = LOG_INFO; // 6
 	const DEBUG = LOG_DEBUG; // 7
-	const STRACE = 8;
 	/**
-	 * @var string 日志记录的时间格式
-	 */
-	private static $timestamp = 'Y-m-d H:i:s';
-	/**
-	 * @var string 日志记录的时区
-	 */
-	private static $timezone;
-	/**
-	 * @var Log 单例容器
+	 * @var  Log  Singleton instance container
 	 */
 	private static $instance;
 	/**
-	 * @var string 放置日志文件的目录
-	 */
-	private $directory;
-	/**
-	 * @var array 添加的消息列表
+	 * @var  array  list of added messages
 	 */
 	private $messages = [];
 	/**
-	 * 日志级别数字转字符串查找表
-	 * @var array
-	 */
-	private $logLevels = array(
-		LOG_EMERG => 'EMERGENCY',
-		LOG_ALERT => 'ALERT',
-		LOG_CRIT => 'CRITICAL',
-		LOG_ERR => 'ERROR',
-		LOG_WARNING => 'WARNING',
-		LOG_NOTICE => 'NOTICE',
-		LOG_INFO => 'INFO',
-		LOG_DEBUG => 'DEBUG',
-		8 => 'STRACE'
-	);
-	/**
-	 * 获得类的单例，创建一个新的文件记录器，检查目录是否存在并且可写。在关闭时开启日志写入。
+	 * Get the singleton instance of this class and enable writing at shutdown.
 	 *
-	 *   $log = Log::instance(APP_PATH . '/logs');
+	 *     $log = Log::instance();
 	 *
-	 * @param	string	$directory 日志目录
-	 * @return	Log
+	 * @return  Log
 	 */
 	public static function instance($directory)
 	{
 		if ( self::$instance === NULL )
 		{
-			// 创建一个新的实例
+			// Create a new instance
 			self::$instance = new Log;
-			// 关闭时写下日志
+
+			// Write the logs at shutdown
 			register_shutdown_function(array(self::$instance, 'write'));
 		}
-		if ( !is_dir($directory) || !is_writable($directory) )
-			exit('目录 ' . Debug::path($directory) . ' 必须是可写的');
-		// 确定目录路径
-		self::$instance->directory = realpath($directory) . DIRECTORY_SEPARATOR;
+
 		return self::$instance;
 	}
 	/**
-	 * 将消息添加到日志中
+	 * Adds a message to the log. Replacement values must be passed in to be
+	 * replaced using [strtr](http://php.net/strtr).
 	 *
-	 *   $log->add(self::ERROR, '无法找到用户：' . $username);
+	 *     $log->add(Log::ERROR, 'Could not locate user: :user', array(
+	 *         ':user' => $username,
+	 *     ));
 	 *
-	 * @param	string	消息级别
-	 * @param	string	消息主体
-	 * @return	void
+	 * @param   string  $level       level of message
+	 * @param   string  $message     message body
+	 * @return  Log
 	 */
 	public function add($level, $message)
 	{
-		// 创建一个新的消息
+		// Create a new message
 		$this->messages[] = array(
-			'time' => Date::formattedTime('now', self::$timestamp, self::$timezone),
+			'time' => time(),
 			'level' => $level,
 			'body' => $message,
 		);
 	}
 	/**
-	 * 写入所有消息
+	 * Write and clear all of the messages.
 	 *
-	 *   $log->write();
+	 *     $log->write();
 	 *
-	 * @return	void
+	 * @return  void
 	 */
 	public function write()
 	{
-		if ( empty($this->messages) )
+		if ( empty($this->_messages) )
 		{
-			// 没什么要写的
+			// There is nothing to write, move along
 			return;
 		}
-		$messages = $this->messages;
-		// 重置消息数组
-		$this->messages = [];
-		// 设置年份目录名
-		$directory = $this->directory . date('Y');
-		if ( !is_dir($directory) )
+
+		// Import all messages locally
+		$messages = $this->_messages;
+
+		// Reset the messages array
+		$this->_messages = array();
+
+		foreach( $this->_writers as $writer )
 		{
-			// 创建年份目录
-			mkdir($directory, 02777);
-			// 设置权限
-			chmod($directory, 02777);
-		}
-		// 将月份添加到目录中
-		$directory .= DIRECTORY_SEPARATOR . date('m');
-		if ( !is_dir($directory) )
-		{
-			// 创建月份目录
-			mkdir($directory, 02777);
-			// 设置权限
-			chmod($directory, 02777);
-		}
-		// 设置日志文件名
-		$filename = $directory . DIRECTORY_SEPARATOR . date('d') . '.php';
-		if ( !file_exists($filename) )
-		{
-			// 创建日志文件
-			file_put_contents($filename, '<?php defined(\'APP_PATH\') || exit(\'Access Denied.\'); ?>' . PHP_EOL);
-			// 允许任何人写日志文件
-			chmod($filename, 0666);
-		}
-		foreach( $messages as $message )
-		{
-			// 将各条消息写入日志文件
-			// 格式：时间 --- 级别: 主体
-			file_put_contents($filename, PHP_EOL . $message['time'] . ' --- ' . $this->logLevels[$message['level']] . ': ' . $message['body'], FILE_APPEND);
+			if ( empty($writer['levels']) )
+			{
+				// Write all of the messages
+				$writer['object']->write($messages);
+			}
+			else
+			{
+				// Filtered messages
+				$filtered = array();
+
+				foreach( $messages as $message )
+				{
+					if ( in_array($message['level'], $writer['levels']) )
+					{
+						// Writer accepts this kind of message
+						$filtered[] = $message;
+					}
+				}
+
+				// Write the filtered messages
+				$writer['object']->write($filtered);
+			}
 		}
 	}
 }

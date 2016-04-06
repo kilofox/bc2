@@ -6,8 +6,8 @@ use Bootphp\Database\Query;
 /**
  * Database query builder. See [Query Builder](/database/query/builder) for usage and examples.
  *
- * @package    Kohana/Database
- * @category   Query
+ * @package	   Kohana/Database
+ * @category	  Query
  * @author     Kohana Team
  * @copyright  (c) 2008-2009 Kohana Team
  * @license    http://kohanaphp.com/license

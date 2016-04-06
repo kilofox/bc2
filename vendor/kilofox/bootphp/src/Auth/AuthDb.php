@@ -5,11 +5,11 @@ use Bootphp\Auth\Auth;
 use Bootphp\Cookie;
 use Bootphp\Database\DB;
 /**
- * 数据库授权驱动
+ * Database Auth driver.
  *
- * @package		BootPHP/授权
+ * @package	BootPHP/Auth
  * @author		Tinsh
- * @copyright	(C) 2005-2015 Kilofox Studio
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class AuthDb extends Auth
 {

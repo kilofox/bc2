@@ -5,19 +5,19 @@ use Bootphp\Database\Database;
 use Bootphp\Database\Result\ResultCached;
 use Bootphp\Cache\Cache;
 /**
- * 数据库查询封装。用法与例子见请参阅 [Parameterized Statements](database/query/parameterized)。
+ * Database query wrapper.  See [Parameterized Statements](database/query/parameterized) for usage and examples.
  *
- * @package Bootphp/数据库
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	Bootphp/Database
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class Query
 {
 	// Query type
 	protected $_type;
-	// 在碰到缓存时仍执行查询
+	// Execute the query during a cache hit
 	protected $_force_execute = false;
-	// 缓存周期
+	// Cache lifetime
 	protected $_lifetime = NULL;
 	// SQL statement
 	protected $_sql;
@@ -63,10 +63,10 @@ class Query
 		return $this->_type;
 	}
 	/**
-	 * 开启缓存指定时间量的查询。
+	 * Enables the query to be cached for a specified amount of time.
 	 *
-	 * @param	integer	$lifetime 缓存的秒数，0为从缓存中删除它
-	 * @param boolean 是否在碰到缓存时仍执行查询
+	 * @param   integer  $lifetime  number of seconds to cache, 0 deletes it from the cache
+	 * @param   boolean  whether or not to execute the query during a cache hit
 	 * @return	$this
 	 * @uses Kohana::$cache_life
 	 */
@@ -166,41 +166,48 @@ class Query
 		return $sql;
 	}
 	/**
-	 * 在给定的数据库上执行当前查询。
+	 * Execute the current query on the given database.
 	 *
-	 * @param mixed $db Database instance or name of instance
-	 * @param  array    result object constructor arguments
-	 * @return	object   Database_Result for SELECT queries
-	 * @return	mixed    the insert id for INSERT queries
-	 * @return	integer  number of affected rows for all other queries
+	 * @param   mixed    $db  Database instance or name of instance
+	 * @param   string   result object classname, TRUE for stdClass or FALSE for array
+	 * @param   array    result object constructor arguments
+	 * @return  object   Database_Result for SELECT queries
+	 * @return  mixed    the insert id for INSERT queries
+	 * @return  integer  number of affected rows for all other queries
 	 */
 	public function execute($db = NULL)
 	{
 		if ( !is_object($db) )
 		{
-			// 得到数据库实例
+			// Get the database instance
 			$db = Database::instance($db);
 		}
-		// 编译 SQL 查询
+
+		// Compile the SQL query
 		$sql = $this->compile($db);
+
 		if ( $this->_lifetime !== NULL && $this->_type === 'select' )
 		{
-			// 设置基于数据库实例名和SQL的缓存键
+			// Set the cache key based on the database instance name and SQL
 			$cacheKey = 'db_' . $db . '_' . $sql;
+
 			// Read the cache first to delete a possible hit with lifetime <= 0
 			if ( ($result = Cache::instance()->get($cacheKey)) !== NULL && !$this->_force_execute )
 			{
-				// 返回缓存结果
+				// Return a cached result
 				return new ResultCached($result, $sql);
 			}
 		}
-		// 执行查询
+
+		// Execute the query
 		$result = $db->query($this->_type, $sql);
+
 		if ( isset($cacheKey) && $this->_lifetime > 0 )
 		{
-			// 缓存结果数组
+			// Cache the result array
 			Cache::instance()->set($cacheKey, $result->asArray(), $this->_lifetime);
 		}
+
 		return $result;
 	}
 }

@@ -4,14 +4,15 @@ namespace Bootphp;
 use Bootphp\Response;
 use Bootphp\Exception\ExceptionHandler;
 /**
- * 处理与显示视图模板的视图模板类
+ * View template class that will display and handle view templates.
  *
  * @package	Bootphp
- * @author		Tinsh
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class View extends Response
 {
-	// 静态配置
+	// Static config setup for usage
 	protected static $_config = array(
 		'default_format' => 'html',
 		'default_extension' => 'php',
@@ -19,7 +20,7 @@ class View extends Response
 		'path_layouts' => NULL,
 		'auto_layout' => false
 	);
-	// 模板特定的东西
+	// Template specific stuff
 	protected $_file;
 	protected $_fileFormat;
 	protected $_vars = [];
@@ -29,33 +30,32 @@ class View extends Response
 	protected $_templateContent;
 	protected $_exists;
 	/**
-	 * 构造方法
-	 *
-	 * @param	$module	string	配置参数
+	 * Constructor method.
 	 */
 	public function __construct()
 	{
-		// 自动布局
+		// Auto layout
 		if ( self::$_config['auto_layout'] )
 		{
 			$this->layout(self::$_config['auto_layout']);
 		}
 	}
 	/**
-	 * 配置主模板目录等
+	 * Config setup for main templates directory, etc.
 	 */
 	public static function config($cfg = NULL)
 	{
-		// 获取
+		// Getter
 		if ( $cfg === NULL )
 		{
 			return self::$_config;
 		}
-		// 设置
+
+		// Setter
 		self::$_config = array_merge(self::$_config, $cfg);
 	}
 	/**
-	 * 获取或设置布局
+	 * Layout template getter/setter
 	 */
 	public function layout($layout = NULL)
 	{
@@ -63,17 +63,19 @@ class View extends Response
 		{
 			return $this->_layout;
 		}
+
 		$this->_layout = $layout;
 		return $this;
 	}
 	/**
-	 * 获取单个模板变量
+	 * Gets a view variable.
 	 *
-	 * 抑制变量未找到时的 notice 错误，使模板语法变量更简单
+	 * Surpress notice errors for variables not found to
+	 * help make template syntax for variables simpler.
 	 *
-	 * @param	string	键
-	 * @return	mixed 值（如果找到了键）
-	 * @return	NULL （如果键没找到）
+	 * @param	string  key
+	 * @return	mixed	value if the key is found
+	 * @return	null	if key is not found
 	 */
 	public function get($var, $default = NULL)
 	{
@@ -84,7 +86,7 @@ class View extends Response
 		return $default;
 	}
 	/**
-	 * 分配模板变量
+	 * Assign template variables.
 	 *
 	 * 	@param array 模板变量数组
 	 */
@@ -103,7 +105,7 @@ class View extends Response
 		return $this;
 	}
 	/**
-	 * 获取所有模板变量
+	 * Get template variables.
 	 *
 	 * @return	array
 	 */
@@ -112,7 +114,7 @@ class View extends Response
 		return $this->_vars;
 	}
 	/**
-	 * 获取或设置查找模板的路径
+	 * Get/Set path to look in for templates.
 	 */
 	public function path($path = NULL)
 	{
@@ -144,7 +146,7 @@ class View extends Response
 		}
 	}
 	/**
-	 * 获取设置的模板名
+	 * Get template name that was set
 	 *
 	 * @return	string
 	 */
@@ -163,9 +165,9 @@ class View extends Response
 		}
 	}
 	/**
-	 * 返回带有格式和扩展的完整模板文件名
+	 * Returns full template filename with format and extension.
 	 *
-	 * @param OPTIONAL $template string 要返回的完整文件格式的模板名
+	 * @param OPTIONAL $template string Name of the template to return full file format
 	 * @return	string
 	 */
 	public function fileName($template = NULL)
@@ -196,67 +198,50 @@ class View extends Response
 		}
 	}
 	/**
-	 * 转义 HTML 实体
-	 * 用于防止 XSS 攻击
+	 * Escapes HTML entities.
+	 * Use to prevent XSS attacks.
 	 */
 	public function h($str)
 	{
 		return htmlentities($str, ENT_NOQUOTES);
 	}
 	/**
-	 * 加载并返回局部视图对象
+	 * Verify template exists and optionally throw an exception if not.
 	 *
-	 * @param	string	$template 使用的模板文件
-	 * @param array $vars 传递给局部的变量
-	 * @return	Bootphp\View\Template
-	 */
-	public function partial($template, array $vars = [])
-	{
-		$tpl = new static($template, $vars);
-		return $tpl->layout(false);
-	}
-	/**
-	 * 验证模板是否存在，并抛出异常（可选）
-	 *
-	 * @param	boolean $throwException 抛出异常
+	 * @param	boolean $throwException Throw an exception
 	 * @throws	Bootphp\View\Exception\TemplateMissing
 	 * @return	boolean
 	 */
 	public function exists()
 	{
-		// 避免多次 file_exists 检查
+		// Avoid multiple file_exists checks
 		if ( $this->_exists )
 		{
 			return true;
 		}
+
 		$vpath = $this->path();
 		$template = $this->fileName();
 		$vfile = $vpath . $template;
-		// 确保设置了路径
+
+		// Ensure path has been set
 		if ( !$vpath )
 		{
-			throw new ExceptionHandler('未设置模板基路径！用 $view->path() 来给模板文件设置基路径！');
+			throw new ExceptionHandler('Base template path is not set! Use \'$view->path()\' to set root path to template files!');
 		}
-		// 确保模板文件存在
+
+		// Ensure template file exists
 		if ( !file_exists($vfile) )
 		{
-			throw new ExceptionHandler('模板文件 \'' . $template . '\' 不存在。路径：' . $vpath);
+			throw new ExceptionHandler('The template file \'' . $template . '\' does not exist. Path: ' . $vpath);
 		}
+
 		$this->_exists = true;
+
 		return true;
 	}
 	/**
-	 * 清除上一次渲染并缓存的内容
-	 *
-	 * @return	self
-	 */
-	public function clearCachedContent()
-	{
-		$this->_templateContent = NULL;
-		return $this;
-	}
-	/**
-	 * 读取模板文件的内容字符串并返回之
+	 * Read template file into content string and return it.
 	 *
 	 * @return	string
 	 */
@@ -265,47 +250,61 @@ class View extends Response
 		if ( !$this->_templateContent )
 		{
 			$this->exists();
+
 			$vfile = $this->path() . $this->fileName();
-			// 使用闭包隔离起来
+
+			// Use closure to get isolated scope
 			$view = $this;
 			$vars = $this->vars();
 			$render = function($templateFile) use($view, $vars){
 				extract($vars);
 				ob_start();
+
 				try
 				{
 					require $templateFile;
 				}
 				catch( \Exception $e )
 				{
-					// 删除输出缓冲
+					// Delete the output buffer
 					ob_end_clean();
-					// 重新抛出异常
+
+					// Re-throw the exception
 					throw $e;
 				}
+
+				// Get the captured output and close the buffer
 				return ob_get_clean();
 			};
 			$templateContent = $render($vfile);
 			$templateContent = trim($templateContent);
-			// 在布局中包装模板内容
-			if ( $this->layout() )
+
+			// Wrap template content in layout
+			if ( $this->_layout )
 			{
-				// 确保布局没有递归渲染
+				// Ensure layout doesn't get rendered recursively
 				self::$_config['auto_layout'] = false;
-				// 为布局实例化模板
+
+				// New template for layout
 				$layout = new self();
 				$layout->file($this->layout());
-				// 如果指定了布局路径，就设置一下
+
+				// Set layout path if specified
 				$layout->path($this->_layoutPath !== NULL ? $this->_layoutPath : self::$_config['path_layouts']);
-				// 将所有本类变量传递给布局
+
+				// Pass all locally set variables to layout
 				$layout->set($this->_vars);
-				// 设置主内容块
+
+				// Set main yield content block
 				$layout->set(['yield' => $templateContent]);
-				// 取得内容
+
+				// Get content
 				$templateContent = $layout->render();
 			}
+
 			$this->_templateContent = $templateContent;
 		}
+
 		return $this->_templateContent;
 	}
 }

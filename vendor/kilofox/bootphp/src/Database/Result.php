@@ -2,11 +2,11 @@
 
 namespace Bootphp\Database;
 /**
- * 数据库结果封装。用法与例子请参阅 [Results](/database/results)。
+ * Database result wrapper. See [Results](/database/results) for usage and examples.
  *
- * @package Bootphp/数据库
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	Bootphp/数据库
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 abstract class Result implements \Countable, \Iterator, \SeekableIterator, \ArrayAccess
 {

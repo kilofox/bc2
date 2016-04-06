@@ -20,8 +20,8 @@ use Bootphp\Database\Query\Builder\Delete;
  *
  * You pass the same parameters to these functions as you pass to the objects they return.
  *
- * @package    Kohana/Database
- * @category   Base
+ * @package	   Kohana/Database
+ * @category	  Base
  * @author     Kohana Team
  * @copyright  (c) 2009 Kohana Team
  * @license    http://kohanaphp.com/license

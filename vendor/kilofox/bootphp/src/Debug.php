@@ -2,12 +2,12 @@
 
 namespace Bootphp;
 /**
- * 调试工具
+ * Contains debugging and dumping tools.
  *
- * @package BootPHP
- * @category Base
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP
+ * @category	Base
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class Debug
 {

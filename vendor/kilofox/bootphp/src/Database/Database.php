@@ -4,101 +4,113 @@ namespace Bootphp\Database;
 use Bootphp\Database\Query;
 use Bootphp\Database\Expression;
 /**
- * 数据库连接封装。
+ * Database connection wrapper/helper.
  *
- * 你可以使用 `Database::instance('name')` 获得一个数据库实例，name 为 [config](database/config) 的一个组。
+ * You may get a database instance using `Database::instance('name')` where
+ * name is the [config](database/config) group.
  *
- * 这个类通过数据库驱动提供对连接实例的管理，以及引括、转义和其它相关功能。
- * 查询由 [Database\Query] 和 [Database\Query\Builder] 对象来完成，用 [DB] 辅助类可以轻松创建。
+ * This class provides connection instance management via Database Drivers, as
+ * well as quoting, escaping and other related functions. Querys are done using
+ * [Database_Query] and [Database_Query_Builder] objects, which can be easily
+ * created using the [DB] helper class.
  *
- * @package Bootphp/数据库
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	Bootphp/Database
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 abstract class Database
 {
 	/**
-	 * @var string 默认实例名
+	 * @var string default instance name
 	 */
 	public static $default = 'default';
 	/**
-	 * @var array 数据库实例
+	 * @var array Database instances
 	 */
 	public static $instances = array();
 	/**
-	 * 取得 Database 单例。
+	 * Get a singleton Database instance.
 	 *
-	 *     // 加载默认数据库
+	 *     // Load the default database
 	 *     $db = Database::instance();
 	 *
-	 *     // 由指定的配置名的创建一个实例
-	 *     $db = Database::instance('自定义');
+	 *     // Create a custom instance
+	 *     $db = Database::instance('custom');
 	 *
-	 * @param	string	$name 实例名
+	 * @param	string	$name instance name
 	 * @return	Database
 	 */
 	public static function instance($name = NULL)
 	{
 		if ( $name === NULL )
 		{
-			// 使用默认实例名
+			// Use the default instance name
 			$name = self::$default;
 		}
+
 		if ( !isset(self::$instances[$name]) )
 		{
-			// 加载数据库配置
+			// Load the configuration for this database
 			$configs = require APP_PATH . '/../configs/database.php';
 			$config = $configs[$name];
+
 			if ( !isset($config['type']) )
 			{
 				throw new \Bootphp\Exception\ExceptionHandler('在 ' . $name . ' 配置中没有定义数据库类型');
 			}
-			// 设置驱动的类名
+
+			// Set the driver class name
 			$driver = 'Bootphp\\Database\\' . 'Pdo' . ucfirst($config['type']);
-			// 创建数据库连接实例
+
+			// Create the database connection instance
 			$driver = new $driver($name, $config);
-			// 存储数据库实例
+
+			// Store the database instance
 			self::$instances[$name] = $driver;
 		}
+
 		return self::$instances[$name];
 	}
 	/**
-	 * @var string 最后一次执行的查询
+	 * @var string the last query executed
 	 */
 	public $last_query;
-	// 用于引括标识符的字符
+	// Character that is used to quote identifiers
 	protected $_identifier = '"';
-	// 实例名
+	// Instance name
 	protected $_instance;
-	// 原生的服务器连接
+	// Raw server connection
 	protected $_connection;
-	// 配置数组
+	// Configuration array
 	protected $_config;
 	/**
-	 * 本地存储数据库配置，并命名实例。
+	 * Stores the database configuration locally and name the instance.
 	 *
-	 * [!!] 这个方法不能直接访问，必须使用 [Database::instance]。
+	 * [!!] This method cannot be accessed directly, you must use [Database::instance].
 	 *
 	 * @return	void
 	 */
 	public function __construct($name, array $config)
 	{
-		// 设置实例名
+		// Set the instance name
 		$this->_instance = $name;
-		// 存储配置于本地
+
+		// Store the config locally
 		$this->_config = $config;
+
 		if ( empty($this->_config['table_prefix']) )
 		{
 			$this->_config['table_prefix'] = '';
 		}
 	}
 	/**
-	 * 对象销毁时，断开与数据库的连接。
+	 * Disconnect from the database when the object is destroyed.
 	 *
-	 *     // 销毁数据库实例
+	 *     // Destroy the database instance
 	 *     unset(Database::instances[(string)$db]);
 	 *
-	 * [!!] 调用 `unset($db)` 不足以销毁数据库，因为它仍然存储于 `Database::$instances`。
+	 * [!!] Calling `unset($db)` is not enough to destroy the database, as it
+	 * will still be stored in `Database::$instances`.
 	 *
 	 * @return	void
 	 */
@@ -107,7 +119,7 @@ abstract class Database
 		$this->disconnect();
 	}
 	/**
-	 * 返回数据库实例名。
+	 * Returns the database instance name.
 	 *
 	 *     echo (string)$db;
 	 *
@@ -118,7 +130,8 @@ abstract class Database
 		return $this->_instance;
 	}
 	/**
-	 * 连接数据库。第一次查询执行时，会自动调用。
+	 * Connect to the database. This is called automatically when the first
+	 * query is executed.
 	 *
 	 *     $db->connect();
 	 *
@@ -127,8 +140,8 @@ abstract class Database
 	 */
 	abstract public function connect();
 	/**
-	 * 断开数据库连接。由 [Database::__destruct] 自动调用。
-	 * 从 [Database::$instances] 中清除数据库实例。
+	 * Disconnect from the database. This is called automatically by [Database::__destruct].
+	 * Clears the database instance from [Database::$instances].
 	 *
 	 *     $db->disconnect();
 	 *
@@ -137,20 +150,21 @@ abstract class Database
 	public function disconnect()
 	{
 		unset(self::$instances[$this->_instance]);
+
 		return true;
 	}
 	/**
-	 * 设置连接字符集。由 [Database::connect] 自动调用。
+	 * Set the connection character set. This is called automatically by [Database::connect].
 	 *
 	 *     $db->setCharset('utf8');
 	 *
 	 * @throws ExceptionHandler
-	 * @param	string	$charset 字符集名
+	 * @param	string	$charset character set name
 	 * @return	void
 	 */
 	abstract public function setCharset($charset);
 	/**
-	 * 执行给定的类型的 SQL 查询。
+	 * Perform an SQL query of the given type.
 	 *
 	 *     // Make a SELECT query and use objects for results
 	 *     $db->query('select', 'SELECT * FROM groups', true);
@@ -166,44 +180,43 @@ abstract class Database
 	 */
 	abstract public function query($type, $sql);
 	/**
-	 * 开始 SQL 事务
+	 * Start a SQL transaction
 	 *
-	 *     // 开始事务
+	 *     // Start the transactions
 	 *     $db->begin();
 	 *
-	 *     try
-	 *     {
+	 *     try {
 	 *          DB::insert('users')->values($user1)...
 	 *          DB::insert('users')->values($user2)...
-	 *          // 插入成功，提交更改
+	 *          // Insert successful commit the changes
 	 *          $db->commit();
 	 *     }
-	 *     catch( Database_Exception $e )
+	 *     catch (Database_Exception $e)
 	 *     {
-	 *          // 插入失败，回滚更改
+	 *          // Insert failed. Rolling back changes...
 	 *          $db->rollback();
-	 *     }
+	 *      }
 	 *
-	 * @param	string	$mode 事务模式
-	 * @return	boolean
+	 * @param string $mode  transaction mode
+	 * @return  boolean
 	 */
 	abstract public function begin($mode = NULL);
 	/**
-	 * 提交当前事务
+	 * Commit the current transaction
 	 *
-	 *     // 提交数据库更改
+	 *     // Commit the database changes
 	 *     $db->commit();
 	 *
-	 * @return	boolean
+	 * @return  boolean
 	 */
 	abstract public function commit();
 	/**
-	 * 停止当前事务
+	 * Abort the current transaction
 	 *
-	 *     // 撤销更改
+	 *     // Undo the changes
 	 *     $db->rollback();
 	 *
-	 * @return	boolean
+	 * @return  boolean
 	 */
 	abstract public function rollback();
 	/**
@@ -572,12 +585,13 @@ abstract class Database
 		return $value;
 	}
 	/**
-	 * 用转义字符清理可导致SQL注入攻击的字符串。
+	 * Sanitize a string by escaping characters that could cause an SQL
+	 * injection attack.
 	 *
-	 *     $value = $db->escape('任何字符串');
+	 *     $value = $db->escape('any string');
 	 *
-	 * @param	string	$value 要转义的值
-	 * @return	string
+	 * @param   string   $value  value to quote
+	 * @return  string
 	 */
 	abstract public function escape($value);
 }

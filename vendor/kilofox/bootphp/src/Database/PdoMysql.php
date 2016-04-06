@@ -6,15 +6,15 @@ use Bootphp\Database\Result\ResultCached;
 use Bootphp\ExceptionHandler;
 use Bootphp\Profiler\Profiler;
 /**
- *  PDO_MySQL 数据库连接。
+ *  PDO database connection.
  *
- * @package BootPHP/数据库
- * @author Tinsh
- * @copyright (C) 2005-2015 Kilofox Studio
+ * @package	BootPHP/Database
+ * @author		Tinsh <kilofox2000@gmail.com>
+ * @copyright	(C) 2005-2016 Kilofox Studio
  */
 class PdoMysql extends Database
 {
-	// PDO_MySQL 使用反引号作为标识符
+	// PDO_MYSQL uses no quoting for identifiers
 	protected $_identifier = '`';
 	public function __construct($name, array $config)
 	{
@@ -29,58 +29,66 @@ class PdoMysql extends Database
 	{
 		if ( $this->_connection )
 			return;
-		// 提取连接参数，添加必要的变量
+
+		// Extract the connection parameters, adding required variabels
 		extract($this->_config['connection'] + array(
 			'dsn' => '',
 			'username' => NULL,
 			'password' => NULL,
 			'persistent' => FALSE,
 		));
-		// 出于安全考虑，清除连接参数
+
+		// Clear the connection parameters for security
 		unset($this->_config['connection']);
-		// 强制 PDO 对所有错误使用异常
+
+		// Force PDO to use exceptions for all errors
 		$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
+
 		if ( !empty($persistent) )
 		{
-			// 使连接持久化
+			// Make the connection persistent
 			$options[\PDO::ATTR_PERSISTENT] = TRUE;
 		}
+
 		try
 		{
-			// 创建一个新的 PDO 连接
+			// Create a new PDO connection
 			$this->_connection = new \PDO($dsn, $username, $password, $options);
 		}
 		catch( PDOException $e )
 		{
 			throw new ExceptionHandler(':error', array(':error' => $e->getMessage()), $e->getCode());
 		}
+
 		if ( !empty($this->_config['charset']) )
 		{
-			// 设置字符集
+			// Set the character set
 			$this->setCharset($this->_config['charset']);
 		}
 	}
 	public function disconnect()
 	{
-		// 销毁 PDO 对象
+		// Destroy the PDO object
 		$this->_connection = NULL;
 		return parent::disconnect();
 	}
 	public function setCharset($charset)
 	{
-		// 确保数据库已连接
+		// Make sure the database is connected
 		$this->_connection or $this->connect();
 		$this->_connection->exec('SET NAMES ' . $this->quote($charset));
 	}
 	public function query($type, $sql)
 	{
-		// 确保数据库已连接
+		// Make sure the database is connected
 		$this->_connection or $this->connect();
+
 		if ( $this->_config['profiling'] )
 		{
-			// 对当前实例的查询实施基准测试
+			// Benchmark this query for the current instance
 			$benchmark = Profiler::start("数据库（{$this->_instance}）", $sql);
 		}
+
 		try
 		{
 			$result = $this->_connection->query($sql);
@@ -89,10 +97,11 @@ class PdoMysql extends Database
 		{
 			if ( isset($benchmark) )
 			{
-				// 基准测试已无价值
+				// This benchmark is worthless
 				Profiler::delete($benchmark);
 			}
-			// 将异常转换为数据库异常
+
+			// Convert the exception in a database exception
 			throw new ExceptionHandler(':error [ :query ]', array(
 			':error' => $e->getMessage(),
 			':query' => $sql
@@ -102,18 +111,21 @@ class PdoMysql extends Database
 		{
 			Profiler::stop($benchmark);
 		}
-		// 设置最后一次查询
+
+		// Set the last query
 		$this->last_query = $sql;
+
 		if ( $type === 'select' )
 		{
 			$result->setFetchMode(\PDO::FETCH_CLASS, 'stdClass');
 			$result = $result->fetchAll();
-			// 返回结果的迭代
+
+			// Return an iterator of results
 			return new ResultCached($result, $sql);
 		}
 		elseif ( $type === 'insert' )
 		{
-			// 返回插入的 ID 与创建行数的列表
+			// Return a list of insert id and rows created
 			return array(
 				$this->_connection->lastInsertId(),
 				$result->rowCount(),
@@ -121,25 +133,25 @@ class PdoMysql extends Database
 		}
 		else
 		{
-			// 返回受影响的行数
+			// Return the number of rows affected
 			return $result->rowCount();
 		}
 	}
 	public function begin($mode = NULL)
 	{
-		// 确保数据库已连接
+		// Make sure the database is connected
 		$this->_connection or $this->connect();
 		return $this->_connection->beginTransaction();
 	}
 	public function commit()
 	{
-		// 确保数据库已连接
+		// Make sure the database is connected
 		$this->_connection or $this->connect();
 		return $this->_connection->commit();
 	}
 	public function rollback()
 	{
-		// 确保数据库已连接
+		// Make sure the database is connected
 		$this->_connection or $this->connect();
 		return $this->_connection->rollBack();
 	}
@@ -151,7 +163,7 @@ class PdoMysql extends Database
 	 */
 	public function escape($value)
 	{
-		// 确保数据库已连接
+		// Make sure the database is connected
 		$this->_connection or $this->connect();
 		return $this->_connection->quote($value);
 	}

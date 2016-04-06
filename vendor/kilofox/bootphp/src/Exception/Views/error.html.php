@@ -1,8 +1,7 @@
 <?php
 use Bootphp\Debug;
 use Bootphp\Html;
-// 唯一错误标识
-$error_id = uniqid('error');
+$errorId = uniqid('error');
 ?>
 <style>
 	#bootphp_error {
@@ -105,7 +104,7 @@ $error_id = uniqid('error');
 </script>
 <div id="bootphp_error">
 	<h1><span class="type"><?php echo $class; ?> [ <?php echo $code; ?> ]:</span> <span class="message"><?php echo Html::chars($message); ?></span></h1>
-	<div id="<?php echo $error_id; ?>" class="content">
+	<div id="<?php echo $errorId; ?>" class="content">
 		<p><span class="file"><?php echo Debug::path($file); ?> [ <?php echo $line; ?> ]</span></p>
 		<?php echo Debug::source($file, $line); ?>
 		<ol class="trace">
@@ -114,14 +113,14 @@ $error_id = uniqid('error');
 					<p>
 						<span class="file">
 							<?php if ( $step['file'] ): ?>
-								<?php $source_id = $error_id . 'source' . $i; ?>
+								<?php $source_id = $errorId . 'source' . $i; ?>
 								<a href="#<?php echo $source_id; ?>" onclick="return toggle('<?php echo $source_id; ?>')"><?php echo Debug::path($step['file']); ?> [ <?php echo $step['line']; ?> ]</a>
 							<?php else: ?>
-								{PHP 内部调用}
+								{PHP internal call}
 							<?php endif; ?>
 						</span>
 						&raquo;
-						<?php echo $step['function']; ?>(<?php if ( $step['args'] ): $args_id = $error_id . 'args' . $i; ?><a href="#<?php echo $args_id; ?>" onclick="return toggle('<?php echo $args_id; ?>')">参数</a><?php endif ?>)
+						<?php echo $step['function']; ?>(<?php if ( $step['args'] ): $args_id = $errorId . 'args' . $i; ?><a href="#<?php echo $args_id; ?>" onclick="return toggle('<?php echo $args_id; ?>')">arguments</a><?php endif ?>)
 					</p>
 					<?php if ( isset($args_id) ): ?>
 						<div id="<?php echo $args_id; ?>" class="collapsed">
@@ -143,10 +142,10 @@ $error_id = uniqid('error');
 			<?php endforeach; ?>
 		</ol>
 	</div>
-	<h2><a href="#<?php echo $env_id = $error_id . 'environment'; ?>" onclick="return toggle('<?php echo $env_id; ?>')">环境</a></h2>
+	<h2><a href="#<?php echo $env_id = $errorId . 'environment'; ?>" onclick="return toggle('<?php echo $env_id; ?>')">Environment</a></h2>
 	<div id="<?php echo $env_id; ?>" class="content collapsed">
 		<?php $included = get_included_files(); ?>
-		<h3><a href="#<?php echo $env_id = $error_id . 'environment_included'; ?>" onclick="return toggle('<?php echo $env_id ?>')">包含的文件</a> (<?php echo count($included); ?>)</h3>
+		<h3><a href="#<?php echo $env_id = $errorId . 'environment_included'; ?>" onclick="return toggle('<?php echo $env_id ?>')">Included files</a> (<?php echo count($included); ?>)</h3>
 		<div id="<?php echo $env_id; ?>" class="collapsed">
 			<table cellspacing="0">
 				<?php foreach( $included as $file ): ?>
@@ -157,7 +156,7 @@ $error_id = uniqid('error');
 			</table>
 		</div>
 		<?php $included = get_loaded_extensions(); ?>
-		<h3><a href="#<?php echo $env_id = $error_id . 'environment_loaded'; ?>" onclick="return toggle('<?php echo $env_id; ?>')">加载的扩展</a> (<?php echo count($included); ?>)</h3>
+		<h3><a href="#<?php echo $env_id = $errorId . 'environment_loaded'; ?>" onclick="return toggle('<?php echo $env_id; ?>')">Loaded extensions</a> (<?php echo count($included); ?>)</h3>
 		<div id="<?php echo $env_id; ?>" class="collapsed">
 			<table cellspacing="0">
 				<?php foreach( $included as $file ): ?>
@@ -169,7 +168,7 @@ $error_id = uniqid('error');
 		</div>
 		<?php foreach( array('_SESSION', '_GET', '_POST', '_FILES', '_COOKIE', '_SERVER') as $var ): ?>
 			<?php if ( empty($GLOBALS[$var]) || !is_array($GLOBALS[$var]) ) continue; ?>
-			<h3><a href="#<?php echo $env_id = $error_id . 'environment' . strtolower($var); ?>" onclick="return toggle('<?php echo $env_id; ?>')">$<?php echo $var; ?></a></h3>
+			<h3><a href="#<?php echo $env_id = $errorId . 'environment' . strtolower($var); ?>" onclick="return toggle('<?php echo $env_id; ?>')">$<?php echo $var; ?></a></h3>
 			<div id="<?php echo $env_id; ?>" class="collapsed">
 				<table cellspacing="0">
 					<?php foreach( $GLOBALS[$var] as $key => $value ): ?>
