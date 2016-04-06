@@ -86,7 +86,7 @@ class PdoMysql extends Database
 		if ( $this->_config['profiling'] )
 		{
 			// Benchmark this query for the current instance
-			$benchmark = Profiler::start("数据库（{$this->_instance}）", $sql);
+			$benchmark = Profiler::start("database({$this->_instance})", $sql);
 		}
 
 		try

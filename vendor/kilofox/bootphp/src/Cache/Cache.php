@@ -1,10 +1,13 @@
 <?php
 
 namespace Bootphp\Cache;
+
 /**
- * Bootphp 缓存为各种缓存引擎提供一个公共接口。Bootphp 缓存通过分组的单例模式，支持缓存引擎的多个实例。
+ * Bootphp Cache provides a common interface to a variety of caching engines. Tags are
+ * supported where available natively to the cache system. Bootphp Cache supports multiple
+ * instances of cache engines through a grouped singleton pattern.
  *
- * ### 支持的缓存引擎
+ * ### Supported cache engines
  *
  * *  [APC](http://php.net/manual/zh/book.apc.php)
  * *  文件
@@ -56,17 +59,20 @@ namespace Bootphp\Cache;
  * @author		Tinsh <kilofox2000@gmail.com>
  * @copyright	(C) 2005-2016 Kilofox Studio
  */
-abstract class Cache
-{
+abstract class Cache {
+
 	const DEFAULT_EXPIRE = 3600;
+
 	/**
 	 * @var string 使用的默认驱动
 	 */
 	public static $default = 'file';
+
 	/**
 	 * @var	缓存实例
 	 */
 	public static $instances = array();
+
 	/**
 	 * 创建缓存分组的单例。如果未提供分组，则使用 __default__ 分组。
 	 *
@@ -107,10 +113,12 @@ abstract class Cache
 		// 返回实例
 		return self::$instances[$group];
 	}
+
 	/**
 	 * @var 配置
 	 */
 	protected $_config = array();
+
 	/**
 	 * 确保遵守单例模式，加载默认期限。
 	 *
@@ -120,6 +128,7 @@ abstract class Cache
 	{
 		$this->config($config);
 	}
+
 	/**
 	 * 获得或设置配置。如果没有提供参数，则返回当前配置。否则，为这个类设置配置。
 	 *
@@ -155,6 +164,7 @@ abstract class Cache
 		}
 		return $this;
 	}
+
 	/**
 	 * 重载 __clone() 方法，防止复制
 	 *
@@ -165,6 +175,7 @@ abstract class Cache
 	{
 		throw new Exception\ExceptionHandler('禁止复制缓存对象');
 	}
+
 	/**
 	 * 根据 id 获取缓存值条目。
 	 *
@@ -179,6 +190,7 @@ abstract class Cache
 	 * @throws ExceptionHandler
 	 */
 	abstract public function get($id);
+
 	/**
 	 * 用 id 和生命周期给缓存设值。
 	 *
@@ -199,6 +211,7 @@ abstract class Cache
 	 * @return	boolean
 	 */
 	abstract public function set($id, $data, $lifetime = 3600);
+
 	/**
 	 * 根据 id 删除缓存条目
 	 *
@@ -212,6 +225,7 @@ abstract class Cache
 	 * @return	boolean
 	 */
 	abstract public function delete($id);
+
 	/**
 	 * 删除全部缓存条目。
 	 *
@@ -226,6 +240,7 @@ abstract class Cache
 	 * @return	boolean
 	 */
 	abstract public function deleteAll();
+
 	/**
 	 * 用下划线替换麻烦的字符。
 	 *
@@ -237,7 +252,7 @@ abstract class Cache
 	 */
 	protected function _sanitizeId($id)
 	{
-		// 将斜线和空格更改为下划线
+		// Change slashes and spaces to underscores
 		return str_replace(array('/', '\\', ' '), '_', $id);
 	}
 }
