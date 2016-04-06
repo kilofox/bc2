@@ -220,14 +220,7 @@ class Request
 				else
 				{
 					// HTTP request
-					if ( $url = $this->query('u') )
-					{
-						$requestUrl = $url;
-					}
-					else
-					{
-						$requestUrl = $this->uri();
-					}
+					$requestUrl = $this->query('u') ? $this->query('u') : '/';
 				}
 			}
 
@@ -253,49 +246,19 @@ class Request
 	 * @param   array   $routes  Route
 	 * @return  array
 	 */
-	public static function process($paths = NULL)
-	{
-		$sections = explode('/', $paths);
-		$params = ['application' => NULL, 'controller' => NULL, 'action' => NULL, 'id' => 0];
-		foreach( $sections as $section )
-		{
-			if ( empty($section[0]) )
-				break;
-			if ( $params['application'] === NULL )
-			{
-				$params['application'] = $section;
-				continue;
-			}
-			if ( $params['controller'] === NULL )
-			{
-				$params['controller'] = $section;
-				continue;
-			}
-			if ( $params['action'] === NULL )
-			{
-				$params['action'] = $section;
-				continue;
-			}
-		}
-
-		return $params;
-	}
-	public static function process2(Request $request, $routes = NULL)
+	public static function process(Request $request, $routes = NULL)
 	{
 		// Load routes
 		$routes = (empty($routes)) ? \Bootphp\Route::all() : $routes;
 		$params = NULL;
-		print_r($routes);
+		//print_r($routes);
 		foreach( $routes as $name => $route )
 		{
 			// We found something suitable
 			if ( $params = $route->matches($request) )
 			{
 				//print_r($params);
-				return array(
-					'params' => $params,
-					'route' => $route,
-				);
+				return $params;
 			}
 		}
 

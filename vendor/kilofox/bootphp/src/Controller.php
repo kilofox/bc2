@@ -98,19 +98,14 @@ abstract class Controller
 	 */
 	protected function before()
 	{
-		//$route = new \Bootphp\Route();
-		//$route->set($this->routes);
-		//unset($this->paths[0], $this->paths[1]);
-		//list($action, $params) = $route->matches(array_values($this->paths));
-		//$this->action = $action;
-		//foreach( $params as $name => $value )
-		//	$this->request->{$name} = $value;
-		// 加载视图
+		// Load View
 		$this->view = new \Bootphp\View();
-		// 默认模板
+
+		// Default template
 		$this->template = $this->action;
 		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/' . $this->controller . '/';
-		// 默认布局
+
+		// Default layout path
 		$this->layoutPath = APP_PATH . '/index/views/default/';
 	}
 	/**

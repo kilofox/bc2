@@ -21,61 +21,69 @@ class App
 	public function __construct(array $values = [])
 	{
 		// Enable exception handling, adds stack traces and error source.
-		set_exception_handler(array('Bootphp\Exception\ExceptionHandler', 'handler'));
+		set_exception_handler(['Bootphp\Exception\ExceptionHandler', 'handler']);
+
 		// Enable error handling, converts all PHP errors to exceptions.
-		set_error_handler(array('Bootphp\App', 'errorHandler'));
+		set_error_handler(['Bootphp\App', 'errorHandler']);
+
 		// 如果指定了模板配置
 		if ( isset($values['template']) )
 		{
-			View::config($values['template']);
+			//View::config($values['template']);
 		}
 	}
 	/**
-	 * Run app with given REQUEST_METHOD and REQUEST_URI
+	 * Run app.
 	 *
 	 * @return	void
 	 */
-	public function run(Request $request)
+	public function run()
 	{
+		$request = new \Bootphp\Request();
+		$response = new \Bootphp\Response();
+
 		$requestPath = $request->url();
-		$params = $request->process($requestPath);
-		print_r($params);
-		// 分割路径，去掉开头和结尾的斜杠
-		$paths = explode('/', $requestPath);
+		$params = $request->process($request);
+		$requestUri = $request->uri();
+
 		$application = $params['application'];
 		$controller = $params['controller'];
 		$action = $params['action'];
+
 		$controllerClass = 'App\\' . $application . '\\controllers\\' . ucfirst($controller) . 'Controller';
 		if ( !class_exists($controllerClass) )
 		{
-			throw new ExceptionHandler('类 ' . $controllerClass . ' 在服务器上未找到。');
+			throw new ExceptionHandler('The requested URL ' . $requestUri . ' was not found on this server.', 404);
 		}
-		// 使用反射加载控制器
+
+		// Load the controller using reflection
 		$class = new \ReflectionClass($controllerClass);
 		if ( $class->isAbstract() )
 		{
-			throw new ExceptionHandler('不能用抽象类 ' . $controllerClass . ' 创建实例。');
+			throw new ExceptionHandler('Cannot create instances of abstract ' . $controllerClass . '.', 404);
 		}
-		$response = new \Bootphp\Response();
-		// 创建一个新的控制器实例
+
+		// Create a new instance of the controller
 		$ctrler = $class->newInstance($request, $response);
+
 		$ctrler->application = $application;
 		$ctrler->controller = $controller;
 		$ctrler->action = $action;
-		$ctrler->paths = $paths;
-		$requestUri = $request->uri();
 		$ctrler->baseUrl = '/' . trim(mb_substr($requestUri, 0, mb_strrpos($requestUri, $requestPath)), '/');
-		// 执行 before 方法
+
+		// Execute the "before action" method
 		$class->getMethod('before')->invoke($ctrler);
-		//$action = $ctrler->action;
-		// 如果动作不存在，那就是 404
+
+		// If the action doesn't exist, it's a 404
 		if ( !$class->hasMethod($action . 'Action') )
 		{
-			throw new ExceptionHandler('请求的URL ' . $request->uri() . ' 在服务器上未找到。', 404);
+			throw new ExceptionHandler('The requested URL ' . $requestUri . ' was not found on this server.', 404);
 		}
-		$method = $class->getMethod($action . 'Action');
-		$method->invoke($ctrler);
-		// 执行 after 方法
+
+		// Execute the action itself
+		$class->getMethod($action . 'Action')->invoke($ctrler);
+
+		// Execute the "after action" method
 		$class->getMethod('after')->invoke($ctrler);
 	}
 	/**
