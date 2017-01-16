@@ -27,9 +27,8 @@ abstract class Auth
     {
         if (!isset(self::$_instance)) {
             // Load the configuration for this type
-            $config = require APP_PATH . '/configs/auth.php';
-
-            $type = empty($config['driver']) ? 'db' : (string) $config['driver'];
+            $config = new \Bootphp\Config();
+            $type = $config->load(APP_PATH . '/configs/auth.php')->get('driver', 'db');
 
             // Set the session class name
             $class = 'Bootphp\\Auth\\Auth' . ucfirst($type);

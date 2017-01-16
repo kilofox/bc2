@@ -2,7 +2,7 @@
 
 namespace App\modules\system\controllers;
 
-use App\modules\system\controllers\AdministrationController;
+use App\controllers\admin\AdministrationController;
 use Bootphp\Model;
 
 /**

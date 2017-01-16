@@ -34,7 +34,7 @@ class Response
     }
 
     // HTTP status codes and messages
-    public static $messages = array(
+    public static $messages = [
         // Informational 1xx
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -82,7 +82,7 @@ class Response
         504 => 'Gateway Timeout',
         505 => 'HTTP Version Not Supported',
         509 => 'Bandwidth Limit Exceeded'
-    );
+    ];
 
     /**
      * @var  integer     The response http status

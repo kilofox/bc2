@@ -16,7 +16,7 @@ class BootphpException extends \Exception
     /**
      * @var  array  PHP error code => human readable name
      */
-    public static $php_errors = array(
+    public static $phpErrors = array(
         E_ERROR => 'Fatal Error',
         E_USER_ERROR => 'User Error',
         E_PARSE => 'Parse Error',
@@ -27,11 +27,6 @@ class BootphpException extends \Exception
         E_RECOVERABLE_ERROR => 'Recoverable Error',
         E_DEPRECATED => 'Deprecated',
     );
-
-    /**
-     * @var  string  error view content type
-     */
-    public static $error_view_content_type = 'text/html';
 
     /**
      * Creates a new translated exception.
@@ -110,12 +105,12 @@ class BootphpException extends \Exception
      * @param   int        $level
      * @return  void
      */
-    public static function log(\Exception $e, $level = \Bootphp\Log::EMERGENCY)
+    public static function log(\Exception $e, $level = Log::EMERGENCY)
     {
         // Create a text version of the exception
         $error = self::text($e);
 
-        $log = \Bootphp\Log::instance();
+        $log = Log::instance();
 
         // Add this exception to the log
         $log->add($level, $error, null, array('exception' => $e));
@@ -134,7 +129,7 @@ class BootphpException extends \Exception
      */
     public static function text(\Exception $e)
     {
-        return sprintf('%s [ %s ]: %s ~ %s [ %d ]', get_class($e), $e->getCode(), strip_tags($e->getMessage()), \Bootphp\Debug::path($e->getFile()), $e->getLine());
+        return sprintf('%s [ %s ]: %s ~ %s [ %d ]', get_class($e), $e->getCode(), strip_tags($e->getMessage()), Debug::path($e->getFile()), $e->getLine());
     }
 
     /**
@@ -161,28 +156,28 @@ class BootphpException extends \Exception
              * the variables from above.
              */
             if ($e instanceof HTTP_Exception AND $trace[0]['function'] == 'factory') {
-                extract(array_shift($trace));
+               // extract(array_shift($trace));
             }
 
 
             if ($e instanceof \ErrorException) {
-                if (isset(self::$php_errors[$code])) {
+                if (isset(self::$phpErrors[$code])) {
                     // Use the human-readable error name
-                    $code = self::$php_errors[$code];
+                    $code = self::$phpErrors[$code];
                 }
             }
 
             // Instantiate the error view.
-            $view = \Bootphp\View::factory(SYS_PATH . '/BootphpException/Views/error.php', get_defined_vars());
+            $view = View::factory(SYS_PATH . '/BootphpException/Views/error.php', get_defined_vars());
 
             // Prepare the response object.
-            $response = \Bootphp\Response::factory();
+            $response = Response::factory();
 
             // Set the response status
-            $response->status(($e instanceof HTTP_Exception) ? $e->getCode() : 500);
+            $response->status(key_exists($code, Response::$messages) ? $code : 500);
 
             // Set the response headers
-            $response->headers('Content-Type', self::$error_view_content_type . '; charset=UTF-8');
+            $response->headers('Content-Type', 'text/html; charset=UTF-8');
 
             // Set the response body
             $response->body($view->render());
@@ -191,7 +186,7 @@ class BootphpException extends \Exception
              * Things are going badly for us, Lets try to keep things under control by
              * generating a simpler response object.
              */
-            $response = \Bootphp\Response::factory();
+            $response = Response::factory();
             $response->status(500);
             $response->headers('Content-Type', 'text/plain');
             $response->body(self::text($e));

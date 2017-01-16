@@ -1,6 +1,6 @@
 <?php
 
-namespace App\modules\system\controllers;
+namespace App\controllers\admin;
 
 use Bootphp\Auth\Auth;
 

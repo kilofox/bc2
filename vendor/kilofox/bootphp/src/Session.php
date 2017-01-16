@@ -46,7 +46,8 @@ abstract class Session
 
         if (!isset(Session::$instances[$type])) {
             // Load the configuration for this type
-            $config = require APP_PATH . '/configs/session.php';
+            $oConfig = new \Bootphp\Config();
+            $config = $oConfig->load(APP_PATH . '/configs/session.php')->get($type);
 
             // Set the session class name
             $class = 'Bootphp\\Session\\Session' . ucfirst($type);

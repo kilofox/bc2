@@ -1,8 +1,8 @@
 <?php
 
-namespace App\modules\system\controllers;
+namespace App\controllers\admin;
 
-use App\modules\system\controllers\AdministrationController;
+use App\controllers\adimin\AdministrationController;
 use Bootphp\Model;
 
 /**
