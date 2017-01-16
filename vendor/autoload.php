@@ -1,31 +1,34 @@
 <?php
+
 class AutoloaderInit
 {
-	private static $loader;
-	public static function loadClassLoader($class)
-	{
-		if ( $class === 'Kilofox\Bootphp\ClassLoader' )
-		{
-			require __DIR__ . '/kilofox/bootphp/ClassLoader.php';
-		}
-	}
-	public static function getLoader()
-	{
-		if ( self::$loader !== NULL )
-		{
-			return self::$loader;
-		}
+    private static $loader;
 
-		spl_autoload_register(['AutoloaderInit', 'loadClassLoader'], true, true);
-		self::$loader = $loader = new \Kilofox\Bootphp\ClassLoader();
-		spl_autoload_unregister(['AutoloaderInit', 'loadClassLoader']);
+    public static function loadClassLoader($class)
+    {
+        if ($class === 'Kilofox\Bootphp\ClassLoader') {
+            require __DIR__ . '/kilofox/bootphp/ClassLoader.php';
+        }
+    }
 
-		$loader->set('Bootphp', __DIR__ . '/kilofox/bootphp/src');
-		$loader->set('App', __DIR__ . '/../applications');
+    public static function getLoader()
+    {
+        if (self::$loader !== null) {
+            return self::$loader;
+        }
 
-		$loader->register();
+        spl_autoload_register(['AutoloaderInit', 'loadClassLoader'], true, true);
+        self::$loader = $loader = new \Kilofox\Bootphp\ClassLoader();
+        spl_autoload_unregister(['AutoloaderInit', 'loadClassLoader']);
 
-		return $loader;
-	}
+        $loader->set('Bootphp', __DIR__ . '/kilofox/bootphp/src');
+        $loader->set('App', __DIR__ . '/../application');
+
+        $loader->register();
+
+        return $loader;
+    }
+
 }
+
 return AutoloaderInit::getLoader();

@@ -1,179 +1,135 @@
 <?php
 
 namespace Bootphp;
+
 /**
  * Abstract controller class. Controllers should only be created using a [Request].
  *
  * Controllers methods will be automatically called in the following order by
  * the request:
  *
- * 	$controller = new FooController($request, $response);
- * 	$controller->before();
- * 	$controller->barAction();
- * 	$controller->after();
+ *     $controller = new Controller_Foo($request);
+ *     $controller->before();
+ *     $controller->action_bar();
+ *     $controller->after();
  *
  * The controller action should add the output it creates to
  * `$this->response->body($output)`, typically in the form of a [View], during the
  * "action" part of execution.
  *
- * @package	BootPHP
- * @category	Controller
- * @author		Tinsh <kilofox2000@gmail.com>
- * @copyright	(C) 2005-2016 Kilofox Studio
+ * @package    Bootphp
+ * @category   Controller
+ * @author     Tinsh <kilofox2000@gmail.com>
+ * @copyright  (C) 2005-2017 Kilofox Studio
+ * @license    http://kilofox.net/license
  */
 abstract class Controller
 {
-	/**
-	 * @var	Request Request that created the controller
-	 */
-	public $request;
-	/**
-	 * @var	Response The response that will be returned from controller
-	 */
-	public $response;
-	/**
-	 * @var string 应用
-	 */
-	public $application;
-	/**
-	 * @var string 控制器
-	 */
-	public $controller;
-	/**
-	 * @var string 动作
-	 */
-	public $action;
-	/**
-	 * @var	View 页面模板
-	 */
-	public $template;
-	/**
-	 * @var	View 模板文件路径
-	 */
-	public $templatePath;
-	/**
-	 * @var	View 布局模板
-	 */
-	public $layout = 'layout';
-	/**
-	 * @var	View 布局文件路径
-	 */
-	public $layoutPath;
-	/**
-	 * @var	View 页面模板
-	 */
-	public $view;
-	/**
-	 * @var	boolean	自动渲染模板
-	 * */
-	public $autoRender = true;
-	/**
-	 * @var array 路径
-	 */
-	public $paths = [];
-	/**
-	 * @var array 路由规则
-	 */
-	public $routes = [];
-	/**
-	 * Creates a new controller instance. Each controller must be constructed
-	 * with the request object that created it.
-	 *
-	 * @param Request $request Request that created the controller
-	 * @param Response $response The request's response
-	 * @return	void
-	 */
-	public function __construct(Request $request, Response $response)
-	{
-		// Assign the request to the controller
-		$this->request = $request;
-		// Assign a response to the controller
-		$this->response = $response;
-	}
-	/**
-	 * Automatically executed before the controller action. Can be used to set
-	 * class properties, do authorization checks, and execute other custom code.
-	 *
-	 * @return	void
-	 */
-	protected function before()
-	{
-		// Load View
-		$this->view = new \Bootphp\View();
+    /**
+     * @var  Request  Request that created the controller
+     */
+    public $request;
 
-		// Default template
-		$this->template = $this->action;
-		$this->templatePath = APP_PATH . '/' . $this->application . '/views/default/' . $this->controller . '/';
+    /**
+     * @var  Response The response that will be returned from controller
+     */
+    public $response;
 
-		// Default layout path
-		$this->layoutPath = APP_PATH . '/index/views/default/';
-	}
-	/**
-	 * Automatically executed after the controller action. Can be used to apply
-	 * transformation to the response, add extra output, and execute
-	 * other custom code.
-	 *
-	 * @return	void
-	 */
-	protected function after()
-	{
-		if ( $this->autoRender )
-		{
-			$this->view->path($this->templatePath);
-			$this->view->file($this->template);
-			$this->view->layout($this->layout);
-			$this->view->layoutPath($this->layoutPath);
-			$this->view->set([
-				'application' => $this->application,
-				'controller' => $this->controller,
-				'action' => $this->action,
-				'baseUrl' => $this->baseUrl
-			]);
-			echo $this->view->render();
-		}
-	}
-	/**
-	 * 为模板分配变量
-	 *
-	 * @param $name 模板变量
-	 * @param $value 模板变量的值
-	 * @return	void
-	 */
-	protected function assign($name, $value = '')
-	{
-		if ( $this->autoRender )
-		{
-			$this->view->set([$name => $value]);
-		}
-	}
-	/**
-	 * 重定向。
-	 *
-	 * @param	string	$location 生成URL的地址或URL
-	 * @param type $outter 是站外链接吗？
-	 * @return	void
-	 */
-	public function redirect($location, $outter = false)
-	{
-		$outter === false and $location = $this->baseUrl . '/' . $location;
-		$this->response->redirect($location)->send();
-		exit;
-	}
-	/**
-	 * Ajax方式返回数据到客户端
-	 * @access protected
-	 * @param mixed $data 要返回的数据
-	 * @param String $info 提示信息
-	 * @param boolean $status 返回状态
-	 * @param String $status ajax返回类型 JSON XML
-	 * @return	void
-	 */
-	public function ajaxReturn($status = 0, $info = '', $data = NULL)
-	{
-		$result = new \stdClass();
-		$result->status = $status;
-		$result->info = $info;
-		$result->data = $data;
-		exit(json_encode($result));
-	}
+    /**
+     * Creates a new controller instance. Each controller must be constructed
+     * with the request object that created it.
+     *
+     * @param   Request   $request  Request that created the controller
+     * @param   Response  $response The request's response
+     * @return  void
+     */
+    public function __construct(Request $request, Response $response)
+    {
+        // Assign the request to the controller
+        $this->request = $request;
+
+        // Assign a response to the controller
+        $this->response = $response;
+    }
+
+    /**
+     * Executes the given action and calls the [Controller::before] and [Controller::after] methods.
+     *
+     * Can also be used to catch exceptions from actions in a single place.
+     *
+     * 1. Before the controller action is called, the [Controller::before] method
+     * will be called.
+     * 2. Next the controller action will be called.
+     * 3. After the controller action is called, the [Controller::after] method
+     * will be called.
+     *
+     * @throws  HTTP_Exception_404
+     * @return  Response
+     */
+    public function execute()
+    {
+        // Execute the "before action" method
+        $this->before();
+
+        // Determine the action to use
+        $action = $this->request->action() . '2Action';
+
+        // If the action doesn't exist, it's a 404
+        if (!method_exists($this, $action)) {
+            throw new BootphpException('The requested URL '.$this->request->uri().' was not found on this server.', 404);
+        }
+
+        // Execute the action itself
+        $this->{$action}();
+
+        // Execute the "after action" method
+        $this->after();
+
+        // Return the response
+        return $this->response;
+    }
+
+    /**
+     * Automatically executed before the controller action. Can be used to set
+     * class properties, do authorization checks, and execute other custom code.
+     *
+     * @return  void
+     */
+    public function before()
+    {
+        // Nothing by default
+    }
+
+    /**
+     * Automatically executed after the controller action. Can be used to apply
+     * transformation to the response, add extra output, and execute
+     * other custom code.
+     *
+     * @return  void
+     */
+    public function after()
+    {
+        // Nothing by default
+    }
+
+    /**
+     * Issues a HTTP redirect.
+     *
+     * @param  string  $uri   URI to redirect to
+     * @param  integer $code  HTTP Status code to use for the redirect
+     * @throws BootphpException
+     */
+    public function redirect($uri = '', $code = 303)
+    {
+        if (!in_array($code, [300, 301, 302, 303, 307]))
+            throw new BootphpException('Invalid redirect code `' . $code . '`');
+
+        if (strpos($uri, '://') === false) {
+            // Make the URI into a URL
+            $uri = \Bootphp\URL::site($uri, true);
+        }
+
+        return $this->response->status($code)->headers('Location', (string) $uri);
+    }
+
 }

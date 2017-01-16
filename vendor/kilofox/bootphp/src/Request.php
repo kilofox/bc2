@@ -1,959 +1,1198 @@
 <?php
 
 namespace Bootphp;
+
+use Bootphp\Request\Client;
+
 /**
- * Request Class.
+ * Request. Uses the [Route] class to determine what
+ * [Controller] to send the request to.
  *
- * Wraps around request variables and provides useful helper methods.
- *
- * @package	Bootphp
- * @author		Tinsh <kilofox2000@gmail.com>
+ * @package    Bootphp
+ * @category   Base
+ * @author     Tinsh <kilofox2000@gmail.com>
+ * @copyright  (C) 2005-2017 Kilofox Studio
+ * @license    http://kilofox.net/license
  */
 class Request
 {
-	// Request URL
-	protected $_method;
-	protected $_url;
-	protected $_format = null;
-	// Request parameters
-	protected $_headers = array();
-	protected $_params = array();
-	protected $_postParams = array();
-	protected $_queryParams = array();
-	protected $_accept;
-	// Other
-	protected $_raw;
-	// Mimetypes
-	protected $_mimeTypes = array(
-		'txt' => 'text/plain',
-		'html' => 'text/html',
-		'xhtml' => 'application/xhtml+xml',
-		'xml' => 'application/xml',
-		'css' => 'text/css',
-		'js' => 'application/javascript',
-		'json' => 'application/json',
-		'csv' => 'text/csv',
-		// images
-		'png' => 'image/png',
-		'jpe' => 'image/jpeg',
-		'jpeg' => 'image/jpeg',
-		'jpg' => 'image/jpeg',
-		'gif' => 'image/gif',
-		'bmp' => 'image/bmp',
-		'ico' => 'image/vnd.microsoft.icon',
-		'tiff' => 'image/tiff',
-		'tif' => 'image/tiff',
-		'svg' => 'image/svg+xml',
-		'svgz' => 'image/svg+xml',
-		// archives
-		'zip' => 'application/zip',
-		'rar' => 'application/x-rar-compressed',
-		// adobe
-		'pdf' => 'application/pdf'
-	);
-	/**
-	 * Setup request object and ensure magic quotes are not mucking up request data.
-	 *
-	 * @param string HTTP Method
-	 * @param string Request URI
-	 * @param array  Request parameters
-	 * @param array  HTTP Headers
-	 */
-	public function __construct($method = null, $url = null, array $params = array(), array $headers = array(), $rawBody = null)
-	{
-		// Die magic_quotes, just die...
-		if ( get_magic_quotes_gpc() )
-		{
-			$stripslashes_gpc = function(&$value, $key){
-				$value = stripslashes($value);
-			};
-			array_walk_recursive($_GET, $stripslashes_gpc);
-			array_walk_recursive($_POST, $stripslashes_gpc);
-			array_walk_recursive($_COOKIE, $stripslashes_gpc);
-			array_walk_recursive($_REQUEST, $stripslashes_gpc);
-		}
+    /**
+     * @var  string  client user agent
+     */
+    public static $user_agent = '';
 
-		$this->_postParams = $_POST;
-		$this->_queryParams = $_GET;
+    /**
+     * @var  string  client IP address
+     */
+    public static $client_ip = '0.0.0.0';
 
-		// Set Method
-		if ( $method !== null )
-		{
-			$this->_method = $method;
-		}
+    /**
+     * @var  string  trusted proxy server IPs
+     */
+    public static $trusted_proxies = array('127.0.0.1', 'localhost', 'localhost.localdomain');
 
-		// Set URL
-		if ( $url !== null )
-		{
-			$this->url($url);
-		}
+    /**
+     * @var  Request  main request instance
+     */
+    public static $initial;
 
-		// Set params if given
-		if ( !empty($params) )
-		{
-			if ( $method === 'POST' )
-			{
-				$this->_postParams = $params;
-			}
-			elseif ( $method === 'GET' )
-			{
-				$this->_queryParams = $params;
-			}
-			else
-			{
-				$this->_params = $params;
-			}
-		}
+    /**
+     * @var  Request  currently executing request instance
+     */
+    public static $current;
 
-		// Set Headers
-		$this->_headers = $headers;
-		if ( empty($this->_headers) )
-		{
-			$this->_headers = $_SERVER;
-		}
+    /**
+     * Creates a new request object for the given URI. New requests should be
+     * Created using the [Request::factory] method.
+     *
+     *     $request = Request::factory($uri);
+     *
+     * If $cache parameter is set, the response for the request will attempt to
+     * be retrieved from the cache.
+     *
+     * @param   string  $uri              URI of the request
+     * @param   array   $client_params    An array of params to pass to the request client
+     * @param   bool    $allow_external   Allow external requests? (deprecated in 3.3)
+     * @param   array   $injected_routes  An array of routes to use, for testing
+     * @return  void|Request
+     * @throws  Request_Exception
+     * @uses    Route::all
+     * @uses    Route::matches
+     */
+    public static function factory($uri = true, $client_params = array(), $allow_external = true, $injected_routes = array())
+    {
+        // If this is the initial request
+        if (!self::$initial) {
+            $protocol = HTTP::$protocol;
 
-		// Set raw request body
-		if ( $rawBody !== null )
-		{
-			$this->_raw = $rawBody;
-		}
+            if (isset($_SERVER['REQUEST_METHOD'])) {
+                // Use the server request method
+                $method = $_SERVER['REQUEST_METHOD'];
+            } else {
+                // Default to GET requests
+                $method = 'GET';
+            }
 
-		// Parse 'Accept' header to see what format is requested
-		$accept = $this->accept();
-		if ( !empty($accept) )
-		{
-			// Use first 'accept' type as the default format
-			$firstType = array_shift($accept);
-			$formatAny = in_array($firstType, array(null, '*/*', '', '*'), true);
-			$this->format($formatAny ? null : $firstType);
-		}
+            if ((!empty($_SERVER['HTTPS']) AND filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN))
+                    OR ( isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+                    AND $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trusted_proxies)) {
+                // This request is secure
+                $secure = true;
+            }
 
-		// Properly handle PATCH, PUT, and DELETE requests, and POST requests with no params but post bodies
-		if ( $this->isPatch() || $this->isPut() || $this->isDelete() || ($this->isPost() && empty($_POST) && empty($this->_params)) )
-		{
-			// Get and parse raw request body
-			$raw = $this->raw();
+            if (isset($_SERVER['HTTP_REFERER'])) {
+                // There is a referrer for this request
+                $referrer = $_SERVER['HTTP_REFERER'];
+            }
 
-			// Handle any JSON request
-			if ( strpos($this->header('Content-Type'), 'json') !== false )
-			{
-				// Cleanup bad JSON so we can parse it
-				$raw = stripslashes(str_replace(array('\r\n', '\n', '\r'), '', $raw));
-				$json = json_decode($raw, true);
-				if ( $json )
-				{
-					$params = $json;
-				}
+            if (isset($_SERVER['HTTP_USER_AGENT'])) {
+                // Browser type
+                self::$user_agent = $_SERVER['HTTP_USER_AGENT'];
+            }
 
-				// Handle other requests (probably query params)
-			}
-			else
-			{
-				parse_str($raw, $params);
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                // Typically used to denote AJAX requests
+                $requested_with = $_SERVER['HTTP_X_REQUESTED_WITH'];
+            }
 
-				// Check to ensure raw body was decoded correctly. If it wasn't, the whole raw string will be a key in the
-				// resulting array instead of something sensible, like... I dunno... boolean false, maybe? (f#*@&! php).
-				// Additionally, parse_str will convert spaces and dots to underscores so we have to watch for that.
-				$raw_transformed = str_replace(array(" ", "."), "_", $raw);
-				if ( isset($params[$raw_transformed]) )
-				{
-					$params = array();
-					$json = json_decode($raw, true);
-					if ( $json !== false )
-					{
-						$params = $json;
-					}
-				}
-			}
+            if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])
+                    AND isset($_SERVER['REMOTE_ADDR'])
+                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trusted_proxies)) {
+                // Use the forwarded IP address, typically set when the
+                // client is using a proxy server.
+                // Format: "X-Forwarded-For: client1, proxy1, proxy2"
+                $client_ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
 
-			// Set params if any decoding was successful
-			if ( $params )
-			{
-				// Real POST and GET params take precidence over raw body
-				if ( $method === 'POST' )
-				{
-					$this->_postParams = array_merge($params, $this->_postParams);
-				}
-				elseif ( $method === 'GET' )
-				{
-					$this->_queryParams = array_merge($params, $this->_queryParams);
-				}
-				else
-				{
-					$this->setParams($params);
-				}
-			}
-		}
-	}
-	/**
-	 * Return requested URL path.
-	 *
-	 * Works for HTTP(S) requests and CLI requests using the -u flag for URL dispatch emulation.
-	 *
-	 * @return string Requested URL path segement
-	 */
-	public function url($url = null)
-	{
-		if ( null === $this->_url )
-		{
-			if ( null !== $url )
-			{
-				// SET url with what's given
-				$requestUrl = $url;
-			}
-			else
-			{
-				// AUTO-DETECT url
-				if ( $this->isCli() )
-				{
-					// CLI request
-					$cliArgs = getopt("u:");
+                self::$client_ip = array_shift($client_ips);
 
-					$requestUrl = isset($cliArgs['u']) ? $cliArgs['u'] : '/';
-					$qs = parse_url($requestUrl, PHP_URL_QUERY);
-					$cliRequestParams = array();
-					parse_str($qs, $cliRequestParams);
+                unset($client_ips);
+            } elseif (isset($_SERVER['HTTP_CLIENT_IP'])
+                    AND isset($_SERVER['REMOTE_ADDR'])
+                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trusted_proxies)) {
+                // Use the forwarded IP address, typically set when the
+                // client is using a proxy server.
+                $client_ips = explode(',', $_SERVER['HTTP_CLIENT_IP']);
 
-					// Set parsed query params back on request object
-					$this->setParams($cliRequestParams);
-				}
-				else
-				{
-					// HTTP request
-					$requestUrl = $this->query('u') ? $this->query('u') : '/';
-				}
-			}
+                self::$client_ip = array_shift($client_ips);
 
-			// Set requestUrl and remove query string if present so router can parse it as expected
-			if ( $qsPos = strpos($requestUrl, '?') )
-			{
-				$fullUrl = $requestUrl;
-				$requestUrl = substr($requestUrl, 0, $qsPos);
-				parse_str(substr($fullUrl, $qsPos + 1), $urlRequestParams);
-				// Set parsed query params back on request object
-				$this->setParams($urlRequestParams);
-			}
+                unset($client_ips);
+            } elseif (isset($_SERVER['REMOTE_ADDR'])) {
+                // The remote IP address
+                self::$client_ip = $_SERVER['REMOTE_ADDR'];
+            }
 
-			$this->_url = $requestUrl;
-		}
+            if ($method !== 'GET') {
+                // Ensure the raw body is saved for future use
+                $body = file_get_contents('php://input');
+            }
 
-		return $this->_url;
-	}
-	/**
-	 * Process a request to find a matching route
-	 *
-	 * @param   object  $request Request
-	 * @param   array   $routes  Route
-	 * @return  array
-	 */
-	public static function process(Request $request, $routes = NULL)
-	{
-		// Load routes
-		$routes = (empty($routes)) ? \Bootphp\Route::all() : $routes;
-		$params = NULL;
-		//print_r($routes);
-		foreach( $routes as $name => $route )
-		{
-			// We found something suitable
-			if ( $params = $route->matches($request) )
-			{
-				//print_r($params);
-				return $params;
-			}
-		}
+            if ($uri === true) {
+                // Attempt to guess the proper URI
+                $uri = self::detect_uri();
+            }
 
-		return NULL;
-	}
-	/**
-	 * Access values contained in the superglobals as public members.
-	 * Order of precedence: 1. GET, 2. POST, 3. COOKIE, 4. SERVER, 5. ENV
-	 *
-	 * @see http://msdn.microsoft.com/en-us/library/system.web.httprequest.item.aspx
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function get($key, $default = null)
-	{
-		switch( true )
-		{
-			case isset($this->_params[$key]):
-				$value = $this->_params[$key];
-				break;
+            $cookies = array();
 
-			case isset($this->_queryParams[$key]):
-				$value = $this->_queryParams[$key];
-				break;
+            if (($cookie_keys = array_keys($_COOKIE))) {
+                foreach ($cookie_keys as $key) {
+                    $cookies[$key] = Cookie::get($key);
+                }
+            }
 
-			case isset($this->_postParams[$key]):
-				$value = $this->_postParams[$key];
-				break;
+            // Create the instance singleton
+            self::$initial = $request = new self($uri, $client_params, $allow_external, $injected_routes);
 
-			case isset($_COOKIE[$key]):
-				$value = $_COOKIE[$key];
-				break;
+            // Store global GET and POST data in the initial request only
+            $request->protocol($protocol)
+                    ->query($_GET)
+                    ->post($_POST);
 
-			case isset($_SERVER[$key]):
-				$value = $_SERVER[$key];
-				break;
+            if (isset($secure)) {
+                // Set the request security
+                $request->secure($secure);
+            }
 
-			case isset($_ENV[$key]):
-				$value = $_ENV[$key];
-				break;
+            if (isset($method)) {
+                // Set the request method
+                $request->method($method);
+            }
 
-			default:
-				$value = $default;
-		}
+            if (isset($referrer)) {
+                // Set the referrer
+                $request->referrer($referrer);
+            }
 
-		// Key not found, default is being used
-		if ( $value === $default )
-		{
-			// Check for dot-separator (convenience access for nested array values)
-			if ( strpos($key, '.') !== false )
-			{
-				// Get all dot-separated key parts
-				$keyParts = explode('.', $key);
+            if (isset($requested_with)) {
+                // Apply the requested with variable
+                $request->requested_with($requested_with);
+            }
 
-				// Remove first key because we're going to start with it
-				$keyFirst = array_shift($keyParts);
+            if (isset($body)) {
+                // Set the request body (probably a PUT type)
+                $request->body($body);
+            }
 
-				// Get root value array to begin
-				$value = $this->get($keyFirst);
+            if (isset($cookies)) {
+                $request->cookie($cookies);
+            }
+        } else {
+            $request = new Request($uri, $client_params, $allow_external, $injected_routes);
+        }
 
-				// Loop over remaining key parts to see if value can be found in resulting array
-				foreach( $keyParts as $keyPart )
-				{
-					if ( is_array($value) )
-					{
-						if ( isset($value[$keyPart]) )
-						{
-							$value = $value[$keyPart];
-						}
-						else
-						{
-							$value = $default;
-						}
-					}
-				}
-			}
-		}
+        return $request;
+    }
 
-		return $value;
-	}
-	// Automagic companion function
-	public function __get($key)
-	{
-		return $this->get($key);
-	}
-	/**
-	 * 	Override request parameter value.
-	 *
-	 * 	@param string $key
-	 * 	@param string $value
-	 */
-	public function set($key, $value)
-	{
-		$this->_params[$key] = $value;
-	}
-	// Automagic companion function
-	public function __set($key, $value)
-	{
-		$this->set($key, $value);
-	}
-	/**
-	 * Check to see if a property is set.
-	 *
-	 * @param string $key
-	 * @return boolean
-	 */
-	public function __isset($key)
-	{
-		switch( true )
-		{
-			case isset($this->_params[$key]):
-				return true;
-			case isset($this->_queryParams[$key]):
-				return true;
-			case isset($this->_postParams[$key]):
-				return true;
-			case isset($_COOKIE[$key]):
-				return true;
-			case isset($_SERVER[$key]):
-				return true;
-			case isset($_ENV[$key]):
-				return true;
-			default:
-				return false;
-		}
-	}
-	/**
-	 * Get array of accept formats or check if request accepts a given format.
-	 */
-	public function accept($format = null)
-	{
-		if ( $this->_accept === null )
-		{
-			$this->parseAcceptHeader();
-		}
+    /**
+     * Automatically detects the URI of the main request using PATH_INFO,
+     * REQUEST_URI, PHP_SELF or REDIRECT_URL.
+     *
+     *     $uri = Request::detect_uri();
+     *
+     * @return  string  URI of the main request
+     * @throws  BootphpException
+     */
+    public static function detect_uri()
+    {
+        $uri = isset($_GET['u']) ? $_GET['u'] : '';
+        // Get the path from the base URL, including the index file
+        $baseUrl = parse_url(Core::$baseUrl, PHP_URL_PATH);
 
-		// Check if request accepts a particular format
-		if ( $format !== null )
-		{
-			// blah
-			if ( isset($this->_mimeTypes[$format]) )
-			{
-				return in_array($this->_mimeTypes[$format], $this->_accept);
-			}
-			return false;
-		}
+        if (strpos($uri, $baseUrl) === 0) {
+            // Remove the base URL from the URI
+            $uri = (string) substr($uri, strlen($baseUrl));
+        }
 
-		return $this->_accept;
-	}
-	/**
-	 * Retrieve request parameters.
-	 *
-	 * @return array Returns array of all GET, POST, and set params
-	 */
-	public function params(array $params = array())
-	{
-		// Setting
-		if ( count($params) > 0 )
-		{
-			foreach( $params as $pKey => $pValue )
-			{
-				$this->set($pKey, $pValue);
-			}
+        return $uri;
+    }
 
-			// Getting
-		}
-		else
-		{
-			$params = array_merge($this->_queryParams, $this->_postParams, $this->_params);
-		}
-		return $params;
-	}
-	/**
-	 * Set additional request parameters.
-	 */
-	public function setParams($params)
-	{
-		if ( $params && is_array($params) )
-		{
-			foreach( $params as $pKey => $pValue )
-			{
-				$this->set($pKey, $pValue);
-			}
-		}
-	}
-	/**
-	 * Retrieve a member of the $params set variables.
-	 *
-	 * If no $key is passed, returns the entire $params array.
-	 *
-	 * @todo How to retrieve from nested arrays
-	 * @param string $key
-	 * @param mixed $default Default value to use if key not found
-	 * @return mixed Returns null if key does not exist
-	 */
-	public function param($key = null, $default = null)
-	{
-		if ( null === $key )
-		{
-			return $this->_params;
-		}
+    /**
+     * Return the currently executing request. This is changed to the current
+     * request when [Request::execute] is called and restored when the request
+     * is completed.
+     *
+     *     $request = Request::current();
+     *
+     * @return  Request
+     * @since   3.0.5
+     */
+    public static function current()
+    {
+        return self::$current;
+    }
 
-		return (isset($this->_params[$key])) ? $this->_params[$key] : $default;
-	}
-	/**
-	 * Retrieve a member of the $_GET superglobal.
-	 *
-	 * If no $key is passed, returns the entire $_GET array.
-	 *
-	 * @todo How to retrieve from nested arrays
-	 * @param string $key
-	 * @param mixed $default Default value to use if key not found
-	 * @return mixed Returns null if key does not exist
-	 */
-	public function query($key = null, $default = null)
-	{
-		if ( null === $key )
-		{
-			// Return _GET params without routing param or other params set by Alloy or manually on the request object
-			return array_diff_key($this->_queryParams, $this->param() + array('u' => 1));
-		}
+    /**
+     * Returns the first request encountered by this framework. This will should
+     * only be set once during the first [Request::factory] invocation.
+     *
+     *     // Get the first request
+     *     $request = Request::initial();
+     *
+     *     // Test whether the current request is the first request
+     *     if (Request::initial() === Request::current())
+     *          // Do something useful
+     *
+     * @return  Request
+     * @since   3.1.0
+     */
+    public static function initial()
+    {
+        return self::$initial;
+    }
 
-		return (isset($this->_queryParams[$key])) ? $this->_queryParams[$key] : $default;
-	}
-	/**
-	 * Retrieve a member of the $_POST superglobal.
-	 *
-	 * If no $key is passed, returns the entire $_POST array.
-	 *
-	 * @todo How to retrieve from nested arrays
-	 * @param string $key
-	 * @param mixed $default Default value to use if key not found
-	 * @return mixed Returns null if key does not exist
-	 */
-	public function post($key = null, $default = null)
-	{
-		if ( null === $key )
-		{
-			return $this->_postParams;
-		}
+    /**
+     * Returns information about the initial user agent.
+     *
+     * @param   mixed   $value  array or string to return: browser, version, robot, mobile, platform
+     * @return  mixed   requested information, false if nothing is found
+     * @uses    Request::$user_agent
+     * @uses    Text::user_agent
+     */
+    public static function user_agent($value)
+    {
+        return Text::user_agent(self::$user_agent, $value);
+    }
 
-		return (isset($this->_postParams[$key])) ? $this->_postParams[$key] : $default;
-	}
-	/**
-	 * Retrieve a member of the $_COOKIE superglobal.
-	 *
-	 * If no $key is passed, returns the entire $_COOKIE array.
-	 *
-	 * @todo How to retrieve from nested arrays
-	 * @param string $key
-	 * @param mixed $default Default value to use if key not found
-	 * @return mixed Returns null if key does not exist
-	 */
-	public function cookie($key = null, $default = null)
-	{
-		if ( null === $key )
-		{
-			return $_COOKIE;
-		}
+    /**
+     * Returns the accepted content types. If a specific type is defined,
+     * the quality of that type will be returned.
+     *
+     *     $types = Request::accept_type();
+     *
+     * [!!] Deprecated in favor of using [HTTP\Header::accepts_at_quality].
+     *
+     * @deprecated  since version 3.3.0
+     * @param   string  $type Content MIME type
+     * @return  mixed   An array of all types or a specific type as a string
+     * @uses    Request::_parse_accept
+     */
+    public static function accept_type($type = null)
+    {
+        static $accepts;
 
-		return (isset($_COOKIE[$key])) ? $_COOKIE[$key] : $default;
-	}
-	/**
-	 * Retrieve a member of the $_SERVER superglobal.
-	 *
-	 * If no $key is passed, returns the entire $_SERVER array.
-	 *
-	 * @param string $key
-	 * @param mixed $default Default value to use if key not found
-	 * @return mixed Returns null if key does not exist
-	 */
-	public function server($key = null, $default = null)
-	{
-		if ( null === $key )
-		{
-			return $_SERVER;
-		}
+        if ($accepts === null) {
+            // Parse the HTTP_ACCEPT header
+            $accepts = self::_parse_accept($_SERVER['HTTP_ACCEPT'], array('*/*' => 1.0));
+        }
 
-		return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
-	}
-	/**
-	 * Retrieve a member of the $_ENV or $_SERVER superglobal (via `getenv`).
-	 *
-	 * If no $key is passed, returns the entire $_ENV array.
-	 *
-	 * @param string $key
-	 * @param mixed $default Default value to use if key not found
-	 * @return mixed Returns null if key does not exist
-	 */
-	public function env($key = null, $default = null)
-	{
-		if ( null === $key )
-		{
-			return $_ENV;
-		}
+        if (isset($type)) {
+            // Return the quality setting for this type
+            return isset($accepts[$type]) ? $accepts[$type] : $accepts['*/*'];
+        }
 
-		$var = getenv($key);
-		return ($var !== false) ? $var : $default;
-	}
-	/**
-	 * Format getter/setter.
-	 *
-	 * If no $format is passed, returns the current format.
-	 *
-	 * @param string $key
-	 * @return string Format
-	 */
-	public function format($format = null)
-	{
-		if ( null !== $format )
-		{
-			// If using full mime type, we only need the extension
-			if ( strpos($format, '/') !== false && in_array($format, $this->_mimeTypes) )
-			{
-				$format = array_search($format, $this->_mimeTypes);
-			}
-			$this->_format = $format;
-		}
+        return $accepts;
+    }
 
-		// Detect extension and assign it as the requested format (overrides 'Accept' header)
-		$dotPos = strpos($this->url(), '.');
-		if ( $dotPos !== false )
-		{
-			$ext = substr($this->url(), $dotPos + 1);
-			$this->_format = $ext;
-		}
+    /**
+     * Returns the accepted languages. If a specific language is defined,
+     * the quality of that language will be returned. If the language is not
+     * accepted, false will be returned.
+     *
+     *     $langs = Request::accept_lang();
+     *
+     * [!!] Deprecated in favor of using [HTTP\Header::accepts_language_at_quality].
+     *
+     * @deprecated  since version 3.3.0
+     * @param   string  $lang  Language code
+     * @return  mixed   An array of all types or a specific type as a string
+     * @uses    Request::_parse_accept
+     */
+    public static function accept_lang($lang = null)
+    {
+        static $accepts;
 
-		return $this->_format;
-	}
-	/**
-	 * Return the value of the given HTTP header. Pass the header name as the
-	 * plain, HTTP-specified header name. Ex.: Ask for 'Accept' to get the
-	 * Accept header, 'Accept-Encoding' to get the Accept-Encoding header.
-	 *
-	 * @param string $header HTTP header name
-	 * @return string|false HTTP header value, or false if not found
-	 */
-	public function header($header)
-	{
-		// Try to get it from the keys that $_SERVER populates first
-		$temp = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
-		if ( !empty($this->_headers[$temp]) )
-		{
-			return $this->_headers[$temp];
-		}
+        if ($accepts === null) {
+            // Parse the HTTP_ACCEPT_LANGUAGE header
+            $accepts = self::_parse_accept($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        }
 
-		// Try to get direct header key now
-		if ( !empty($this->_headers[$header]) )
-		{
-			return $this->_headers[$header];
-		}
+        if (isset($lang)) {
+            // Return the quality setting for this lang
+            return isset($accepts[$lang]) ? $accepts[$lang] : false;
+        }
 
-		// This seems to be the only way to get the Authorization header on Apache
-		if ( function_exists('apache_request_headers') )
-		{
-			$headers = apache_request_headers();
-			if ( !empty($headers[$header]) )
-			{
-				return $headers[$header];
-			}
-		}
+        return $accepts;
+    }
 
-		return false;
-	}
-	/**
-	 * Return the method by which the request was made. Always returns HTTP_METHOD in UPPERCASE.
-	 *
-	 * @return string HTTP Request method in UPPERCASE
-	 */
-	public function method()
-	{
-		if ( $this->_method === null )
-		{
-			$sm = strtoupper($this->server('REQUEST_METHOD', 'GET'));
+    /**
+     * Returns the accepted encodings. If a specific encoding is defined,
+     * the quality of that encoding will be returned. If the encoding is not
+     * accepted, false will be returned.
+     *
+     *     $encodings = Request::accept_encoding();
+     *
+     * [!!] Deprecated in favor of using [HTTP\Header::accepts_encoding_at_quality].
+     *
+     * @deprecated  since version 3.3.0
+     * @param   string  $type Encoding type
+     * @return  mixed   An array of all types or a specific type as a string
+     * @uses    Request::_parse_accept
+     */
+    public static function accept_encoding($type = null)
+    {
+        static $accepts;
 
-			// POST + '_method' override to emulate REST behavior in browsers that do not support it
-			if ( 'POST' == $sm && $this->get('_method') )
-			{
-				return strtoupper($this->get('_method'));
-			}
+        if ($accepts === null) {
+            // Parse the HTTP_ACCEPT_LANGUAGE header
+            $accepts = self::_parse_accept($_SERVER['HTTP_ACCEPT_ENCODING']);
+        }
 
-			$this->_method = $sm;
-		}
+        if (isset($type)) {
+            // Return the quality setting for this type
+            return isset($accepts[$type]) ? $accepts[$type] : false;
+        }
 
-		return $this->_method;
-	}
-	/**
-	 * Request URI, as seen by PHP.
-	 *
-	 * @return string request URI from $_SERVER superglobal
-	 */
-	public function uri()
-	{
-		return $this->server('REQUEST_URI');
-	}
-	/**
-	 * Request scheme (http, https, or cli).
-	 *
-	 * @return string 'http', 'https', or 'cli'
-	 */
-	public function scheme()
-	{
-		return ($this->isCli() ? 'cli' : ($this->isSecure() ? 'https' : 'http' ));
-	}
-	/**
-	 * Request subdomain.
-	 *
-	 * @return String request subdomain
-	 */
-	public function subdomain()
-	{
-		$parts = explode('.', $this->host());
-		$count = count($parts);
-		return ($count > 2 ? $parts[0] : false);
-	}
-	/**
-	 * Request HTTP_HOST.
-	 *
-	 * @return String request host from $_SERVER superglobal
-	 */
-	public function host()
-	{
-		return $this->header('Host');
-	}
-	/**
-	 * Request port.
-	 *
-	 * @return integer request port
-	 */
-	public function port()
-	{
-		return $this->server('SERVER_PORT');
-	}
-	/**
-	 * Get a user's correct IP address.
-	 * Retrieves IP's behind firewalls or ISP proxys like AOL.
-	 *
-	 * @return string IP Address
-	 */
-	public function ip()
-	{
-		$ip = FALSE;
+        return $accepts;
+    }
 
-		if ( !empty($_SERVER["HTTP_CLIENT_IP"]) )
-			$ip = $_SERVER["HTTP_CLIENT_IP"];
+    /**
+     * Determines if a file larger than the post_max_size has been uploaded. PHP
+     * does not handle this situation gracefully on its own, so this method
+     * helps to solve that problem.
+     *
+     * @return  boolean
+     * @uses    Num::bytes
+     * @uses    Arr::get
+     */
+    public static function post_max_size_exceeded()
+    {
+        // Make sure the request method is POST
+        if (self::$initial->method() !== 'POST')
+            return false;
 
-		if ( !empty($_SERVER['HTTP_X_FORWARDED_FOR']) )
-		{
-			// Put the IP's into an array which we shall work with shortly.
-			$ips = explode(", ", $_SERVER['HTTP_X_FORWARDED_FOR']);
-			if ( $ip )
-			{
-				array_unshift($ips, $ip);
-				$ip = false;
-			}
+        // Get the post_max_size in bytes
+        $max_bytes = Num::bytes(ini_get('post_max_size'));
 
-			for( $i = 0; $i < count($ips); $i++ )
-			{
-				if ( !eregi("^(10|172\.16|192\.168)\.", $ips[$i]) )
-				{
-					$ip = $ips[$i];
-					break;
-				}
-			}
-		}
-		return ($ip ? $ip : $_SERVER['REMOTE_ADDR']);
-	}
-	/**
-	 * Get raw, unparsed request body (useful for PUT and POST requests with encoded body - like JSON)
-	 * Exists because PHP cannot retrieve the contents of php://input more than once.
-	 */
-	public function raw()
-	{
-		if ( null === $this->_raw )
-		{
-			$this->_raw = file_get_contents('php://input');
-		}
-		return $this->_raw;
-	}
-	/**
-	 * Determine is incoming request is POST.
-	 *
-	 * 	@return boolean
-	 */
-	public function isPost()
-	{
-		return ($this->method() == "POST");
-	}
-	/**
-	 * Determine is incoming request is GET.
-	 *
-	 * 	@return boolean
-	 */
-	public function isGet()
-	{
-		return ($this->method() == "GET");
-	}
-	/**
-	 * Determine is incoming request is PUT.
-	 *
-	 * 	@return boolean
-	 */
-	public function isPut()
-	{
-		return ($this->method() == "PUT");
-	}
-	/**
-	 * Determine is incoming request is DELETE.
-	 *
-	 * 	@return boolean
-	 */
-	public function isDelete()
-	{
-		return ($this->method() == "DELETE");
-	}
-	/**
-	 * Determine is incoming request is PATCH.
-	 *
-	 * 	@return boolean
-	 */
-	public function isPatch()
-	{
-		return ($this->method() == "PATCH");
-	}
-	/**
-	 * Determine is incoming request is HEAD.
-	 *
-	 * 	@return boolean
-	 */
-	public function isHead()
-	{
-		return ($this->method() == "HEAD");
-	}
-	/**
-	 * Determine is incoming request is OPTIONS.
-	 *
-	 *  @return boolean
-	 */
-	public function isOptions()
-	{
-		return ($this->method() == "OPTIONS");
-	}
-	/**
-	 * Determine is incoming request is secure HTTPS.
-	 *
-	 * 	@return boolean
-	 */
-	public function isSecure()
-	{
-		return (bool)((!isset($_SERVER['HTTPS']) || strtolower($_SERVER['HTTPS']) != 'on') ? false : true);
-	}
-	/**
-	 * Is the request a Javascript XMLHttpRequest?
-	 *
-	 * Works with Prototype/Script.aculo.us, jQuery, YUI, Dojo, possibly others.
-	 *
-	 * @return boolean
-	 */
-	public function isAjax()
-	{
-		return ($this->header('X_REQUESTED_WITH') == 'XMLHttpRequest');
-	}
-	/**
-	 * Is the request coming from a mobile device?
-	 *
-	 * Works with iPhone, Android, Windows Mobile, Windows Phone 7, Symbian, and other mobile browsers
-	 *
-	 * @return boolean
-	 */
-	public function isMobile()
-	{
-		$op = strtolower($_SERVER['HTTP_X_OPERAMINI_PHONE']);
-		$ua = strtolower($_SERVER['HTTP_USER_AGENT']);
-		$ac = strtolower($_SERVER['HTTP_ACCEPT']);
+        // Error occurred if method is POST, and content length is too long
+        return (Arr::get($_SERVER, 'CONTENT_LENGTH') > $max_bytes);
+    }
 
-		return (
-			strpos($ac, 'application/vnd.wap.xhtml+xml') !== false || strpos($ac, 'text/vnd.wap.wml') !== false || $op != '' || strpos($ua, 'iphone') !== false || strpos($ua, 'android') !== false || strpos($ua, 'iemobile') !== false || strpos($ua, 'kindle') !== false || strpos($ua, 'sony') !== false || strpos($ua, 'symbian') !== false || strpos($ua, 'nokia') !== false || strpos($ua, 'samsung') !== false || strpos($ua, 'mobile') !== false || strpos($ua, 'windows ce') !== false || strpos($ua, 'epoc') !== false || strpos($ua, 'opera mini') !== false || strpos($ua, 'nitro') !== false || strpos($ua, 'j2me') !== false || strpos($ua, 'midp-') !== false || strpos($ua, 'cldc-') !== false || strpos($ua, 'netfront') !== false || strpos($ua, 'mot') !== false || strpos($ua, 'up.browser') !== false || strpos($ua, 'up.link') !== false || strpos($ua, 'audiovox') !== false || strpos($ua, 'blackberry') !== false || strpos($ua, 'ericsson,') !== false || strpos($ua, 'panasonic') !== false || strpos($ua, 'philips') !== false || strpos($ua, 'sanyo') !== false || strpos($ua, 'sharp') !== false || strpos($ua, 'sie-') !== false || strpos($ua, 'portalmmm') !== false || strpos($ua, 'blazer') !== false || strpos($ua, 'avantgo') !== false || strpos($ua, 'danger') !== false || strpos($ua, 'palm') !== false || strpos($ua, 'series60') !== false || strpos($ua, 'palmsource') !== false || strpos($ua, 'pocketpc') !== false || strpos($ua, 'smartphone') !== false || strpos($ua, 'rover') !== false || strpos($ua, 'ipaq') !== false || strpos($ua, 'au-mic,') !== false || strpos($ua, 'alcatel') !== false || strpos($ua, 'ericy') !== false || strpos($ua, 'up.link') !== false || strpos($ua, 'vodafone/') !== false || strpos($ua, 'wap1.') !== false || strpos($ua, 'wap2.') !== false
-			);
-	}
-	/**
-	 * Is the request coming from a bot or spider?
-	 *
-	 * Works with Googlebot, MSN, Yahoo, possibly others.
-	 *
-	 * @return boolean
-	 */
-	public function isBot()
-	{
-		$ua = strtolower($this->server('HTTP_USER_AGENT'));
-		$botList = array(
-			'googlebot',
-			'msnbot',
-			'yahoo',
-			'slurp',
-			'bot',
-			'spider',
-			'nutch',
-			'crawler',
-			'facebook',
-			'bing',
-			'siteanalyzer',
-			'dnsqueries',
-			'httpclient',
-			'indy library',
-			'netcraftsurveyagent',
-		);
-		foreach( $botList as $bot )
-		{
-			if ( false !== strpos($ua, $bot) )
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	/**
-	 * Is the request from CLI (Command-Line Interface)?
-	 *
-	 * @return boolean
-	 */
-	public function isCli()
-	{
-		return !isset($_SERVER['HTTP_HOST']);
-	}
-	/**
-	 * Is the request from HHVM (HipHop)?
-	 *
-	 * @return boolean
-	 */
-	public function isHHVM()
-	{
-		return defined('HHVM_VERSION');
-	}
-	/**
-	 * Is this a Flash request?
-	 *
-	 * @return bool
-	 */
-	public function isFlash()
-	{
-		return ($this->header('USER_AGENT') == 'Shockwave Flash');
-	}
-	/**
-	 * Parse 'Accept' HTTP header.
-	 */
-	protected function parseAcceptHeader()
-	{
-		$hdr = $this->header('Accept');
-		$accept = array();
+    /**
+     * Process a request to find a matching route
+     *
+     * @param   object  $request Request
+     * @param   array   $routes  Route
+     * @return  array
+     */
+    public static function process(Request $request, $routes = null)
+    {
+        // Load routes
+        $routes = (empty($routes)) ? Route::all() : $routes;
+        $params = null;
 
-		foreach( preg_split('/\s*,\s*/', $hdr) as $i => $term )
-		{
-			$o = new \stdclass;
-			$o->pos = $i;
-			if ( preg_match(",^(\S+)\s*;\s*(?:q|level)=([0-9\.]+),i", $term, $M) )
-			{
-				$o->type = $M[1];
-				$o->q = (double)$M[2];
-			}
-			else
-			{
-				$o->type = $term;
-				$o->q = 1;
-			}
-			$accept[] = $o;
-		}
+        foreach ($routes as $name => $route) {
+            // Use external routes for reverse routing only
+            if ($route->is_external()) {
+                continue;
+            }
 
-		usort($accept, function ($a, $b){
-			// first tier: highest q factor wins
-			$diff = $b->q - $a->q;
-			if ( $diff > 0 )
-			{
-				$diff = 1;
-			}
-			else if ( $diff < 0 )
-			{
-				$diff = -1;
-			}
-			else
-			{
-				// tie-breaker: first listed item wins
-				$diff = $a->pos - $b->pos;
-			}
-			return $diff;
-		});
+            // We found something suitable
+            if ($params = $route->matches($request)) {
+                return array(
+                    'params' => $params,
+                    'route' => $route,
+                );
+            }
+        }
 
-		$this->_accept = array();
-		foreach( $accept as $a )
-		{
-			if ( empty($a->type) )
-			{
-				continue;
-			}
-			$this->_accept[$a->type] = $a->type;
-		}
-		return $this->_accept;
-	}
+        return null;
+    }
+
+    /**
+     * Parses an accept header and returns an array (type => quality) of the
+     * accepted types, ordered by quality.
+     *
+     *     $accept = Request::_parse_accept($header, $defaults);
+     *
+     * @param   string   $header   Header to parse
+     * @param   array    $accepts  Default values
+     * @return  array
+     */
+    protected static function _parse_accept(& $header, array $accepts = null)
+    {
+        if (!empty($header)) {
+            // Get all of the types
+            $types = explode(',', $header);
+
+            foreach ($types as $type) {
+                // Split the type into parts
+                $parts = explode(';', $type);
+
+                // Make the type only the MIME
+                $type = trim(array_shift($parts));
+
+                // Default quality is 1.0
+                $quality = 1.0;
+
+                foreach ($parts as $part) {
+                    // Prevent undefined $value notice below
+                    if (strpos($part, '=') === false)
+                        continue;
+
+                    // Separate the key and value
+                    list ($key, $value) = explode('=', trim($part));
+
+                    if ($key === 'q') {
+                        // There is a quality for this type
+                        $quality = (float) trim($value);
+                    }
+                }
+
+                // Add the accept type and quality
+                $accepts[$type] = $quality;
+            }
+        }
+
+        // Make sure that accepts is an array
+        $accepts = (array) $accepts;
+
+        // Order by quality
+        arsort($accepts);
+
+        return $accepts;
+    }
+
+    /**
+     * @var  string  the x-requested-with header which most likely
+     *               will be xmlhttprequest
+     */
+    protected $_requested_with;
+
+    /**
+     * @var  string  method: GET, POST, PUT, DELETE, HEAD, etc
+     */
+    protected $_method = 'GET';
+
+    /**
+     * @var  string  protocol: HTTP/1.1, FTP, CLI, etc
+     */
+    protected $_protocol;
+
+    /**
+     * @var  boolean
+     */
+    protected $_secure = false;
+
+    /**
+     * @var  string  referring URL
+     */
+    protected $_referrer;
+
+    /**
+     * @var  Route       route matched for this request
+     */
+    protected $_route;
+
+    /**
+     * @var  Route       array of routes to manually look at instead of the global namespace
+     */
+    protected $_routes;
+
+    /**
+     * @var  HTTP\Header  headers to sent as part of the request
+     */
+    protected $_header;
+
+    /**
+     * @var  string the body
+     */
+    protected $_body;
+
+    /**
+     * @var  string  controller directory
+     */
+    protected $_directory = '';
+
+    /**
+     * @var  string  controller to be executed
+     */
+    protected $_controller;
+
+    /**
+     * @var  string  action to be executed in the controller
+     */
+    protected $_action;
+
+    /**
+     * @var  string  the URI of the request
+     */
+    protected $_uri;
+
+    /**
+     * @var  boolean  external request
+     */
+    protected $_external = false;
+
+    /**
+     * @var  array   parameters from the route
+     */
+    protected $_params = array();
+
+    /**
+     * @var array    query parameters
+     */
+    protected $_get = array();
+
+    /**
+     * @var array    post parameters
+     */
+    protected $_post = array();
+
+    /**
+     * @var array    cookies to send with the request
+     */
+    protected $_cookies = array();
+
+    /**
+     * @var Kohana_Client
+     */
+    protected $_client;
+
+    /**
+     * Creates a new request object for the given URI. New requests should be
+     * Created using the [Request::factory] method.
+     *
+     *     $request = new Request($uri);
+     *
+     * If $cache parameter is set, the response for the request will attempt to
+     * be retrieved from the cache.
+     *
+     * @param   string  $uri              URI of the request
+     * @param   array   $client_params    Array of params to pass to the request client
+     * @param   bool    $allow_external   Allow external requests? (deprecated in 3.3)
+     * @param   array   $injected_routes  An array of routes to use, for testing
+     * @return  void
+     * @throws  Request_Exception
+     * @uses    Route::all
+     * @uses    Route::matches
+     */
+    public function __construct($uri, $client_params = array(), $allow_external = true, $injected_routes = array())
+    {
+        $client_params = is_array($client_params) ? $client_params : array();
+
+        // Initialise the header
+        $this->_header = new HTTP\Header(array());
+
+        // Assign injected routes
+        $this->_routes = $injected_routes;
+
+        // Cleanse query parameters from URI (faster that parse_url())
+        $split_uri = explode('?', $uri);
+        $uri = array_shift($split_uri);
+
+        if ($split_uri) {
+            parse_str($split_uri[0], $this->_get);
+        }
+
+        // Detect protocol (if present)
+        // $allow_external = false prevents the default index.php from
+        // being able to proxy external pages.
+        if (!$allow_external OR strpos($uri, '://') === false) {
+            // Remove leading and trailing slashes from the URI
+            $this->_uri = trim($uri, '/');
+
+            // Apply the client
+            $this->_client = new Request\Client\Internal($client_params);
+        } else {
+            // Create a route
+            $this->_route = new Route($uri);
+
+            // Store the URI
+            $this->_uri = $uri;
+
+            // Set the security setting if required
+            if (strpos($uri, 'https://') === 0) {
+                $this->secure(true);
+            }
+
+            // Set external state
+            $this->_external = true;
+
+            // Setup the client
+            $this->_client = Client_External::factory($client_params);
+        }
+    }
+
+    /**
+     * Returns the response as the string representation of a request.
+     *
+     *     echo $request;
+     *
+     * @return  string
+     */
+    public function __toString()
+    {
+        return $this->render();
+    }
+
+    /**
+     * Sets and gets the uri from the request.
+     *
+     * @param   string $uri
+     * @return  mixed
+     */
+    public function uri($uri = null)
+    {
+        if ($uri === null) {
+            // Act as a getter
+            return ($this->_uri === '') ? '/' : $this->_uri;
+        }
+
+        // Act as a setter
+        $this->_uri = $uri;
+
+        return $this;
+    }
+
+    /**
+     * Create a URL string from the current request. This is a shortcut for:
+     *
+     *     echo URL::site($this->request->uri(), $protocol);
+     *
+     * @param   mixed    $protocol  protocol string or Request object
+     * @return  string
+     * @since   3.0.7
+     * @uses    URL::site
+     */
+    public function url($protocol = null)
+    {
+        if ($this->is_external()) {
+            // If it's an external request return the URI
+            return $this->uri();
+        }
+
+        // Create a URI with the current route, convert to a URL and returns
+        return URL::site($this->uri(), $protocol);
+    }
+
+    /**
+     * Retrieves a value from the route parameters.
+     *
+     *     $id = $request->param('id');
+     *
+     * @param   string   $key      Key of the value
+     * @param   mixed    $default  Default value if the key is not set
+     * @return  mixed
+     */
+    public function param($key = null, $default = null)
+    {
+        if ($key === null) {
+            // Return the full array
+            return $this->_params;
+        }
+
+        return isset($this->_params[$key]) ? $this->_params[$key] : $default;
+    }
+
+    /**
+     * Sets and gets the referrer from the request.
+     *
+     * @param   string $referrer
+     * @return  mixed
+     */
+    public function referrer($referrer = null)
+    {
+        if ($referrer === null) {
+            // Act as a getter
+            return $this->_referrer;
+        }
+
+        // Act as a setter
+        $this->_referrer = (string) $referrer;
+
+        return $this;
+    }
+
+    /**
+     * Sets and gets the route from the request.
+     *
+     * @param   string $route
+     * @return  mixed
+     */
+    public function route(Route $route = null)
+    {
+        if ($route === null) {
+            // Act as a getter
+            return $this->_route;
+        }
+
+        // Act as a setter
+        $this->_route = $route;
+
+        return $this;
+    }
+
+    /**
+     * Sets and gets the directory for the controller.
+     *
+     * @param   string   $directory  Directory to execute the controller from
+     * @return  mixed
+     */
+    public function directory($directory = null)
+    {
+        if ($directory === null) {
+            // Act as a getter
+            return $this->_directory;
+        }
+
+        // Act as a setter
+        $this->_directory = (string) $directory;
+
+        return $this;
+    }
+
+    /**
+     * Sets and gets the controller for the matched route.
+     *
+     * @param   string   $controller  Controller to execute the action
+     * @return  mixed
+     */
+    public function controller($controller = null)
+    {
+        if ($controller === null) {
+            // Act as a getter
+            return $this->_controller;
+        }
+
+        // Act as a setter
+        $this->_controller = (string) $controller;
+
+        return $this;
+    }
+
+    /**
+     * Sets and gets the action for the controller.
+     *
+     * @param   string   $action  Action to execute the controller from
+     * @return  mixed
+     */
+    public function action($action = null)
+    {
+        if ($action === null) {
+            // Act as a getter
+            return $this->_action;
+        }
+
+        // Act as a setter
+        $this->_action = (string) $action;
+
+        return $this;
+    }
+
+    /**
+     * Provides access to the [Client].
+     *
+     * @return  Client
+     * @return  self
+     */
+    public function client(Client $client = null)
+    {
+        if ($client === null)
+            return $this->_client;
+        else {
+            $this->_client = $client;
+            return $this;
+        }
+    }
+
+    /**
+     * Gets and sets the requested with property, which should
+     * be relative to the x-requested-with pseudo header.
+     *
+     * @param   string    $requested_with Requested with value
+     * @return  mixed
+     */
+    public function requested_with($requested_with = null)
+    {
+        if ($requested_with === null) {
+            // Act as a getter
+            return $this->_requested_with;
+        }
+
+        // Act as a setter
+        $this->_requested_with = strtolower($requested_with);
+
+        return $this;
+    }
+
+    /**
+     * Processes the request, executing the controller action that handles this
+     * request, determined by the [Route].
+     *
+     * 1. Before the controller action is called, the [Controller::before] method
+     * will be called.
+     * 2. Next the controller action will be called.
+     * 3. After the controller action is called, the [Controller::after] method
+     * will be called.
+     *
+     * By default, the output from the controller is captured and returned, and
+     * no headers are sent.
+     *
+     *     $request->execute();
+     *
+     * @return  Response
+     * @throws  Request_Exception
+     * @throws  HTTP_Exception_404
+     * @uses    [Core::$profiling]
+     * @uses    [Profiler]
+     */
+    public function execute()
+    {
+        if (!$this->_external) {
+            $processed = self::process($this, $this->_routes);
+
+            if ($processed) {
+                // Store the matching route
+                $this->_route = $processed['route'];
+                $params = $processed['params'];
+
+                // Is this route external?
+                $this->_external = $this->_route->is_external();
+
+                if (isset($params['directory'])) {
+                    // Controllers are in a sub-directory
+                    $this->_directory = $params['directory'];
+                }
+
+                // Store the controller
+                $this->_controller = $params['controller'];
+
+                // Store the action
+                $this->_action = (isset($params['action'])) ? $params['action'] : Route::$default_action;
+
+                // These are accessible as public vars and can be overloaded
+                unset($params['controller'], $params['action'], $params['directory']);
+
+                // Params cannot be changed once matched
+                $this->_params = $params;
+            }
+        }
+
+        if (!$this->_route instanceof Route) {
+            return HTTP_Exception::factory(404, 'Unable to find a route to match the URI: :uri', array(
+                                ':uri' => $this->_uri,
+                            ))->request($this)
+                            ->get_response();
+        }
+
+        if (!$this->_client instanceof Client) {
+            throw new Request_Exception('Unable to execute :uri without a Kohana_Client', array(
+        ':uri' => $this->_uri,
+            ));
+        }
+
+        return $this->_client->execute($this);
+    }
+
+    /**
+     * Returns whether this request is the initial request Kohana received.
+     * Can be used to test for sub requests.
+     *
+     *     if ( ! $request->is_initial())
+     *         // This is a sub request
+     *
+     * @return  boolean
+     */
+    public function is_initial()
+    {
+        return ($this === self::$initial);
+    }
+
+    /**
+     * Readonly access to the [Request::$_external] property.
+     *
+     *     if ( ! $request->is_external())
+     *          // This is an internal request
+     *
+     * @return  boolean
+     */
+    public function is_external()
+    {
+        return $this->_external;
+    }
+
+    /**
+     * Returns whether this is an ajax request (as used by JS frameworks)
+     *
+     * @return  boolean
+     */
+    public function is_ajax()
+    {
+        return ($this->requested_with() === 'xmlhttprequest');
+    }
+
+    /**
+     * Gets or sets the HTTP method. Usually GET, POST, PUT or DELETE in
+     * traditional CRUD applications.
+     *
+     * @param   string   $method  Method to use for this request
+     * @return  mixed
+     */
+    public function method($method = null)
+    {
+        if ($method === null) {
+            // Act as a getter
+            return $this->_method;
+        }
+
+        // Act as a setter
+        $this->_method = strtoupper($method);
+
+        return $this;
+    }
+
+    /**
+     * Gets or sets the HTTP protocol. If there is no current protocol set,
+     * it will use the default set in HTTP::$protocol
+     *
+     * @param   string   $protocol  Protocol to set to the request
+     * @return  mixed
+     */
+    public function protocol($protocol = null)
+    {
+        if ($protocol === null) {
+            if ($this->_protocol)
+                return $this->_protocol;
+            else
+                return $this->_protocol = HTTP::$protocol;
+        }
+
+        // Act as a setter
+        $this->_protocol = strtoupper($protocol);
+        return $this;
+    }
+
+    /**
+     * Getter/Setter to the security settings for this request. This
+     * method should be treated as immutable.
+     *
+     * @param   boolean $secure is this request secure?
+     * @return  mixed
+     */
+    public function secure($secure = null)
+    {
+        if ($secure === null)
+            return $this->_secure;
+
+        // Act as a setter
+        $this->_secure = (bool) $secure;
+        return $this;
+    }
+
+    /**
+     * Gets or sets HTTP headers oo the request. All headers
+     * are included immediately after the HTTP protocol definition during
+     * transmission. This method provides a simple array or key/value
+     * interface to the headers.
+     *
+     * @param   mixed   $key   Key or array of key/value pairs to set
+     * @param   string  $value Value to set to the supplied key
+     * @return  mixed
+     */
+    public function headers($key = null, $value = null)
+    {
+        if ($key instanceof HTTP\Header) {
+            // Act a setter, replace all headers
+            $this->_header = $key;
+
+            return $this;
+        }
+
+        if (is_array($key)) {
+            // Act as a setter, replace all headers
+            $this->_header->exchangeArray($key);
+
+            return $this;
+        }
+
+        if ($this->_header->count() === 0 AND $this->is_initial()) {
+            // Lazy load the request headers
+            $this->_header = HTTP::request_headers();
+        }
+
+        if ($key === null) {
+            // Act as a getter, return all headers
+            return $this->_header;
+        } elseif ($value === null) {
+            // Act as a getter, single header
+            return ($this->_header->offsetExists($key)) ? $this->_header->offsetGet($key) : null;
+        }
+
+        // Act as a setter for a single header
+        $this->_header[$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set and get cookies values for this request.
+     *
+     * @param   mixed    $key    Cookie name, or array of cookie values
+     * @param   string   $value  Value to set to cookie
+     * @return  string
+     * @return  mixed
+     */
+    public function cookie($key = null, $value = null)
+    {
+        if (is_array($key)) {
+            // Act as a setter, replace all cookies
+            $this->_cookies = $key;
+            return $this;
+        } elseif ($key === null) {
+            // Act as a getter, all cookies
+            return $this->_cookies;
+        } elseif ($value === null) {
+            // Act as a getting, single cookie
+            return isset($this->_cookies[$key]) ? $this->_cookies[$key] : null;
+        }
+
+        // Act as a setter for a single cookie
+        $this->_cookies[$key] = (string) $value;
+
+        return $this;
+    }
+
+    /**
+     * Gets or sets the HTTP body of the request. The body is
+     * included after the header, separated by a single empty new line.
+     *
+     * @param   string  $content Content to set to the object
+     * @return  mixed
+     */
+    public function body($content = null)
+    {
+        if ($content === null) {
+            // Act as a getter
+            return $this->_body;
+        }
+
+        // Act as a setter
+        $this->_body = $content;
+
+        return $this;
+    }
+
+    /**
+     * Returns the length of the body for use with
+     * content header
+     *
+     * @return  integer
+     */
+    public function content_length()
+    {
+        return strlen($this->body());
+    }
+
+    /**
+     * Renders the HTTP_Interaction to a string, producing
+     *
+     *  - Protocol
+     *  - Headers
+     *  - Body
+     *
+     *  If there are variables set to the `Kohana_Request::$_post`
+     *  they will override any values set to body.
+     *
+     * @return  string
+     */
+    public function render()
+    {
+        if (!$post = $this->post()) {
+            $body = $this->body();
+        } else {
+            $body = http_build_query($post, null, '&');
+            $this->body($body)
+                    ->headers('content-type', 'application/x-www-form-urlencoded; charset=' . Core::$charset);
+        }
+
+        // Set the content length
+        $this->headers('content-length', (string) $this->content_length());
+
+        // If Kohana expose, set the user-agent
+        if (Core::$expose) {
+            $this->headers('user-agent', Core::version());
+        }
+
+        // Prepare cookies
+        if ($this->_cookies) {
+            $cookie_string = array();
+
+            // Parse each
+            foreach ($this->_cookies as $key => $value) {
+                $cookie_string[] = $key . '=' . $value;
+            }
+
+            // Create the cookie string
+            $this->_header['cookie'] = implode('; ', $cookie_string);
+        }
+
+        $output = $this->method() . ' ' . $this->uri() . ' ' . $this->protocol() . "\r\n";
+        $output .= (string) $this->_header;
+        $output .= $body;
+
+        return $output;
+    }
+
+    /**
+     * Gets or sets HTTP query string.
+     *
+     * @param   mixed   $key    Key or key value pairs to set
+     * @param   string  $value  Value to set to a key
+     * @return  mixed
+     * @uses    Arr::path
+     */
+    public function query($key = null, $value = null)
+    {
+        if (is_array($key)) {
+            // Act as a setter, replace all query strings
+            $this->_get = $key;
+
+            return $this;
+        }
+
+        if ($key === null) {
+            // Act as a getter, all query strings
+            return $this->_get;
+        } elseif ($value === null) {
+            // Act as a getter, single query string
+            return Arr::path($this->_get, $key);
+        }
+
+        // Act as a setter, single query string
+        $this->_get[$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Gets or sets HTTP POST parameters to the request.
+     *
+     * @param   mixed  $key    Key or key value pairs to set
+     * @param   string $value  Value to set to a key
+     * @return  mixed
+     * @uses    Arr::path
+     */
+    public function post($key = null, $value = null)
+    {
+        if (is_array($key)) {
+            // Act as a setter, replace all fields
+            $this->_post = $key;
+
+            return $this;
+        }
+
+        if ($key === null) {
+            // Act as a getter, all fields
+            return $this->_post;
+        } elseif ($value === null) {
+            // Act as a getter, single field
+            return Arr::path($this->_post, $key);
+        }
+
+        // Act as a setter, single field
+        $this->_post[$key] = $value;
+
+        return $this;
+    }
+
 }

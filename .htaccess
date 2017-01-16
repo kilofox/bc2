@@ -1,7 +1,21 @@
+# Turn on URL rewriting
 RewriteEngine On
-#RewriteBase /bootphp/
+
+# Installation directory
 RewriteBase /bootcms2/
-# 重新路由所有传入的非现有目录或文件请求
-RewriteCond %{REQUEST_FILENAME} !-d
+
+# Protect hidden files from being viewed
+<Files .*>
+	Order Deny,Allow
+	Deny From All
+</Files>
+
+# Protect application and system files from being viewed
+RewriteRule ^(?:application|vendor)\b.* index.php?u=/$0 [L]
+
+# Allow any files or directories that exist to be displayed directly
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule .* index.php?u=$0 [L]
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite all other URLs to index.php?u=/URL
+RewriteRule .* index.php?u=$0 [L,QSA]
