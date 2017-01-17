@@ -54,7 +54,7 @@ class Form
         $attributes['action'] = $action;
 
         // Only accept the default character set
-        $attributes['accept-charset'] = Kohana::$charset;
+        $attributes['accept-charset'] = Core::$charset;
 
         if (!isset($attributes['method'])) {
             // Use POST method

@@ -84,7 +84,7 @@ class Encrypt
 
         if (!isset(Encrypt::$instances[$name])) {
             // Load the configuration data
-            $config = Kohana::$config->load('encrypt')->$name;
+            $config = Core::$config->load('encrypt')->$name;
 
             if (!isset($config['key'])) {
                 // No default encryption key is provided!

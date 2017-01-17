@@ -151,14 +151,14 @@ class Route
      * @param   boolean $append append, rather than replace, cached routes when loading
      * @return  void    when saving routes
      * @return  boolean when loading routes
-     * @uses    Kohana::cache
+     * @uses    Core::cache
      */
     public static function cache($save = false, $append = false)
     {
         if ($save === true) {
             try {
                 // Cache all defined routes
-                Kohana::cache('Route::cache()', self::$_routes);
+                Core::cache('Route::cache()', self::$_routes);
             } catch (Exception $e) {
                 // We most likely have a lambda in a route, which cannot be cached
                 throw new BootphpException('One or more routes could not be cached (:message)', array(
@@ -166,7 +166,7 @@ class Route
                 ), 0, $e);
             }
         } else {
-            if ($routes = Kohana::cache('Route::cache()')) {
+            if ($routes = Core::cache('Route::cache()')) {
                 if ($append) {
                     // Append cached routes
                     Route::$_routes += $routes;

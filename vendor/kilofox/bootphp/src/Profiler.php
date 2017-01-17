@@ -43,7 +43,7 @@ class Profiler
         // Create a unique token based on the counter
         $token = 'kp/' . base_convert($counter++, 10, 32);
 
-        Profiler::$_marks[$token] = array
+        self::$_marks[$token] = array
             (
             'group' => strtolower($group),
             'name' => (string) $name,
@@ -69,8 +69,8 @@ class Profiler
     public static function stop($token)
     {
         // Stop the benchmark
-        Profiler::$_marks[$token]['stop_time'] = microtime(true);
-        Profiler::$_marks[$token]['stop_memory'] = memory_get_usage();
+        self::$_marks[$token]['stop_time'] = microtime(true);
+        self::$_marks[$token]['stop_memory'] = memory_get_usage();
     }
 
     /**
@@ -86,7 +86,7 @@ class Profiler
     public static function delete($token)
     {
         // Remove the benchmark
-        unset(Profiler::$_marks[$token]);
+        unset(self::$_marks[$token]);
     }
 
     /**
@@ -100,7 +100,7 @@ class Profiler
     {
         $groups = array();
 
-        foreach (Profiler::$_marks as $token => $mark) {
+        foreach (self::$_marks as $token => $mark) {
             // Sort the tokens by the group and name
             $groups[$mark['group']][$mark['name']][] = $token;
         }
@@ -131,7 +131,7 @@ class Profiler
 
         foreach ($tokens as $token) {
             // Get the total time and memory for this benchmark
-            list($time, $memory) = Profiler::total($token);
+            list($time, $memory) = self::total($token);
 
             if ($max['time'] === null OR $time > $max['time']) {
                 // Set the maximum time
@@ -188,7 +188,7 @@ class Profiler
     public static function group_stats($groups = null)
     {
         // Which groups do we need to calculate stats for?
-        $groups = ($groups === null) ? Profiler::groups() : array_intersect_key(Profiler::groups(), array_flip((array) $groups));
+        $groups = ($groups === null) ? self::groups() : array_intersect_key(self::groups(), array_flip((array) $groups));
 
         // All statistics
         $stats = array();
@@ -197,7 +197,7 @@ class Profiler
             foreach ($names as $name => $tokens) {
                 // Store the stats for each subgroup.
                 // We only need the values for "total".
-                $_stats = Profiler::stats($tokens);
+                $_stats = self::stats($tokens);
                 $stats[$group][$name] = $_stats['total'];
             }
         }
@@ -262,7 +262,7 @@ class Profiler
     public static function total($token)
     {
         // Import the benchmark data
-        $mark = Profiler::$_marks[$token];
+        $mark = self::$_marks[$token];
 
         if ($mark['stop_time'] === false) {
             // The benchmark has not been stopped yet
@@ -286,14 +286,14 @@ class Profiler
      *     list($time, $memory) = Profiler::application();
      *
      * @return  array  execution time, memory
-     * @uses    Kohana::cache
+     * @uses    Core::cache
      */
     public static function application()
     {
         // Load the stats from cache, which is valid for 1 day
-        $stats = Kohana::cache('profiler_application_stats', null, 3600 * 24);
+        $stats = Core::cache('profiler_application_stats', null, 3600 * 24);
 
-        if (!is_array($stats) OR $stats['count'] > Profiler::$rollover) {
+        if (!is_array($stats) OR $stats['count'] > self::$rollover) {
             // Initialize the stats array
             $stats = array(
                 'min' => array(
@@ -349,7 +349,7 @@ class Profiler
             'memory' => $stats['total']['memory'] / $stats['count']);
 
         // Cache the new stats
-        Kohana::cache('profiler_application_stats', $stats);
+        Core::cache('profiler_application_stats', $stats);
 
         // Set the current application execution time and memory
         // Do NOT cache these, they are specific to the current request only

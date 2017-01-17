@@ -49,7 +49,52 @@ class Inflector
     {
         if (Inflector::$uncountable === null) {
             // Cache uncountables
-            Inflector::$uncountable = Kohana::$config->load('inflector')->uncountable;
+            Inflector::$uncountable = array(
+                'access',
+                'advice',
+                'aircraft',
+                'art',
+                'baggage',
+                'bison',
+                'dances',
+                'deer',
+                'equipment',
+                'fish',
+                'fuel',
+                'furniture',
+                'heat',
+                'honey',
+                'homework',
+                'impatience',
+                'information',
+                'knowledge',
+                'luggage',
+                'media',
+                'money',
+                'moose',
+                'music',
+                'news',
+                'patience',
+                'progress',
+                'pollution',
+                'research',
+                'rice',
+                'salmon',
+                'sand',
+                'series',
+                'sheep',
+                'sms',
+                'spam',
+                'species',
+                'staff',
+                'swine',
+                'toothpaste',
+                'traffic',
+                'understanding',
+                'water',
+                'weather',
+                'work',
+            );
 
             // Make uncountables mirrored
             Inflector::$uncountable = array_combine(Inflector::$uncountable, Inflector::$uncountable);
@@ -100,7 +145,7 @@ class Inflector
 
         if (empty(Inflector::$irregular)) {
             // Cache irregular words
-            Inflector::$irregular = Kohana::$config->load('inflector')->irregular;
+            Inflector::$irregular = Core::$config->load('inflector')->irregular;
         }
 
         if ($irregular = array_search($str, Inflector::$irregular)) {
@@ -167,7 +212,52 @@ class Inflector
 
         if (empty(Inflector::$irregular)) {
             // Cache irregular words
-            Inflector::$irregular = Kohana::$config->load('inflector')->irregular;
+            Inflector::$irregular = array(
+                'appendix' => 'appendices',
+                'cactus' => 'cacti',
+                'calf' => 'calves',
+                'child' => 'children',
+                'crisis' => 'crises',
+                'criterion' => 'criteria',
+                'curriculum' => 'curricula',
+                'diagnosis' => 'diagnoses',
+                'elf' => 'elves',
+                'ellipsis' => 'ellipses',
+                'foot' => 'feet',
+                'goose' => 'geese',
+                'hero' => 'heroes',
+                'hoof' => 'hooves',
+                'hypothesis' => 'hypotheses',
+                'is' => 'are',
+                'knife' => 'knives',
+                'leaf' => 'leaves',
+                'life' => 'lives',
+                'loaf' => 'loaves',
+                'man' => 'men',
+                'mouse' => 'mice',
+                'nucleus' => 'nuclei',
+                'oasis' => 'oases',
+                'octopus' => 'octopi',
+                'ox' => 'oxen',
+                'paralysis' => 'paralyses',
+                'parenthesis' => 'parentheses',
+                'person' => 'people',
+                'phenomenon' => 'phenomena',
+                'potato' => 'potatoes',
+                'quiz' => 'quizzes',
+                'radius' => 'radii',
+                'scarf' => 'scarves',
+                'stimulus' => 'stimuli',
+                'syllabus' => 'syllabi',
+                'synthesis' => 'syntheses',
+                'thief' => 'thieves',
+                'tooth' => 'teeth',
+                'was' => 'were',
+                'wharf' => 'wharves',
+                'wife' => 'wives',
+                'woman' => 'women',
+                'release' => 'releases',
+            );
         }
 
         if (isset(Inflector::$irregular[$str])) {

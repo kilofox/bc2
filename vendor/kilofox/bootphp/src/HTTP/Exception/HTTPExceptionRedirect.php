@@ -28,7 +28,7 @@ abstract class HTTPExceptionRedirect extends HTTPExceptionExpected
 
         if (strpos($uri, '://') === false) {
             // Make the URI into a URL
-            $uri = URL::site($uri, true, !empty(Kohana::$index_file));
+            $uri = URL::site($uri, true, !empty(Core::$index_file));
         }
 
         $this->headers('Location', $uri);

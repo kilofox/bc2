@@ -2,8 +2,6 @@
 
 namespace Bootphp\Auth;
 
-defined('SYS_PATH') OR die('No direct access allowed.');
-
 /**
  * User authorization library. Handles user login and logout, as well as secure
  * password hashing.
@@ -27,8 +25,9 @@ abstract class Auth
     {
         if (!isset(self::$_instance)) {
             // Load the configuration for this type
-            $config = new \Bootphp\Config();
-            $type = $config->load(APP_PATH . '/configs/auth.php')->get('driver', 'db');
+            $config = \Bootphp\Core::$config->load('auth');
+
+            $type = isset($config['driver']) ? $config['driver'] : 'db';
 
             // Set the session class name
             $class = 'Bootphp\\Auth\\Auth' . ucfirst($type);

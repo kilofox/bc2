@@ -7,7 +7,7 @@ class AutoloaderInit
     public static function loadClassLoader($class)
     {
         if ($class === 'Kilofox\Bootphp\ClassLoader') {
-            require __DIR__ . '/kilofox/bootphp/ClassLoader.php';
+            require __DIR__ . '/kilofox/bootphp/src/ClassLoader.php';
         }
     }
 

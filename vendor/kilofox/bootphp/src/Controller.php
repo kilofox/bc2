@@ -72,7 +72,7 @@ abstract class Controller
         $this->before();
 
         // Determine the action to use
-        $action = $this->request->action() . '2Action';
+        $action = $this->request->action() . 'Action';
 
         // If the action doesn't exist, it's a 404
         if (!method_exists($this, $action)) {

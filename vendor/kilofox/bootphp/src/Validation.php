@@ -277,7 +277,7 @@ class Validation implements ArrayAccess
      */
     public function check()
     {
-        if (Kohana::$profiling === true) {
+        if (Core::$profiling === true) {
             // Start a new benchmark
             $benchmark = Profiler::start('Validation', __FUNCTION__);
         }
@@ -447,7 +447,7 @@ class Validation implements ArrayAccess
      *     // Get errors from messages/forms/login.php
      *     $errors = $Validation->errors('forms/login');
      *
-     * @uses    Kohana::message
+     * @uses    Core::message
      * @param   string  $file       file to load error messages from
      * @param   mixed   $translate  translate the message
      * @return  array
@@ -520,13 +520,13 @@ class Validation implements ArrayAccess
                 }
             }
 
-            if ($message = Kohana::message($file, "{$field}.{$error}") AND is_string($message)) {
+            if ($message = Core::message($file, "{$field}.{$error}") AND is_string($message)) {
                 // Found a message for this field and error
-            } elseif ($message = Kohana::message($file, "{$field}.default") AND is_string($message)) {
+            } elseif ($message = Core::message($file, "{$field}.default") AND is_string($message)) {
                 // Found a default message for this field
-            } elseif ($message = Kohana::message($file, $error) AND is_string($message)) {
+            } elseif ($message = Core::message($file, $error) AND is_string($message)) {
                 // Found a default message for this error
-            } elseif ($message = Kohana::message('validation', $error) AND is_string($message)) {
+            } elseif ($message = Core::message('validation', $error) AND is_string($message)) {
                 // Found a default message for this error
             } else {
                 // No message exists, display the path expected

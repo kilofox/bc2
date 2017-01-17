@@ -40,9 +40,9 @@ class IndexController extends AdministrationController
     public function indexAction()
     {
         // 统计文章数
-        $articles = Model::factory('article', 'articles')->count();
+        $articles = \Bootphp\ORM\ORM::factory('article')->count();
         // 统计评论数
-        $comments = Model::factory('comment', 'articles')->count();
+        $comments = Model::factory('comment')->count();
         // 查询数据库版本
         $dbVersion = DB::select([DB::expr('version()'), 'version'])->execute()->get('version');
         $this->assign('articles', $articles);

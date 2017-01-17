@@ -290,10 +290,8 @@ class Core
             self::$log = Log::instance();
         }
 
-        // Load the config if one doesn't already exist
-        if (!self::$config instanceof Config) {
-            self::$config = new Config;
-        }
+        // Load the config
+        self::$config = new Config();
     }
 
     /**

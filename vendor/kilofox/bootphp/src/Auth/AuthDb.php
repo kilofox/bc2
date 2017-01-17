@@ -4,8 +4,6 @@ namespace Bootphp\Auth;
 
 use Bootphp\Cookie;
 
-defined('SYS_PATH') OR die('No direct access allowed.');
-
 /**
  * ORM Auth driver.
  *

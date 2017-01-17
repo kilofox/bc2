@@ -35,7 +35,7 @@ abstract class Session
      * @param   string  $type   type of session (native, cookie, etc)
      * @param   string  $id     session identifier
      * @return  Session
-     * @uses    Kohana::$config
+     * @uses    Core::$config
      */
     public static function instance($type = null, $id = null)
     {
@@ -46,8 +46,7 @@ abstract class Session
 
         if (!isset(Session::$instances[$type])) {
             // Load the configuration for this type
-            $oConfig = new \Bootphp\Config();
-            $config = $oConfig->load(APP_PATH . '/configs/session.php')->get($type);
+            $config = Core::$config->load(APP_PATH . '/configs/session.php');
 
             // Set the session class name
             $class = 'Bootphp\\Session\\Session' . ucfirst($type);
@@ -337,7 +336,7 @@ abstract class Session
      * been sent.
      *
      * @return  boolean
-     * @uses    Kohana::$log
+     * @uses    Core::$log
      */
     public function write()
     {
@@ -354,7 +353,7 @@ abstract class Session
             return $this->_write();
         } catch (Exception $e) {
             // Log & ignore all errors when a write fails
-            Kohana::$log->add(Log::ERROR, BootphpException::text($e))->write();
+            Core::$log->add(Log::ERROR, BootphpException::text($e))->write();
 
             return false;
         }

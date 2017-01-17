@@ -21,42 +21,27 @@ namespace Bootphp;
 class Config
 {
     /**
-     * Array of config for default
-     */
-    protected $config = [];
-
-    /**
      * Load a configuration file.
      *
-     * @param   string  $file  Configuration file name
-     * @return  $this
+     * @param   string  $group      Configuration group name
+     * @param   string  $directory  Specified directory
+     * @return  mixed
      * @throws  BootphpException
      */
-    public function load($file)
+    public function load($group, $directory = null)
     {
-        if (empty($file) || !is_string($file)) {
+        if (empty($group) || !is_string($group)) {
             throw new BootphpException('Config group must be a non-empty string');
         }
 
+        $config = array();
+
+        $file = ($directory === null ? APP_PATH . '/configs/' : (string) $directory) . $group . '.php';
         if (is_file($file)) {
-            $this->config = require $file;
+            $config = require $file;
         }
 
-        return $this;
-    }
-
-    /**
-     * Get a variable from the configuration or return the default value.
-     *
-     *     $value = $config->get($key);
-     *
-     * @param   string  $key        Array key
-     * @param   mixed   $default    Default value
-     * @return  mixed
-     */
-    public function get($key, $default = null)
-    {
-        return isset($this->config[$key]) ? $this->config[$key] : $default;
+        return $config;
     }
 
 }

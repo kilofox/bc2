@@ -31,7 +31,7 @@ class Internal extends \Bootphp\Request\Client
      * @param   Request $request
      * @return  Response
      * @throws  BootphpException
-     * @uses    [Kohana::$profiling]
+     * @uses    [Core::$profiling]
      * @uses    [Profiler]
      */
     public function execute_request(Request $request, Response $response)

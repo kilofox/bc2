@@ -194,7 +194,7 @@ class Debug
      * when you want to display a shorter path.
      *
      *     // Displays SYSPATH/classes/kohana.php
-     *     echo Debug::path(Kohana::find_file('classes', 'kohana'));
+     *     echo Debug::path(Core::find_file('classes', 'kohana'));
      *
      * @param   string  $file   path to debug
      * @return  string

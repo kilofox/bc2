@@ -18,7 +18,7 @@ namespace Bootphp;
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
- * @uses       Kohana::cache
+ * @uses       Core::cache
  */
 class Fragment
 {
@@ -84,7 +84,7 @@ class Fragment
         // Get the cache key name
         $cache_key = Fragment::_cache_key($name, $i18n);
 
-        if ($fragment = Kohana::cache($cache_key, null, $lifetime)) {
+        if ($fragment = Core::cache($cache_key, null, $lifetime)) {
             // Display the cached fragment now
             echo $fragment;
 
@@ -123,7 +123,7 @@ class Fragment
             $fragment = ob_get_flush();
 
             // Cache the fragment
-            Kohana::cache($cache_key, $fragment);
+            Core::cache($cache_key, $fragment);
         }
     }
 
@@ -139,7 +139,7 @@ class Fragment
     public static function delete($name, $i18n = null)
     {
         // Invalid the cache
-        Kohana::cache(Fragment::_cache_key($name, $i18n), null, -3600);
+        Core::cache(Fragment::_cache_key($name, $i18n), null, -3600);
     }
 
 }

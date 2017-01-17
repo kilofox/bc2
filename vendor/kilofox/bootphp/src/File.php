@@ -71,7 +71,7 @@ class File
     public static function mime_by_ext($extension)
     {
         // Load all of the mime types
-        $mimes = Kohana::$config->load('mimes');
+        $mimes = Core::$config->load('mimes');
 
         return isset($mimes[$extension]) ? $mimes[$extension][0] : false;
     }
@@ -86,7 +86,7 @@ class File
     public static function mimes_by_ext($extension)
     {
         // Load all of the mime types
-        $mimes = Kohana::$config->load('mimes');
+        $mimes = Core::$config->load('mimes');
 
         return isset($mimes[$extension]) ? ( (array) $mimes[$extension]) : array();
     }
@@ -103,7 +103,7 @@ class File
 
         // Fill the static array
         if (empty($types)) {
-            foreach (Kohana::$config->load('mimes') as $ext => $mimes) {
+            foreach (Core::$config->load('mimes') as $ext => $mimes) {
                 foreach ($mimes as $mime) {
                     if ($mime == 'application/octet-stream') {
                         // octet-stream is a generic binary

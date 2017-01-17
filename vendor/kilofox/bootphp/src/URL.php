@@ -206,8 +206,8 @@ class URL
     {
         // If list of trusted hosts is not directly provided read from config
         if (empty($trustedHosts)) {
-            $config = new \Bootphp\Config();
-            $trustedHosts = (array) $config->load(APP_PATH . '/configs/url.php')->get('trustedHosts');
+            $config = Core::$config->load('url');
+            $trustedHosts = isset($config['trustedHosts']) ? (array) $config['trustedHosts'] : [];
         }
 
         // loop through the $trustedHosts array for a match

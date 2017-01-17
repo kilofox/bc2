@@ -18,13 +18,16 @@ abstract class Model
      *
      *     $model = Model::factory($name);
      *
-     * @param   string  $name   model name
+     * @param   string  $name   Model name
+     * @param   string  $module Module name
      * @return  Model
      */
-    public static function factory($name)
+    public static function factory($name, $module = null)
     {
-        // Add the model prefix
-        $class = 'Model_' . $name;
+        $module = !is_string($module) ? '' : $module .= '\\';
+
+        // Add the model suffix
+        $class = 'App\\models\\' . $module . ucfirst($name) . 'Model';
 
         return new $class;
     }

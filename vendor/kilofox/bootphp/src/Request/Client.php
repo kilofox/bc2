@@ -94,7 +94,7 @@ abstract class Client
      * @param   Response  $response
      * @return  Response
      * @throws  Kohana_Exception
-     * @uses    [Kohana::$profiling]
+     * @uses    [Core::$profiling]
      * @uses    [Profiler]
      */
     public function execute(Request $request)

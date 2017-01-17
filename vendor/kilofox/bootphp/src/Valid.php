@@ -262,7 +262,7 @@ class Valid
             return false;
         }
 
-        $cards = Kohana::$config->load('credit_cards');
+        $cards = Core::$config->load('credit_cards');
 
         // Check card type
         $type = strtolower($type);

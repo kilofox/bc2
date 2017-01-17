@@ -95,12 +95,12 @@ abstract class Request_Client_External extends Request_Client
      * @param   Response  $response  A response object
      * @return  Response
      * @throws  Kohana_Exception
-     * @uses    [Kohana::$profiling]
+     * @uses    [Core::$profiling]
      * @uses    [Profiler]
      */
     public function execute_request(Request $request, Response $response)
     {
-        if (Kohana::$profiling) {
+        if (Core::$profiling) {
             // Set the benchmark name
             $benchmark = '"' . $request->uri() . '"';
 
@@ -126,8 +126,8 @@ abstract class Request_Client_External extends Request_Client
         $request->headers('content-length', (string) $request->content_length());
 
         // If Kohana expose, set the user-agent
-        if (Kohana::$expose) {
-            $request->headers('user-agent', Kohana::version());
+        if (Core::$expose) {
+            $request->headers('user-agent', Core::version());
         }
 
         try {
