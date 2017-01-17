@@ -44,7 +44,7 @@ class DB
      */
     public static function query($type, $sql)
     {
-        return new Database_Query($type, $sql);
+        return new Database\Query($type, $sql);
     }
 
     /**
@@ -62,7 +62,7 @@ class DB
      */
     public static function select($columns = null)
     {
-        return new Database_Query_Builder_Select(func_get_args());
+        return new Database\Query\Builder\Select(func_get_args());
     }
 
     /**
@@ -76,7 +76,7 @@ class DB
      */
     public static function select_array(array $columns = null)
     {
-        return new Database_Query_Builder_Select($columns);
+        return new Database\Query\Builder\Select($columns);
     }
 
     /**
@@ -91,7 +91,7 @@ class DB
      */
     public static function insert($table = null, array $columns = null)
     {
-        return new Database_Query_Builder_Insert($table, $columns);
+        return new Database\Query\Builder\Insert($table, $columns);
     }
 
     /**
@@ -105,7 +105,7 @@ class DB
      */
     public static function update($table = null)
     {
-        return new Database_Query_Builder_Update($table);
+        return new Database\Query\Builder\Update($table);
     }
 
     /**
@@ -119,7 +119,7 @@ class DB
      */
     public static function delete($table = null)
     {
-        return new Database_Query_Builder_Delete($table);
+        return new Database\Query\Builder\Delete($table);
     }
 
     /**
@@ -136,9 +136,7 @@ class DB
      */
     public static function expr($string, $parameters = array())
     {
-        return new Database_Expression($string, $parameters);
+        return new Database\Expression($string, $parameters);
     }
 
 }
-
-// End DB

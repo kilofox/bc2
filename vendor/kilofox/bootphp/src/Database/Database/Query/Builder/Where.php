@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp\Database\Query\Builder;
+namespace Bootphp\Database\Database\Query\Builder;
 
 /**
  * Database query builder for WHERE statements. See [Query Builder](/database/query/builder) for usage and examples.
@@ -11,7 +11,7 @@ namespace Bootphp\Database\Query\Builder;
  * @copyright  (c) 2008-2009 Kohana Team
  * @license    http://kohanaphp.com/license
  */
-abstract class DatabaseQueryBuilderWhere extends \Bootphp\DatabaseQueryBuilder
+abstract class Where extends \Bootphp\Database\Database\Query\Builder
 {
     // WHERE ...
     protected $_where = array();

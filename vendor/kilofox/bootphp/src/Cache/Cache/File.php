@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache\Cache;
+
 /**
  * [Kohana Cache](api/Kohana_Cache) File driver. Provides a file based
  * driver for the Kohana Cache library. This is one of the slowest
@@ -39,7 +41,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class Kohana_Cache_File extends Cache implements Cache_GarbageCollect
+class CacheFile extends Cache implements Cache_GarbageCollect
 {
     /**
      * Creates a hashed filename based on the string. This is used

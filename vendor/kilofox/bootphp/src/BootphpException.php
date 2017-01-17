@@ -3,7 +3,7 @@
 namespace Bootphp;
 
 /**
- * Kohana exception class. Translates exceptions using the [I18n] class.
+ * Kohana exception class.
  *
  * @package    Bootphp
  * @category   Exceptions

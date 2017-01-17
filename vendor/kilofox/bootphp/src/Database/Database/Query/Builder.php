@@ -1,6 +1,8 @@
 <?php
 
-namespace Bootphp\Database\Query;
+namespace Bootphp\Database\Database\Query;
+
+use Bootphp\Database\Database;
 
 /**
  * Database query builder. See [Query Builder](/database/query/builder) for usage and examples.
@@ -11,7 +13,7 @@ namespace Bootphp\Database\Query;
  * @copyright  (c) 2008-2009 Kohana Team
  * @license    http://kohanaphp.com/license
  */
-abstract class DatabaseQueryBuilder extends \Bootphp\Database\DatabaseQuery
+abstract class Builder extends \Bootphp\Database\Database\Query
 {
     /**
      * Compiles an array of JOIN statements into an SQL partial.

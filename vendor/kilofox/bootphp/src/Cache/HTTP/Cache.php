@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache;
+
 /**
  * HTTP Caching adaptor class that provides caching services to the
  * [Request_Client] class, using HTTP cache control logic as defined in
@@ -10,9 +12,8 @@
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
- * @since      3.2.0
  */
-class Kohana_HTTP_Cache
+class HTTPCache
 {
     const CACHE_STATUS_KEY = 'x-cache-status';
     const CACHE_STATUS_SAVED = 'SAVED';

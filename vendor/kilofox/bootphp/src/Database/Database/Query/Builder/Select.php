@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp\Database\Query\Builder;
+namespace Bootphp\Database\Database\Query\Builder;
 
 /**
  * Database query builder for SELECT statements. See [Query Builder](/database/query/builder) for usage and examples.
@@ -11,7 +11,7 @@ namespace Bootphp\Database\Query\Builder;
  * @copyright  (c) 2008-2009 Kohana Team
  * @license    http://kohanaphp.com/license
  */
-class DatabaseQueryBuilderSelect extends \Bootphp\DatabaseQueryBuilderWhere
+class Select extends Where
 {
     // SELECT ...
     protected $_select = array();
@@ -46,7 +46,7 @@ class DatabaseQueryBuilderSelect extends \Bootphp\DatabaseQueryBuilderWhere
         }
 
         // Start the query with no actual SQL statement
-        parent::__construct(Database::SELECT, '');
+        parent::__construct('select', '');
     }
 
     /**
@@ -317,7 +317,7 @@ class DatabaseQueryBuilderSelect extends \Bootphp\DatabaseQueryBuilderWhere
     {
         if (!is_object($db)) {
             // Get the database instance
-            $db = Database::instance($db);
+            $db = \Bootphp\Database::instance($db);
         }
 
         // Callback to quote columns

@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache\Cache;
+
 /**
  * Kohana Cache Arithmetic Interface, for basic cache integer based
  * arithmetic, addition and subtraction
@@ -11,7 +13,7 @@
  * @license    http://kohanaphp.com/license
  * @since      3.2.0
  */
-interface Kohana_Cache_Arithmetic
+interface CacheArithmetic
 {
     /**
      * Increments a given value by the step value supplied.

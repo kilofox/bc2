@@ -40,7 +40,13 @@ class IndexController extends AdministrationController
     public function indexAction()
     {
         // 统计文章数
-        $articles = \Bootphp\ORM\ORM::factory('article')->count();
+        //$articles = \Bootphp\ORM\ORM::factory('article')->find_all();
+        $user = \Bootphp\ORM\ORM::factory('Linkage')->where('id', '<', 20)->find_all()->as_array();
+		echo '<!--';
+		foreach ($user as $node) {
+			echo $node->name . "\n";
+		}
+		echo '-->';
         // 统计评论数
         $comments = Model::factory('comment')->count();
         // 查询数据库版本

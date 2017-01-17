@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache\Cache;
+
 /**
  * Kohana Cache Sqlite Driver
  *
@@ -11,7 +13,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class Kohana_Cache_Sqlite extends Cache implements Cache_Tagging, Cache_GarbageCollect
+class CacheSqlite extends Cache implements CacheTagging, CacheGarbageCollect
 {
     /**
      * Database resource

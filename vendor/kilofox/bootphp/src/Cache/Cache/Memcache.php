@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache\Cache;
+
 /**
  * [Kohana Cache](api/Kohana_Cache) Memcache driver,
  *
@@ -81,7 +83,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class Kohana_Cache_Memcache extends Cache implements Cache_Arithmetic
+class CacheMemcache extends Cache implements CacheArithmetic
 {
     // Memcache has a maximum cache lifetime of 30 days
     const CACHE_CEILING = 2592000;

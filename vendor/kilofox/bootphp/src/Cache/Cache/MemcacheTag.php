@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache\Cache;
+
 /**
  * See [Kohana_Cache_Memcache]
  *
@@ -10,7 +12,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class Kohana_Cache_MemcacheTag extends Cache_Memcache implements Cache_Tagging
+class CacheMemcacheTag extends CacheMemcache implements CacheTagging
 {
     /**
      * Constructs the memcache object

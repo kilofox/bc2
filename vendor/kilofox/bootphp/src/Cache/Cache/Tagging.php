@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache\Cache;
+
 /**
  * Kohana Cache Tagging Interface
  *
@@ -9,7 +11,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-interface Kohana_Cache_Tagging
+interface CacheTagging
 {
     /**
      * Set a value based on an id. Optionally add tags.

@@ -259,8 +259,7 @@ abstract class Database
      */
     public function datatype($type)
     {
-        static $types = array
-            (
+        static $types = [
             // SQL-92
             'bit' => array('type' => 'string', 'exact' => true),
             'bit varying' => array('type' => 'string'),
@@ -308,12 +307,12 @@ abstract class Database
             'binary' => array('type' => 'string', 'binary' => true, 'exact' => true),
             'binary varying' => array('type' => 'string', 'binary' => true),
             'varbinary' => array('type' => 'string', 'binary' => true),
-        );
+        ];
 
         if (isset($types[$type]))
             return $types[$type];
 
-        return array();
+        return [];
     }
 
     /**

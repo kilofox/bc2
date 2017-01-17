@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache;
+
 /**
  * Kohana Cache provides a common interface to a variety of caching engines. Tags are
  * supported where available natively to the cache system. Kohana Cache supports multiple
@@ -67,11 +69,6 @@
  *
  * Details of the settings specific to each driver are available within the drivers documentation.
  *
- * ### System requirements
- *
- * *  Kohana 3.0.x
- * *  PHP 5.2.4 or greater
- *
  * @package    Bootphp/Cache
  * @category   Base
  * @version    2.0
@@ -79,7 +76,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-abstract class Kohana_Cache
+abstract class Cache
 {
     const DEFAULT_EXPIRE = 3600;
 

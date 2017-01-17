@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Cache\Cache;
+
 /**
  * [Kohana Cache](api/Kohana_Cache) APCu data store driver for Kohana Cache
  * library.
@@ -37,7 +39,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class Kohana_Cache_Apcu extends Cache implements Cache_Arithmetic
+class CacheApcu extends Cache implements Cache_Arithmetic
 {
     /**
      * Check for existence of the APCu extension This method cannot be invoked externally. The driver must

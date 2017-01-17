@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp\Database;
+namespace Bootphp\Database\Database;
 
 /**
  * Database query wrapper.  See [Parameterized Statements](database/query/parameterized) for usage and examples.
@@ -11,7 +11,7 @@ namespace Bootphp\Database;
  * @copyright  (c) 2008-2009 Kohana Team
  * @license    http://kohanaphp.com/license
  */
-class DatabaseQuery
+class Query
 {
     // Query type
     protected $_type;

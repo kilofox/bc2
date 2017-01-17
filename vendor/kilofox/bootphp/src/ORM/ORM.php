@@ -3,6 +3,8 @@
 namespace Bootphp\ORM;
 
 use Bootphp\Database\Database;
+use Bootphp\Database\DB;
+use Bootphp\BootphpException;
 use Bootphp\Inflector;
 
 /**
@@ -581,7 +583,7 @@ class ORM extends \Bootphp\Model implements \serializable
      * Override this method to add custom get behavior
      *
      * @param   string $column Column name
-     * @throws Kohana_Exception
+     * @throws BootphpException
      * @return mixed
      */
     public function get($column)
@@ -640,7 +642,7 @@ class ORM extends \Bootphp\Model implements \serializable
 
             return $model->where($col, '=', $val);
         } else {
-            throw new Kohana_Exception('The :property property does not exist in the :class class', array(':property' => $column, ':class' => get_class($this)));
+            throw new BootphpException('The :property property does not exist in the :class class', array(':property' => $column, ':class' => get_class($this)));
         }
     }
 
@@ -663,7 +665,7 @@ class ORM extends \Bootphp\Model implements \serializable
      *
      * @param  string $column Column name
      * @param  mixed  $value  Column value
-     * @throws Kohana_Exception
+     * @throws BootphpException
      * @return ORM
      */
     public function set($column, $value)
@@ -702,7 +704,7 @@ class ORM extends \Bootphp\Model implements \serializable
 
             $this->_changed[$column] = $this->_belongs_to[$column]['foreign_key'];
         } else {
-            throw new Kohana_Exception('The :property: property does not exist in the :class: class', array(':property:' => $column, ':class:' => get_class($this)));
+            throw new BootphpException('The :property: property does not exist in the :class: class', array(':property:' => $column, ':class:' => get_class($this)));
         }
 
         return $this;
@@ -854,13 +856,13 @@ class ORM extends \Bootphp\Model implements \serializable
     {
         // Construct new builder object based on query type
         switch ($type) {
-            case Database::SELECT:
+            case 'select':
                 $this->_db_builder = DB::select();
                 break;
-            case Database::UPDATE:
+            case 'update':
                 $this->_db_builder = DB::update(array($this->_table_name, $this->_object_name));
                 break;
-            case Database::DELETE:
+            case 'delete':
                 // Cannot use an alias for DELETE queries
                 $this->_db_builder = DB::delete($this->_table_name);
         }
@@ -882,13 +884,13 @@ class ORM extends \Bootphp\Model implements \serializable
      * Finds and loads a single database row into the object.
      *
      * @chainable
-     * @throws Kohana_Exception
+     * @throws BootphpException
      * @return ORM
      */
     public function find()
     {
         if ($this->_loaded)
-            throw new Kohana_Exception('Method find() cannot be called on loaded objects');
+            throw new BootphpException('Method find() cannot be called on loaded objects');
 
         if (!empty($this->_load_with)) {
             foreach ($this->_load_with as $alias) {
@@ -897,7 +899,7 @@ class ORM extends \Bootphp\Model implements \serializable
             }
         }
 
-        $this->_build(Database::SELECT);
+        $this->_build('select');
 
         return $this->_load_result(false);
     }
@@ -905,13 +907,13 @@ class ORM extends \Bootphp\Model implements \serializable
     /**
      * Finds multiple database rows and returns an iterator of the rows found.
      *
-     * @throws Kohana_Exception
+     * @throws BootphpException
      * @return Database_Result
      */
     public function find_all()
     {
         if ($this->_loaded)
-            throw new Kohana_Exception('Method find_all() cannot be called on loaded objects');
+            throw new BootphpException('Method find_all() cannot be called on loaded objects');
 
         if (!empty($this->_load_with)) {
             foreach ($this->_load_with as $alias) {
@@ -920,7 +922,7 @@ class ORM extends \Bootphp\Model implements \serializable
             }
         }
 
-        $this->_build(Database::SELECT);
+        $this->_build('select');
 
         return $this->_load_result(true);
     }
@@ -1177,13 +1179,13 @@ class ORM extends \Bootphp\Model implements \serializable
     /**
      * Insert a new object to the database
      * @param  Validation $validation Validation object
-     * @throws Kohana_Exception
+     * @throws BootphpException
      * @return ORM
      */
     public function create(Validation $validation = null)
     {
         if ($this->_loaded)
-            throw new Kohana_Exception('Cannot create :model model because it is already loaded.', array(':model' => $this->_object_name));
+            throw new BootphpException('Cannot create :model model because it is already loaded.', array(':model' => $this->_object_name));
 
         // Require model validation before saving
         if (!$this->_valid OR $validation) {
@@ -1231,13 +1233,13 @@ class ORM extends \Bootphp\Model implements \serializable
      *
      * @chainable
      * @param  Validation $validation Validation object
-     * @throws Kohana_Exception
+     * @throws BootphpException
      * @return ORM
      */
     public function update(Validation $validation = null)
     {
         if (!$this->_loaded)
-            throw new Kohana_Exception('Cannot update :model model because it is not loaded.', array(':model' => $this->_object_name));
+            throw new BootphpException('Cannot update :model model because it is not loaded.', array(':model' => $this->_object_name));
 
         // Run validation if the model isn't valid or we have additional validation rules.
         if (!$this->_valid OR $validation) {
@@ -1303,13 +1305,13 @@ class ORM extends \Bootphp\Model implements \serializable
      * Deletes a single record while ignoring relationships.
      *
      * @chainable
-     * @throws Kohana_Exception
+     * @throws BootphpException
      * @return ORM
      */
     public function delete()
     {
         if (!$this->_loaded)
-            throw new Kohana_Exception('Cannot delete :model model because it is not loaded.', array(':model' => $this->_object_name));
+            throw new BootphpException('Cannot delete :model model because it is not loaded.', array(':model' => $this->_object_name));
 
         // Use primary key value
         $id = $this->pk();
@@ -1508,7 +1510,7 @@ class ORM extends \Bootphp\Model implements \serializable
             }
         }
 
-        $this->_build(Database::SELECT);
+        $this->_build('select');
 
         $records = $this->_db_builder->from(array($this->_table_name, $this->_object_name))
                 ->select(array(DB::expr('COUNT(' . $this->_db->quote_column($this->_object_name . '.' . $this->_primary_key) . ')'), 'records_found'))
