@@ -282,8 +282,8 @@ class ORM extends \Bootphp\Model implements \serializable
     }
 
     /**
-     * Prepares the model database connection, determines the table name,
-     * and loads column information.
+     * Prepares the model database connection, determines the table name, and
+     *  loads column information.
      *
      * @return void
      */

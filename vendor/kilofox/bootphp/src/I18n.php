@@ -24,12 +24,12 @@ namespace Bootphp;
 class I18n
 {
     /**
-     * @var  string   target language: en-us, es-es, zh-cn, etc
+     * @var  string   target language: en-us, zh-cn, etc
      */
     public static $lang = 'en-us';
 
     /**
-     * @var  string  source language: en-us, es-es, zh-cn, etc
+     * @var  string  source language: en-us, zh-cn, etc
      */
     public static $source = 'en-us';
 

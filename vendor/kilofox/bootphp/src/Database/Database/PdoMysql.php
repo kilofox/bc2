@@ -35,12 +35,12 @@ class PdoMysql extends \Bootphp\Database\Database
             return;
 
         // Extract the connection parameters, adding required variabels
-        extract($this->_config['connection'] + array(
+        extract($this->_config['connection'] + [
             'dsn' => '',
             'username' => null,
             'password' => null,
             'persistent' => false,
-        ));
+        ]);
 
         // Clear the connection parameters for security
         unset($this->_config['connection']);
