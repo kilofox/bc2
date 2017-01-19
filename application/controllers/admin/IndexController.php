@@ -48,9 +48,9 @@ class IndexController extends AdministrationController
 		}
 		echo '-->';
         // 统计评论数
-        $comments = Model::factory('comment')->count();
+        $comments = 0;//Model::factory('comment')->count();
         // 查询数据库版本
-        $dbVersion = DB::select([DB::expr('version()'), 'version'])->execute()->get('version');
+        $dbVersion = 2;//DB::select([DB::expr('version()'), 'version'])->execute()->get('version');
         $this->assign('articles', $articles);
         $this->assign('comments', $comments);
         $this->assign('dbVersion', $dbVersion);

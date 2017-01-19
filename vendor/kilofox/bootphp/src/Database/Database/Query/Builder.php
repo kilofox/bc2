@@ -24,7 +24,7 @@ abstract class Builder extends \Bootphp\Database\Database\Query
      */
     protected function _compile_join(Database $db, array $joins)
     {
-        $statements = array();
+        $statements = [];
 
         foreach ($joins as $join) {
             // Compile each of the join statements

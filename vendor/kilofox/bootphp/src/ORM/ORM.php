@@ -291,7 +291,7 @@ class ORM extends \Bootphp\Model implements \serializable
     {
         // Set the object name if none predefined
         if (empty($this->_object_name)) {
-            $this->_object_name = strtolower(substr(get_class($this), 6));
+            $this->_object_name = strtolower(substr(get_class($this), -5));
         }
 
         // Check if this model has already been initialized
