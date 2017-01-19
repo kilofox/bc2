@@ -30,7 +30,7 @@ class Response
      */
     public static function factory(array $config = array())
     {
-        return new Response($config);
+        return new self($config);
     }
 
     // HTTP status codes and messages
@@ -229,7 +229,7 @@ class Response
             $this->_header->exchangeArray($key);
             return $this;
         } elseif ($value === null) {
-            return Arr::get($this->_header, $key);
+            return isset($this->_header[$key]) ? $this->_header[$key] : null;
         } else {
             $this->_header[$key] = $value;
             return $this;
@@ -271,7 +271,7 @@ class Response
         if ($key === null)
             return $this->_cookies;
         elseif (!is_array($key) AND ! $value)
-            return Arr::get($this->_cookies, $key);
+            return isset($this->_cookies[$key]) ? $this->_cookies[$key] : null;
 
         // Handle the set cookie calls
         if (is_array($key)) {

@@ -55,7 +55,7 @@ class Request
      * @param   bool    $allow_external   Allow external requests? (deprecated in 3.3)
      * @param   array   $injected_routes  An array of routes to use, for testing
      * @return  void|Request
-     * @throws  Request_Exception
+     * @throws  BootphpException
      * @uses    Route::all
      * @uses    Route::matches
      */
@@ -562,7 +562,7 @@ class Request
      * @param   bool    $allow_external   Allow external requests? (deprecated in 3.3)
      * @param   array   $injected_routes  An array of routes to use, for testing
      * @return  void
-     * @throws  Request_Exception
+     * @throws  BootphpException
      * @uses    Route::all
      * @uses    Route::matches
      */
@@ -831,7 +831,7 @@ class Request
      *     $request->execute();
      *
      * @return  Response
-     * @throws  Request_Exception
+     * @throws  BootphpException
      * @throws  HTTP_Exception_404
      * @uses    [Core::$profiling]
      * @uses    [Profiler]
@@ -876,9 +876,7 @@ class Request
         }
 
         if (!$this->_client instanceof Client) {
-            throw new Request_Exception('Unable to execute :uri without a Kohana_Client', array(
-        ':uri' => $this->_uri,
-            ));
+            throw new \Bootphp\BootphpException('Unable to execute ' . $this->_uri . ' without a Kohana_Client');
         }
 
         return $this->_client->execute($this);
@@ -895,7 +893,7 @@ class Request
      */
     public function is_initial()
     {
-        return ($this === self::$initial);
+        return $this === self::$initial;
     }
 
     /**

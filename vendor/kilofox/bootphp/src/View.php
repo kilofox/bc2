@@ -221,7 +221,7 @@ class View
     {
         try {
             return $this->render();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             /**
              * Display the exception message.
              *

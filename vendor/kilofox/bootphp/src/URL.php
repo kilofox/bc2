@@ -118,7 +118,7 @@ class URL
         }
 
         // Concat the URL
-        return URL::base($protocol) . $path;
+        return self::base($protocol) . $path;
     }
 
     /**

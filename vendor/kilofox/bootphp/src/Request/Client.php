@@ -42,7 +42,7 @@ abstract class Client
      * @var array  Callbacks to use when response contains given headers
      */
     protected $_header_callbacks = array(
-        'Location' => 'Request_Client::on_header_location'
+        'Location' => 'self::on_header_location'
     );
 
     /**
@@ -367,7 +367,7 @@ abstract class Client
      * @param Response $response
      * @param Request_Client $client
      */
-    public static function on_header_location(Request $request, Response $response, Request_Client $client)
+    public static function on_header_location(Request $request, Response $response, Client $client)
     {
         // Do we need to follow a Location header ?
         if ($client->follow() AND in_array($response->status(), array(201, 301, 302, 303, 307))) {

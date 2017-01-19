@@ -28,8 +28,8 @@ class AdministrationController extends \Bootphp\Controller
         $this->layoutPath = APP_PATH . '/modules/system/views/default/';
         $this->templatePath = APP_PATH . '/modules/system/views/default/admin/';
         $this->user = Auth::instance()->get_user();
-        if (!$this->user)
-            $this->redirect('system/login');
+        //if (!$this->user)
+        //    $this->redirect('system/login');
     }
 
     /**
@@ -37,9 +37,9 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function after()
     {
-        $this->assign('user', $this->user);
-        $this->assign('menu', $this->menu($this->module));
-        $this->assign('title', $this->title);
+       // $this->assign('user', $this->user);
+       // $this->assign('menu', $this->menu($this->module));
+       // $this->assign('title', $this->title);
 
         parent::after();
     }
