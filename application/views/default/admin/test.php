@@ -3,4 +3,4 @@
         <li><?php echo $node->name; ?></li>
     <?php endforeach; ?>
 </ul>
-<? echo \Bootphp\View::factory('profiler/stats'); ?>
+<?php echo \Bootphp\View::factory(SYS_PATH.'/profiler/Views/stats.html.php'); ?>

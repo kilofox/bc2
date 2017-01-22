@@ -42,7 +42,8 @@ class IndexController extends AdministrationController
     {
         // 统计文章数
         //$articles = \Bootphp\ORM\ORM::factory('article')->find_all();
-        $linkages = \Bootphp\ORM\ORM::factory('Linkage')->where('id', '<', 16)->find_all()->as_array();
+        //$linkages = \Bootphp\ORM\ORM::factory('Linkage')->where('id', '=', 16)->find_all();
+        $linkages = DB::select()->from('linkages')->where('id', '=', 16)->as_object()->execute();
 
         // 统计评论数
         $comments = 0; //Model::factory('comment')->count();

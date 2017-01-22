@@ -2,6 +2,8 @@
 
 namespace Bootphp\Database\Database;
 
+use Bootphp\Database\Database;
+
 /**
  * Database query wrapper.  See [Parameterized Statements](database/query/parameterized) for usage and examples.
  *
@@ -31,8 +33,8 @@ class Query
     /**
      * Creates a new SQL query of the specified type.
      *
-     * @param   integer  $type  query type: Database::SELECT, Database::INSERT, etc
-     * @param   string   $sql   query string
+     * @param   integer  $type  Query type: 'select', 'insert', etc
+     * @param   string   $sql   Query string
      * @return  void
      */
     public function __construct($type, $sql)
@@ -220,7 +222,7 @@ class Query
         // Compile the SQL query
         $sql = $this->compile($db);
 
-        if ($this->_lifetime !== null AND $this->_type === Database::SELECT) {
+        if ($this->_lifetime !== null AND $this->_type === 'select') {
             // Set the cache key based on the database instance name and SQL
             $cache_key = 'Database::query("' . $db . '", "' . $sql . '")';
 

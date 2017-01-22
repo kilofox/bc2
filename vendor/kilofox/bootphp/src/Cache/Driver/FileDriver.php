@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp\Cache\Cache;
+namespace Bootphp\Cache\Driver;
 
 /**
  * [Kohana Cache](api/Kohana_Cache) File driver. Provides a file based
@@ -41,14 +41,14 @@ namespace Bootphp\Cache\Cache;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class CacheFile extends Cache implements Cache_GarbageCollect
+class FileDriver extends \Bootphp\Cache\Cache
 {
     /**
      * Creates a hashed filename based on the string. This is used
      * to create shorter unique IDs for each cache filename.
      *
      *     // Create the cache filename
-     *     $filename = Cache_File::filename($this->_sanitize_id($id));
+     *     $filename = FileDriver::filename($this->_sanitize_id($id));
      *
      * @param   string  $string  string to hash into filename
      * @return  string
@@ -76,8 +76,8 @@ class CacheFile extends Cache implements Cache_GarbageCollect
         parent::__construct($config);
 
         try {
-            $directory = Arr::get($this->_config, 'cache_dir', Core::$cache_dir);
-            $this->_cache_dir = new SplFileInfo($directory);
+            $directory = isset($this->_config['cacheDir']) ? $this->_config['cacheDir'] : \Bootphp\Core::$cacheDir;
+            $this->_cache_dir = new \SplFileInfo($directory);
         }
         // PHP < 5.3 exception handle
         catch (ErrorException $e) {
@@ -120,13 +120,13 @@ class CacheFile extends Cache implements Cache_GarbageCollect
      */
     public function get($id, $default = null)
     {
-        $filename = Cache_File::filename($this->_sanitize_id($id));
+        $filename = self::filename($this->_sanitize_id($id));
         $directory = $this->_resolve_directory($filename);
 
         // Wrap operations in try/catch to handle notices
         try {
             // Open file
-            $file = new SplFileInfo($directory . $filename);
+            $file = new \SplFileInfo($directory . $filename);
 
             // If file does not exist
             if (!$file->isFile()) {
@@ -184,17 +184,17 @@ class CacheFile extends Cache implements Cache_GarbageCollect
      */
     public function set($id, $data, $lifetime = null)
     {
-        $filename = Cache_File::filename($this->_sanitize_id($id));
+        $filename = self::filename($this->_sanitize_id($id));
         $directory = $this->_resolve_directory($filename);
 
         // If lifetime is null
         if ($lifetime === null) {
             // Set to the default expiry
-            $lifetime = Arr::get($this->_config, 'default_expire', Cache::DEFAULT_EXPIRE);
+            $lifetime = isset($this->_config['default_expire']) ? $this->_config['default_expire'] : \Bootphp\Cache\Cache::DEFAULT_EXPIRE;
         }
 
         // Open directory
-        $dir = new SplFileInfo($directory);
+        $dir = new \SplFileInfo($directory);
 
         // If the directory path is not a directory
         if (!$dir->isDir()) {
@@ -202,7 +202,7 @@ class CacheFile extends Cache implements Cache_GarbageCollect
         }
 
         // Open file to inspect
-        $resouce = new SplFileInfo($directory . $filename);
+        $resouce = new \SplFileInfo($directory . $filename);
         $file = $resouce->openFile('w');
 
         try {
@@ -232,10 +232,10 @@ class CacheFile extends Cache implements Cache_GarbageCollect
      */
     public function delete($id)
     {
-        $filename = Cache_File::filename($this->_sanitize_id($id));
+        $filename = self::filename($this->_sanitize_id($id));
         $directory = $this->_resolve_directory($filename);
 
-        return $this->_delete_file(new SplFileInfo($directory . $filename), false, true);
+        return $this->_delete_file(new \SplFileInfo($directory . $filename), false, true);
     }
 
     /**
@@ -280,7 +280,7 @@ class CacheFile extends Cache implements Cache_GarbageCollect
      * @return  boolean
      * @throws  Cache_Exception
      */
-    protected function _delete_file(SplFileInfo $file, $retain_parent_directory = false, $ignore_errors = false, $only_expired = false)
+    protected function _delete_file(\SplFileInfo $file, $retain_parent_directory = false, $ignore_errors = false, $only_expired = false)
     {
         // Allow graceful error handling
         try {
@@ -327,7 +327,7 @@ class CacheFile extends Cache implements Cache_GarbageCollect
                     // If the name is not a dot
                     if ($name != '.' AND $name != '..') {
                         // Create new file resource
-                        $fp = new SplFileInfo($files->getRealPath());
+                        $fp = new \SplFileInfo($files->getRealPath());
                         // Delete the file
                         $this->_delete_file($fp, $retain_parent_directory, $ignore_errors, $only_expired);
                     }
@@ -351,7 +351,7 @@ class CacheFile extends Cache implements Cache_GarbageCollect
                 } catch (ErrorException $e) {
                     // Catch any delete directory warnings
                     if ($e->getCode() === E_WARNING) {
-                        throw new Cache_Exception(__METHOD__ . ' failed to delete directory : :directory', array(':directory' => $file->getRealPath()));
+                        throw new \Bootphp\BootphpException(__METHOD__ . ' failed to delete directory : '.$file->getRealPath());
                     }
                     throw $e;
                 }
@@ -413,7 +413,7 @@ class CacheFile extends Cache implements Cache_GarbageCollect
         // chmod to solve potential umask issues
         chmod($directory, $mode);
 
-        return new SplFileInfo($directory);
+        return new \SplFileInfo($directory);
     }
 
     /**
@@ -422,7 +422,7 @@ class CacheFile extends Cache implements Cache_GarbageCollect
      * @param SplFileInfo $file the cache file
      * @return boolean true if expired false otherwise
      */
-    protected function _is_expired(SplFileInfo $file)
+    protected function _is_expired(\SplFileInfo $file)
     {
         // Open the file and parse data
         $created = $file->getMTime();

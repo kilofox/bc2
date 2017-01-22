@@ -228,7 +228,7 @@ class View
              * We use this method here because it's impossible to throw an
              * exception from __toString().
              */
-            $error_response = BootphpException::_handler($e);
+            $error_response = BootphpException::handler($e);
 
             return $error_response->body();
         }

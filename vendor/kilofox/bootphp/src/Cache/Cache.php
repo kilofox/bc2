@@ -120,19 +120,17 @@ abstract class Cache
             return Cache::$instances[$group];
         }
 
-        $config = Core::$config->load('cache');
+        $config = \Bootphp\Core::$config->load('cache');
 
-        if (!$config->offsetExists($group)) {
-            throw new Cache_Exception(
-            'Failed to load Kohana Cache group: :group', array(':group' => $group)
-            );
+        if (!isset($config[$group])) {
+            throw new \Bootphp\BootphpException('Failed to load Bootphp Cache group: ' . $group);
         }
 
-        $config = $config->get($group);
+        $config = $config[$group];
 
         // Create a new cache type instance
-        $cache_class = 'Cache_' . ucfirst($config['driver']);
-        Cache::$instances[$group] = new $cache_class($config);
+        $cacheClass = 'Bootphp\\Cache\\Driver\\' . ucfirst($config['driver']) . 'Driver';
+        Cache::$instances[$group] = new $cacheClass($config);
 
         // Return the instance
         return Cache::$instances[$group];
@@ -289,5 +287,3 @@ abstract class Cache
     }
 
 }
-
-// End Kohana_Cache

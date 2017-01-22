@@ -240,7 +240,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     final public function offsetUnset($offset)
     {
-        throw new Kohana_Exception('Database results are read-only');
+        throw new BootphpException('Database results are read-only');
     }
 
     /**
@@ -307,5 +307,3 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
     }
 
 }
-
-// End Database_Result

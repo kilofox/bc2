@@ -2,6 +2,8 @@
 
 namespace Bootphp;
 
+use Bootphp\Cache;
+
 /**
  * Provides simple benchmarking and profiling. To display the statistics that
  * have been collected, load the `profiler/stats` [View]:
@@ -291,7 +293,8 @@ class Profiler
     public static function application()
     {
         // Load the stats from cache, which is valid for 1 day
-        $stats = Core::cache('profiler_application_stats', null, 3600 * 24);
+        $cache = Cache\Cache::instance();
+        $stats = $cache->get('profiler_application_stats', null, 86400);
 
         if (!is_array($stats) OR $stats['count'] > self::$rollover) {
             // Initialize the stats array
@@ -309,10 +312,10 @@ class Profiler
         }
 
         // Get the application run time
-        $time = microtime(true) - KOHANA_START_TIME;
+        $time = microtime(true) - START_TIME;
 
         // Get the total memory usage
-        $memory = memory_get_usage() - KOHANA_START_MEMORY;
+        $memory = memory_get_usage() - START_MEMORY;
 
         // Calculate max time
         if ($stats['max']['time'] === null OR $time > $stats['max']['time']) {
@@ -349,7 +352,7 @@ class Profiler
             'memory' => $stats['total']['memory'] / $stats['count']);
 
         // Cache the new stats
-        Core::cache('profiler_application_stats', $stats);
+        $cache->set('profiler_application_stats', $stats);
 
         // Set the current application execution time and memory
         // Do NOT cache these, they are specific to the current request only

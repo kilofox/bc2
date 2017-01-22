@@ -49,5 +49,3 @@ class Cached extends \Bootphp\Database\Database\Result
     }
 
 }
-
-// End Database_Result_Cached
