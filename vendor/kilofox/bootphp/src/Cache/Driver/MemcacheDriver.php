@@ -83,7 +83,7 @@ namespace Bootphp\Cache\Cache;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class CacheMemcache extends Cache implements CacheArithmetic
+class MemcacheDriver extends Cache implements CacheArithmetic
 {
     // Memcache has a maximum cache lifetime of 30 days
     const CACHE_CEILING = 2592000;

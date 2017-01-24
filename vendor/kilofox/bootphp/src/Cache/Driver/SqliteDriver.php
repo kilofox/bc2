@@ -13,7 +13,7 @@ namespace Bootphp\Cache\Cache;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class CacheSqlite extends Cache implements CacheTagging, CacheGarbageCollect
+class SqliteDriver extends Cache implements CacheTagging, CacheGarbageCollect
 {
     /**
      * Database resource

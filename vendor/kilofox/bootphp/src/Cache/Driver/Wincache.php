@@ -44,7 +44,7 @@ namespace Bootphp\Cache\Cache;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class CacheWincache extends Cache
+class WincacheDriver extends Cache
 {
     /**
      * Check for existence of the wincache extension This method cannot be invoked externally. The driver must

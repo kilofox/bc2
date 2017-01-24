@@ -42,9 +42,9 @@ class IndexController extends AdministrationController
     {
         // 统计文章数
         //$articles = \Bootphp\ORM\ORM::factory('article')->find_all();
-        //$linkages = \Bootphp\ORM\ORM::factory('Linkage')->where('id', '=', 16)->find_all();
-        $linkages = DB::select()->from('linkages')->where('id', '=', 16)->as_object()->execute();
-
+        $linkages = \Bootphp\ORM\ORM::factory('Linkage')->where('id', '=', 16)->find_all();
+        //$linkages = DB::select()->from('linkages')->where('id', '=', 16)->as_object()->execute();
+print_r(\Bootphp\ORM\ORM::factory('Linkage'));
         // 统计评论数
         $comments = 0; //Model::factory('comment')->count();
         // 查询数据库版本

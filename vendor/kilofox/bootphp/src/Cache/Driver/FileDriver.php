@@ -288,7 +288,7 @@ class FileDriver extends \Bootphp\Cache\Cache
             if ($file->isFile()) {
                 try {
                     // Handle ignore files
-                    if (in_array($file->getFilename(), $this->config('ignore_on_delete'))) {
+                    if (in_array($file->getFilename(), $this->config('ignoreOnDelete'))) {
                         $delete = false;
                     }
                     // If only expired is not set
@@ -307,7 +307,7 @@ class FileDriver extends \Bootphp\Cache\Cache
                         return unlink($file->getRealPath());
                     else
                         return false;
-                } catch (ErrorException $e) {
+                } catch (\ErrorException $e) {
                     // Catch any delete file warnings
                     if ($e->getCode() === E_WARNING) {
                         throw new Cache_Exception(__METHOD__ . ' failed to delete file : :file', array(':file' => $file->getRealPath()));
@@ -317,7 +317,7 @@ class FileDriver extends \Bootphp\Cache\Cache
             // Else, is directory
             elseif ($file->isDir()) {
                 // Create new DirectoryIterator
-                $files = new DirectoryIterator($file->getPathname());
+                $files = new \DirectoryIterator($file->getPathname());
 
                 // Iterate over each entry
                 while ($files->valid()) {

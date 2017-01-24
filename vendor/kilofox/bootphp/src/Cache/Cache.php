@@ -181,7 +181,7 @@ abstract class Cache
             $this->_config = $key;
         } else {
             if ($value === null)
-                return Arr::get($this->_config, $key);
+                return isset($this->_config[$key]) ? $this->_config[$key] : null;
 
             $this->_config[$key] = $value;
         }

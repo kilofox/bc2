@@ -12,7 +12,7 @@ namespace Bootphp\Cache\Cache;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-class CacheMemcacheTag extends CacheMemcache implements CacheTagging
+class MemcacheTagDriver extends CacheMemcache implements CacheTagging
 {
     /**
      * Constructs the memcache object

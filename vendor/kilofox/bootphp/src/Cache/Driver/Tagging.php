@@ -11,7 +11,7 @@ namespace Bootphp\Cache\Cache;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kohanaphp.com/license
  */
-interface CacheTagging
+interface Tagging
 {
     /**
      * Set a value based on an id. Optionally add tags.

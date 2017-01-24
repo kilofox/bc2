@@ -945,8 +945,8 @@ class ORM extends \Bootphp\Model implements \serializable
     }
 
     /**
-     * Loads a database result, either as a new record for this model, or as
-     * an iterator for multiple rows.
+     * Loads a database result, either as a new record for this model, or as an
+     * iterator for multiple rows.
      *
      * @chainable
      * @param  bool $multiple Return an iterator or load a single row
@@ -954,7 +954,8 @@ class ORM extends \Bootphp\Model implements \serializable
      */
     protected function _load_result($multiple = false)
     {
-        $this->_db_builder->from(array($this->_table_name, $this->_object_name));
+        //$this->_db_builder->from(array($this->_table_name, $this->_object_name));
+        $this->_db_builder->from($this->_table_name);
 
         if ($multiple === false) {
             // Only fetch 1 record
@@ -962,7 +963,7 @@ class ORM extends \Bootphp\Model implements \serializable
         }
 
         // Select all columns by default
-        $this->_db_builder->select_array($this->_build_select());
+        //$this->_db_builder->select_array($this->_build_select());
 
         if (!isset($this->_db_applied['order_by']) AND ! empty($this->_sorting)) {
             foreach ($this->_sorting as $column => $direction) {
