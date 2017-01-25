@@ -114,7 +114,7 @@ class Select extends Where
      */
     public function join($table, $type = null)
     {
-        $this->_join[] = $this->_last_join = new Database_Query_Builder_Join($table, $type);
+        $this->_join[] = $this->_last_join = new Join($table, $type);
 
         return $this;
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp\Database\Query\Builder;
+namespace Bootphp\Database\Database\Query\Builder;
 
 /**
  * Database query builder for JOIN statements. See [Query Builder](/database/query/builder) for usage and examples.
@@ -11,7 +11,7 @@ namespace Bootphp\Database\Query\Builder;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class DatabaseQueryBuilderJoin extends \Bootphp\DatabaseQueryBuilder
+class Join extends \Bootphp\Database\Database\Query\Builder
 {
     // Type of JOIN
     protected $_type;

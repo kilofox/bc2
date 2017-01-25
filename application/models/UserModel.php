@@ -17,13 +17,7 @@ class UserModel extends \Bootphp\ORM\ORM
     protected $_has_many = array(
         'article' => array(
             //'model' => 'article',
-            'foreign_key' => 'author_id',
-        ),
-    );
-    protected $_belongs_to = array(
-        'article' => array(
-            //'model' => 'article',
-            'foreign_key' => 'author_id',
+            'foreign_key' => 'author_id'
         ),
     );
 

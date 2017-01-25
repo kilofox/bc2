@@ -2,11 +2,12 @@
 
 namespace App\controllers\admin;
 
-use App\controllers\admin\AdministrationController;
-use App\models\UserModel;
-use Bootphp\Model;
+use Bootphp\ORM\ORM;
 use Bootphp\Database\DB;
 use Bootphp\View;
+use App\controllers\admin\AdministrationController;
+use App\models\UserModel;
+
 
 /**
  * 后台首页控制器。
@@ -41,10 +42,18 @@ class IndexController extends AdministrationController
     public function indexAction()
     {
         // 统计文章数
-        $user = new UserModel();
-        $user->where('id', '=', 1)->find();
-        $articles = $user->article->find_all();
-        print_r($user);
+        //$user = ORM::factory('User');
+        //$user->where('id', '=', 1)->find();
+        //$user->article;
+        //$articles = $user->article->find_all();
+        //print_r($user);
+
+        $article = ORM::factory('Article');
+        $articles = $article->where('id', '>', 1)->find_all();
+        $categories = $article->categories->find_all();
+        exit;
+
+
         // $user = DB::select()->from('users')->where('id', '=', 1)->as_object()->execute();
         // $aa = $user[0];
         // 统计评论数
@@ -55,7 +64,8 @@ class IndexController extends AdministrationController
         // $this->assign('articles', $articles);
         // $this->assign('comments', $comments);
         // $this->assign('dbVersion', $dbVersion);
-        $view->set('user', $user);
+        isset($user) and $view->set('user', $user);
+        isset($article) and $view->set('user', $article);
         $this->response->body($view);
     }
 

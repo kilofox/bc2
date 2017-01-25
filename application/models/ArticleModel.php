@@ -11,13 +11,25 @@ use Bootphp\Database\DB;
  * @package	BootCMS
  * @category	模型
  * @author		Tinsh
- @copyright  (C) 2005-2017 Kilofox Studio
+  @copyright  (C) 2005-2017 Kilofox Studio
  */
 class ArticleModel extends \Bootphp\ORM\ORM
 {
     protected $_object_name = 'article';
     protected $_tableName = 'articles';
     protected $_table_name = 'articles';
+    protected $_belongs_to = array(
+        'user' => array(
+            'model' => 'user',
+            'foreign_key' => 'author_id',
+        ),
+    );
+    protected $_has_many = array(
+        'categories' => array(
+            'model' => 'article',
+            'through' => 'article_categories',
+        ),
+    );
 
     /**
      * 文章列表

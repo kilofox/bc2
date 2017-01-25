@@ -35,6 +35,25 @@ class ORM extends \Bootphp\Model
     protected static $_init_cache = [];
 
     /**
+     * Creates and returns a new model.
+     * Model name must be passed with its' original casing, e.g.
+     *
+     *    $model = ORM::factory('User_Token');
+     *
+     * @chainable
+     * @param   string  $model  Model name
+     * @param   mixed   $id     Parameter for find()
+     * @return  ORM
+     */
+    public static function factory($model, $id = null)
+    {
+        // Set class name
+        $model = 'App\\models\\' . ucfirst($model) . 'Model';
+
+        return new $model($id);
+    }
+
+    /**
      * "Has one" relationships
      * @var array
      */
@@ -488,12 +507,11 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Handles getting of column
-     * Override this method to add custom get behavior
+     * Handles getting of column.
      *
-     * @param   string $column Column name
-     * @throws BootphpException
-     * @return mixed
+     * @param   string  $column  Column name
+     * @throws  BootphpException
+     * @return  mixed
      */
     public function get($column)
     {
@@ -506,7 +524,7 @@ class ORM extends \Bootphp\Model
             $model = $this->_related($column);
 
             // Use this model's column and foreign model's primary key
-            $col = $model->_object_name . '.' . $model->_primary_key;
+            $col = $model->_primary_key;
             $val = $this->_object[$this->_belongs_to[$column]['foreign_key']];
 
             // Make sure we don't run WHERE "AUTO_INCREMENT column" = null queries. This would
@@ -521,7 +539,7 @@ class ORM extends \Bootphp\Model
             $model = $this->_related($column);
 
             // Use this model's primary key value and foreign model's column
-            $col = $model->_object_name . '.' . $this->_has_one[$column]['foreign_key'];
+            $col = $this->_has_one[$column]['foreign_key'];
             $val = $this->pk();
 
             $model->where($col, '=', $val)->find();
