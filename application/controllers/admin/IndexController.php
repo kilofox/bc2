@@ -41,14 +41,12 @@ class IndexController extends AdministrationController
     public function indexAction()
     {
         // 统计文章数
-        $user = new UserModel(1);
-        //$user->where('id', '=', 1)->find();
-        print_r($user->articles);
-        $user->articles->find_all();
-
-        //$user = DB::select()->from('users')->where('id', '=', 1)->as_object()->execute();
-        //$user = $user[0];
-
+        $user = new UserModel();
+        $user->where('id', '=', 1)->find();
+        $articles = $user->article->find_all();
+        print_r($user);
+        // $user = DB::select()->from('users')->where('id', '=', 1)->as_object()->execute();
+        // $aa = $user[0];
         // 统计评论数
         $comments = 0; //Model::factory('comment')->count();
         // 查询数据库版本

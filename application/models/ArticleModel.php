@@ -11,10 +11,11 @@ use Bootphp\Database\DB;
  * @package	BootCMS
  * @category	模型
  * @author		Tinsh
- * @copyright	(C) 2005-2015 Kilofox Studio
+ @copyright  (C) 2005-2017 Kilofox Studio
  */
 class ArticleModel extends \Bootphp\ORM\ORM
 {
+    protected $_object_name = 'article';
     protected $_tableName = 'articles';
     protected $_table_name = 'articles';
 

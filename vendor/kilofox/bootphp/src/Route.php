@@ -105,7 +105,7 @@ class Route
     public static function get($name)
     {
         if (!isset(self::$_routes[$name])) {
-            throw new BootphpException('The requested route does not exist: :route', array(':route' => $name));
+            throw new BootphpException('The requested route does not exist: ' . $name);
         }
 
         return self::$_routes[$name];
@@ -159,11 +159,9 @@ class Route
             try {
                 // Cache all defined routes
                 Core::cache('Route::cache()', self::$_routes);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 // We most likely have a lambda in a route, which cannot be cached
-                throw new BootphpException('One or more routes could not be cached (:message)', array(
-            ':message' => $e->getMessage(),
-                ), 0, $e);
+                throw new BootphpException('One or more routes could not be cached (' . $e->getMessage() . ')', 0);
             }
         } else {
             if ($routes = Core::cache('Route::cache()')) {
@@ -339,14 +337,11 @@ class Route
      * Filters to be run before route parameters are returned:
      *
      *     $route->filter(
-     *         function(Route $route, $params, Request $request)
-     *         {
-     *             if ($request->method() !== HTTP_Request::POST)
-     *             {
+     *         function(Route $route, $params, Request $request) {
+     *             if ($request->method() !== HTTP_Request::POST) {
      *                 return false; // This route only matches POST requests
      *             }
-     *             if ($params AND $params['controller'] === 'welcome')
-     *             {
+     *             if ($params AND $params['controller'] === 'welcome') {
      *                 $params['controller'] = 'home';
      *             }
      *
@@ -525,9 +520,7 @@ class Route
             }, $portion);
 
             if ($required AND $missing) {
-                throw new BootphpException(
-                'Required route parameter not passed: :param', array(':param' => reset($missing))
-                );
+                throw new BootphpException('Required route parameter not passed: ' . reset($missing));
             }
 
             return array($result, $required);

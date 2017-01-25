@@ -28,7 +28,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
     /**
      * Sets the total number of rows and stores the result locally.
      *
-     * @param   mixed   $result     query result
+     * @param   mixed   $result     Query result
      * @param   string  $sql        SQL query
      * @param   mixed   $as_object
      * @param   array   $params

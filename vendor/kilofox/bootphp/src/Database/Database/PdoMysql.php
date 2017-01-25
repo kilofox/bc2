@@ -47,6 +47,7 @@ class PdoMysql extends \Bootphp\Database\Database
 
         // Force PDO to use exceptions for all errors
         $options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
+        $options[\PDO::ATTR_EMULATE_PREPARES] = false;
 
         if (!empty($persistent)) {
             // Make the connection persistent
@@ -57,7 +58,7 @@ class PdoMysql extends \Bootphp\Database\Database
             // Create a new PDO connection
             $this->_connection = new \PDO($dsn, $username, $password, $options);
         } catch (\PDOException $e) {
-            throw new BootphpException(':error', array(':error' => $e->getMessage()), $e->getCode());
+            throw new BootphpException($e->getMessage(), $e->getCode());
         }
 
         if (!empty($this->_config['charset'])) {
@@ -106,9 +107,7 @@ class PdoMysql extends \Bootphp\Database\Database
     {
         $this->_connection or $this->connect();
 
-        return $this->_connection->sqliteCreateFunction(
-                        $name, $callback, $arguments
-        );
+        return $this->_connection->sqliteCreateFunction($name, $callback, $arguments);
     }
 
     public function disconnect()
@@ -167,7 +166,7 @@ class PdoMysql extends \Bootphp\Database\Database
                 $result->setFetchMode(\PDO::FETCH_CLASS, 'stdClass');
             }
 
-            $result = $result->fetchAll();
+            $result = $result->fetchAll(\PDO::FETCH_ASSOC);
 
             // Return an iterator of results
             return new Result\Cached($result, $sql, $as_object, $params);

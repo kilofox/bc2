@@ -10,7 +10,7 @@ use Bootphp\Model;
  * @package	BootCMS
  * @category	模型
  * @author		Tinsh
- * @copyright	(C) 2005-2015 Kilofox Studio
+ @copyright  (C) 2005-2017 Kilofox Studio
  */
 class SiteModel extends Model
 {

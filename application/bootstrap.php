@@ -26,14 +26,18 @@ date_default_timezone_set('UTC');
 ]);
 
 /**
- * Cookie Salt
- * @see  http://kohanaframework.org/3.3/guide/kohana/cookies
+ * Cookie Salt.
  *
- * If you have not defined a cookie salt in your Cookie class then
- * uncomment the line below and define a preferrably long salt.
+ * If you have not defined a cookie salt in your Cookie class then uncomment the
+ * line below and define a preferrably long salt.
  */
 \Bootphp\Cookie::$salt = 'null';
 
 // Set the routes.
-\Bootphp\Route::set('admin', '(<directory>(/<controller>(/<id>)(/<action>)))', ['id' => '\d+']);
+\Bootphp\Route::set('admin', '(<directory>(/<controller>(/<id>)(/<action>)))', [
+    'directory' => '(admin)',
+    'id' => '\d+'
+        ]
+);
 \Bootphp\Route::set('default', '(<controller>(/<id>)(/<action>))', ['id' => '\d+']);
+

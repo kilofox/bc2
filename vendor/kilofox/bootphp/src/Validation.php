@@ -68,7 +68,7 @@ class Validation implements ArrayAccess
      * Implements ArrayAccess method.
      *
      * @param   string  $offset key to check
-     * @return  bool    whether the key is set
+     * @return  boolean    whether the key is set
      */
     public function offsetExists($offset)
     {

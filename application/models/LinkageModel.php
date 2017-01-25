@@ -2,16 +2,13 @@
 
 namespace App\models;
 
-use Bootphp\Model;
-use Bootphp\Database\DB;
-
 /**
  * 节点模型。
  *
  * @package	BootCMS
  * @category	模型
  * @author		Tinsh
- * @copyright	(C) 2005-2015 Kilofox Studio
+ @copyright  (C) 2005-2017 Kilofox Studio
  */
 class LinkageModel extends \Bootphp\ORM\ORM
 {

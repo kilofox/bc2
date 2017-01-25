@@ -23,6 +23,7 @@ class AutoloaderInit
 
         $loader->set('Bootphp', __DIR__ . '/kilofox/bootphp/src');
         $loader->set('App', __DIR__ . '/../application');
+        $loader->set('Michelf', __DIR__ . '/Michelf');
 
         $loader->register();
 
