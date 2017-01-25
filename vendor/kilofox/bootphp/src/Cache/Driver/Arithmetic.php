@@ -10,7 +10,7 @@ namespace Bootphp\Cache\Cache;
  * @category   Base
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
- * @license    http://kohanaphp.com/license
+ * @license    http://kilofox.net/license
  * @since      3.2.0
  */
 interface Arithmetic

@@ -7,7 +7,7 @@
  * @category   Test
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
- * @license    http://kohanaphp.com/license
+ * @license    http://kilofox.net/license
  */
 abstract class Kohana_CacheBasicMethodsTest extends PHPUnit_Framework_TestCase
 {

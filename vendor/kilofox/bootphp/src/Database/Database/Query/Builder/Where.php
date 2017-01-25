@@ -8,8 +8,8 @@ namespace Bootphp\Database\Database\Query\Builder;
  * @package    Bootphp/Database
  * @category   Query
  * @author     Tinsh <kilofox2000@gmail.com>
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (C) 2005-2017 Kilofox Studio
+ * @license    http://kilofox.net/license
  */
 abstract class Where extends \Bootphp\Database\Database\Query\Builder
 {

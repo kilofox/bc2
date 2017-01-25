@@ -15,8 +15,6 @@ use Bootphp\Database\DB;
  */
 class LinkageModel extends \Bootphp\ORM\ORM
 {
-    //private $_values = null;
-    //private $_loaded = false;
     protected $_table_name = 'linkages';
 
 }

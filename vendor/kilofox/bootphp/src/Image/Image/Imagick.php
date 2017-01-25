@@ -7,7 +7,7 @@
  * @category   Drivers
  * @author     Tamas Mihalik tamas.mihalik@gmail.com
  * @copyright  (C) 2005-2017 Kilofox Studio
- * @license    http://kohanaphp.com/license.html
+ * @license    http://kilofox.net/license.html
  */
 class Kohana_Image_Imagick extends Image
 {

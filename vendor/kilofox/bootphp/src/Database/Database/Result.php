@@ -3,13 +3,13 @@
 namespace Bootphp\Database\Database;
 
 /**
- * Database result wrapper.  See [Results](/database/results) for usage and examples.
+ * Database result wrapper. See [Results](/database/results) for usage and examples.
  *
  * @package    Bootphp/Database
  * @category   Query/Result
  * @author     Tinsh <kilofox2000@gmail.com>
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (C) 2005-2017 Kilofox Studio
+ * @license    http://kilofox.net/license
  */
 abstract class Result implements \Countable, \Iterator, \SeekableIterator, \ArrayAccess
 {
@@ -67,12 +67,11 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *
      *     $cachable = serialize($result->cached());
      *
-     * @return  Database_Result_Cached
-     * @since   3.0.5
+     * @return  Cached
      */
     public function cached()
     {
-        return new Database_Result_Cached($this->as_array(), $this->_query, $this->_as_object);
+        return new \Bootphp\Database\Database\Result\Cached($this->as_array(), $this->_query, $this->_as_object);
     }
 
     /**
@@ -190,7 +189,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *         // Row 10 exists
      *     }
      *
-     * @param   int     $offset
+     * @param   integer     $offset
      * @return  boolean
      */
     public function offsetExists($offset)
@@ -222,11 +221,11 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      * @param   int     $offset
      * @param   mixed   $value
      * @return  void
-     * @throws  Kohana_Exception
+     * @throws  BootphpException
      */
     final public function offsetSet($offset, $value)
     {
-        throw new Kohana_Exception('Database results are read-only');
+        throw new BootphpException('Database results are read-only');
     }
 
     /**
@@ -236,7 +235,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *
      * @param   int     $offset
      * @return  void
-     * @throws  Kohana_Exception
+     * @throws  BootphpException
      */
     final public function offsetUnset($offset)
     {

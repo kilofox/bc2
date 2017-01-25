@@ -8,7 +8,7 @@ defined('SYSPATH') OR die('No direct access allowed.');
  * @package    Bootphp/Auth
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (c) 2007-2009 Kohana Team
- * @license    http://kohanaphp.com/license.html
+ * @license    http://kilofox.net/license.html
  */
 class Model_Auth_Role extends ORM
 {

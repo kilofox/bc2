@@ -18,16 +18,17 @@ abstract class Model
      *
      *     $model = Model::factory($name);
      *
-     * @param   string  $name   Model name
-     * @param   string  $module Module name
+     * @param   string  $name       Model name
+     * @param   string  $directory  Model directory
      * @return  Model
      */
-    public static function factory($name, $module = null)
+    public static function factory($name, $directory = null)
     {
-        $module = !is_string($module) ? '' : $module .= '\\';
+        // Models are in a sub-directory
+        $directory = !is_string($directory) ? '' : $directory .= '\\';
 
         // Add the model suffix
-        $class = 'App\\models\\' . $module . ucfirst($name) . 'Model';
+        $class = 'App\\models\\' . $directory . ucfirst($name) . 'Model';
 
         return new $class;
     }

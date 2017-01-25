@@ -8,7 +8,7 @@ namespace Bootphp\Auth;
  *
  * @package    Bootphp/Auth
  * @author     Tinsh <kilofox2000@gmail.com>
- * @copyright  (c) 2007-2012 Kohana Team
+ * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
 abstract class Auth

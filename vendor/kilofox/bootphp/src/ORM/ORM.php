@@ -5,23 +5,22 @@ namespace Bootphp\ORM;
 use Bootphp\Database\Database;
 use Bootphp\Database\DB;
 use Bootphp\BootphpException;
-use Bootphp\Inflector;
 
 /**
- * [Object Relational Mapping][ref-orm] (ORM) is a method of abstracting database
- * access to standard PHP calls. All table rows are represented as model objects,
- * with object properties representing row data. ORM in Kohana generally follows
- * the [Active Record][ref-act] pattern.
+ * [Object Relational Mapping][ref-orm] (ORM) is a method of abstracting
+ * database access to standard PHP calls. All table rows are represented as
+ * model objects, with object properties representing row data. ORM in Bootphp
+ * generally follows the [Active Record][ref-act] pattern.
  *
  * [ref-orm]: http://wikipedia.org/wiki/Object-relational_mapping
  * [ref-act]: http://wikipedia.org/wiki/Active_record
  *
  * @package    Bootphp/ORM
  * @author     Tinsh <kilofox2000@gmail.com>
- * @copyright  (c) 2007-2012 Kohana Team
+ * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class ORM extends \Bootphp\Model implements \serializable
+class ORM extends \Bootphp\Model
 {
     /**
      * Stores column information for ORM models
@@ -34,25 +33,6 @@ class ORM extends \Bootphp\Model implements \serializable
      * @var array
      */
     protected static $_init_cache = array();
-
-    /**
-     * Creates and returns a new model.
-     * Model name must be passed with its' original casing, e.g.
-     *
-     *    $model = ORM::factory('User_Token');
-     *
-     * @chainable
-     * @param   string  $model  Model name
-     * @param   mixed   $id     Parameter for find()
-     * @return  ORM
-     */
-    public static function factory($model, $id = null)
-    {
-        // Set class name
-        $model = 'App\\models\\' . ucfirst($model) . 'Model';
-
-        return new $model($id);
-    }
 
     /**
      * "Has one" relationships
@@ -138,12 +118,6 @@ class ORM extends \Bootphp\Model implements \serializable
     protected $_object_name;
 
     /**
-     * Plural model name
-     * @var string
-     */
-    protected $_object_plural;
-
-    /**
      * Table name
      * @var string
      */
@@ -184,12 +158,6 @@ class ORM extends \Bootphp\Model implements \serializable
      * @var mixed
      */
     protected $_primary_key_value;
-
-    /**
-     * Model configuration, table names plural?
-     * @var bool
-     */
-    protected $_table_names_plural = true;
 
     /**
      * Model configuration, reload on wakeup?
@@ -271,7 +239,7 @@ class ORM extends \Bootphp\Model implements \serializable
                 $this->find();
             } else {
                 // Passing the primary key
-                $this->where($this->_object_name . '.' . $this->_primary_key, '=', $id)->find();
+                $this->where($this->_primary_key, '=', $id)->find();
             }
         } elseif (!empty($this->_cast_data)) {
             // Load preloaded data from a database call cast
@@ -283,7 +251,7 @@ class ORM extends \Bootphp\Model implements \serializable
 
     /**
      * Prepares the model database connection, determines the table name, and
-     *  loads column information.
+     * loads column information.
      *
      * @return void
      */
@@ -302,15 +270,6 @@ class ORM extends \Bootphp\Model implements \serializable
                 '_has_many' => array(),
             );
 
-            // Set the object plural name if none predefined
-            if (!isset($this->_object_plural)) {
-                $init['_object_plural'] = Inflector::plural($this->_object_name);
-            }
-
-            if (!$this->_errors_filename) {
-                $init['_errors_filename'] = $this->_object_name;
-            }
-
             if (!is_object($this->_db)) {
                 // Get database instance
                 $init['_db'] = Database::instance($this->_db_group);
@@ -319,11 +278,6 @@ class ORM extends \Bootphp\Model implements \serializable
             if (empty($this->_table_name)) {
                 // Table name is the same as the object name
                 $init['_table_name'] = $this->_object_name;
-
-                if ($this->_table_names_plural === true) {
-                    // Make the table name plural
-                    $init['_table_name'] = isset($init['_object_plural']) ? $init['_object_plural'] : $this->_object_plural;
-                }
             }
 
             $defaults = array();
@@ -350,20 +304,20 @@ class ORM extends \Bootphp\Model implements \serializable
 
             foreach ($this->_has_many as $alias => $details) {
                 if (!isset($details['model'])) {
-                    $defaults['model'] = str_replace(' ', '_', ucwords(str_replace('_', ' ', Inflector::singular($alias))));
+                    $defaults['model'] = str_replace(' ', '_', ucwords(str_replace('_', ' ', $alias)));
                 }
 
                 $defaults['foreign_key'] = $this->_object_name . $this->_foreign_key_suffix;
                 $defaults['through'] = null;
 
                 if (!isset($details['far_key'])) {
-                    $defaults['far_key'] = Inflector::singular($alias) . $this->_foreign_key_suffix;
+                    $defaults['far_key'] = $alias . $this->_foreign_key_suffix;
                 }
 
                 $init['_has_many'][$alias] = array_merge($defaults, $details);
             }
 
-            ORM::$_init_cache[$this->_object_name] = $init;
+            self::$_init_cache[$this->_object_name] = $init;
         }
 
         // Assign initialized properties to the current object
@@ -373,7 +327,6 @@ class ORM extends \Bootphp\Model implements \serializable
 
         // Load column information
         $this->reload_columns();
-
         // Clear initial model state
         $this->clear();
     }
@@ -441,13 +394,12 @@ class ORM extends \Bootphp\Model implements \serializable
     {
         // Create an array with all the columns set to null
         $values = array_combine(array_keys($this->_table_columns), array_fill(0, count($this->_table_columns), null));
-
+        //$values = [];
         // Replace the object and reset the object status
         $this->_object = $this->_changed = $this->_related = $this->_original_values = array();
 
         // Replace the current object with an empty one
         $this->_load_values($values);
-
         // Reset primary key
         $this->_primary_key_value = null;
 
@@ -518,22 +470,6 @@ class ORM extends \Bootphp\Model implements \serializable
     }
 
     /**
-     * Allows serialization of only the object data and state, to prevent
-     * "stale" objects being unserialized, which also requires less memory.
-     *
-     * @return string
-     */
-    public function serialize()
-    {
-        // Store only information about the object
-        foreach (array('_primary_key_value', '_object', '_changed', '_loaded', '_saved', '_sorting', '_original_values') as $var) {
-            $data[$var] = $this->{$var};
-        }
-
-        return serialize($data);
-    }
-
-    /**
      * Check whether the model data has been modified.
      * If $field is specified, checks whether that field was modified.
      *
@@ -543,27 +479,6 @@ class ORM extends \Bootphp\Model implements \serializable
     public function changed($field = null)
     {
         return ($field === null) ? $this->_changed : Arr::get($this->_changed, $field);
-    }
-
-    /**
-     * Prepares the database connection and reloads the object.
-     *
-     * @param string $data String for unserialization
-     * @return  void
-     */
-    public function unserialize($data)
-    {
-        // Initialize model
-        $this->_initialize();
-
-        foreach (unserialize($data) as $name => $var) {
-            $this->{$name} = $var;
-        }
-
-        if ($this->_reload_on_wakeup === true) {
-            // Reload the object
-            $this->reload();
-        }
     }
 
     /**
@@ -619,7 +534,7 @@ class ORM extends \Bootphp\Model implements \serializable
 
             return $this->_related[$column] = $model;
         } elseif (isset($this->_has_many[$column])) {
-            $model = ORM::factory($this->_has_many[$column]['model']);
+            $model = self::factory($this->_has_many[$column]['model']);
 
             if (isset($this->_has_many[$column]['through'])) {
                 // Grab has_many "through" relationship table
@@ -642,7 +557,7 @@ class ORM extends \Bootphp\Model implements \serializable
 
             return $model->where($col, '=', $val);
         } else {
-            throw new BootphpException('The :property property does not exist in the :class class', array(':property' => $column, ':class' => get_class($this)));
+            throw new BootphpException('The ' . $column . ' property does not exist in the ' . get_class($this) . ' class');
         }
     }
 
@@ -704,7 +619,7 @@ class ORM extends \Bootphp\Model implements \serializable
 
             $this->_changed[$column] = $this->_belongs_to[$column]['foreign_key'];
         } else {
-            throw new BootphpException('The :property: property does not exist in the :class: class', array(':property:' => $column, ':class:' => get_class($this)));
+            throw new BootphpException('The ' . $column . ' property does not exist in the ' . get_class($this) . ' class');
         }
 
         return $this;
@@ -1240,7 +1155,7 @@ class ORM extends \Bootphp\Model implements \serializable
     public function update(Validation $validation = null)
     {
         if (!$this->_loaded)
-            throw new BootphpException('Cannot update :model model because it is not loaded.', array(':model' => $this->_object_name));
+            throw new BootphpException('Cannot update ' . $this->_object_name . ' model because it is not loaded.');
 
         // Run validation if the model isn't valid or we have additional validation rules.
         if (!$this->_valid OR $validation) {
@@ -1312,7 +1227,7 @@ class ORM extends \Bootphp\Model implements \serializable
     public function delete()
     {
         if (!$this->_loaded)
-            throw new BootphpException('Cannot delete :model model because it is not loaded.', array(':model' => $this->_object_name));
+            throw new BootphpException('Cannot delete ' . $this->_object_name . ' model because it is not loaded.');
 
         // Use primary key value
         $id = $this->pk();
@@ -1549,9 +1464,9 @@ class ORM extends \Bootphp\Model implements \serializable
         if (isset($this->_related[$alias])) {
             return $this->_related[$alias];
         } elseif (isset($this->_has_one[$alias])) {
-            return $this->_related[$alias] = ORM::factory($this->_has_one[$alias]['model']);
+            return $this->_related[$alias] = self::factory($this->_has_one[$alias]['model']);
         } elseif (isset($this->_belongs_to[$alias])) {
-            return $this->_related[$alias] = ORM::factory($this->_belongs_to[$alias]['model']);
+            return $this->_related[$alias] = self::factory($this->_belongs_to[$alias]['model']);
         } else {
             return false;
         }
@@ -1612,11 +1527,6 @@ class ORM extends \Bootphp\Model implements \serializable
     public function object_name()
     {
         return $this->_object_name;
-    }
-
-    public function object_plural()
-    {
-        return $this->_object_plural;
     }
 
     public function loaded()
@@ -2204,7 +2114,7 @@ class ORM extends \Bootphp\Model implements \serializable
      */
     public function unique($field, $value)
     {
-        $model = ORM::factory($this->object_name())
+        $model = self::factory($this->object_name())
                 ->where($field, '=', $value)
                 ->find();
 

@@ -3,7 +3,7 @@
 namespace App\controllers\admin;
 
 use App\controllers\admin\AdministrationController;
-use App\models\articles\ArticleModel;
+use App\models\UserModel;
 use Bootphp\Model;
 use Bootphp\Database\DB;
 use Bootphp\View;
@@ -41,10 +41,14 @@ class IndexController extends AdministrationController
     public function indexAction()
     {
         // 统计文章数
-        //$articles = \Bootphp\ORM\ORM::factory('article')->find_all();
-        $linkages = \Bootphp\ORM\ORM::factory('Linkage')->where('id', '=', 16)->find_all();
-        //$linkages = DB::select()->from('linkages')->where('id', '=', 16)->as_object()->execute();
-print_r(\Bootphp\ORM\ORM::factory('Linkage'));
+        $user = new UserModel(1);
+        //$user->where('id', '=', 1)->find();
+        print_r($user->articles);
+        $user->articles->find_all();
+
+        //$user = DB::select()->from('users')->where('id', '=', 1)->as_object()->execute();
+        //$user = $user[0];
+
         // 统计评论数
         $comments = 0; //Model::factory('comment')->count();
         // 查询数据库版本
@@ -53,7 +57,7 @@ print_r(\Bootphp\ORM\ORM::factory('Linkage'));
         // $this->assign('articles', $articles);
         // $this->assign('comments', $comments);
         // $this->assign('dbVersion', $dbVersion);
-        $view->set('linkages', $linkages);
+        $view->set('user', $user);
         $this->response->body($view);
     }
 

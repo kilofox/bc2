@@ -11,8 +11,8 @@ use Bootphp\Profiler;
  * @package    Bootphp/Database
  * @category   Drivers
  * @author     Tinsh <kilofox2000@gmail.com>
- * @copyright  (c) 2008-2009 Kohana Team
- * @license    http://kohanaphp.com/license
+ * @copyright  (C) 2005-2017 Kilofox Studio
+ * @license    http://kilofox.net/license
  */
 class PdoMysql extends \Bootphp\Database\Database
 {

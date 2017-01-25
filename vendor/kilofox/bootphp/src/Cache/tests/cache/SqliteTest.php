@@ -9,7 +9,7 @@ include_once(Core::find_file('tests/cache', 'CacheBasicMethodsTest'));
  * @category   Test
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
- * @license    http://kohanaphp.com/license
+ * @license    http://kilofox.net/license
  */
 class Kohana_SqliteTest extends Kohana_CacheBasicMethodsTest
 {

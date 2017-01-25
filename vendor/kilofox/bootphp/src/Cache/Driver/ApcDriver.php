@@ -37,7 +37,7 @@ namespace Bootphp\Cache;
  * @category   Base
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
- * @license    http://kohanaphp.com/license
+ * @license    http://kilofox.net/license
  */
 class ApcDriver extends Cache implements Arithmetic
 {
