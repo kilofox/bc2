@@ -1,5 +1,7 @@
 <?php
-namespace Bootphp\Database\Query\Builder;
+
+namespace Bootphp\Database\Database\Query\Builder;
+
 /**
  * Database query builder for UPDATE statements. See [Query Builder](/database/query/builder) for usage and examples.
  *
@@ -9,7 +11,7 @@ namespace Bootphp\Database\Query\Builder;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class DatabaseQueryBuilderUpdate extends \Bootphp\DatabaseQueryBuilderWhere
+class Update extends Where
 {
     // UPDATE ...
     protected $_table;
@@ -30,7 +32,7 @@ class DatabaseQueryBuilderUpdate extends \Bootphp\DatabaseQueryBuilderWhere
         }
 
         // Start the query with no SQL
-        return parent::__construct(Database::UPDATE, '');
+        return parent::__construct('update', '');
     }
 
     /**
@@ -85,7 +87,7 @@ class DatabaseQueryBuilderUpdate extends \Bootphp\DatabaseQueryBuilderWhere
     {
         if (!is_object($db)) {
             // Get the database instance
-            $db = Database::instance($db);
+            $db = \Bootphp\Database\Database::instance($db);
         }
 
         // Start an update query

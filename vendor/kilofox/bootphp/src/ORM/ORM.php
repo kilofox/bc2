@@ -23,16 +23,10 @@ use Bootphp\BootphpException;
 class ORM extends \Bootphp\Model
 {
     /**
-     * Stores column information for ORM models
+     * Initialization storage for ORM models.
      * @var array
      */
-    protected static $_column_cache = [];
-
-    /**
-     * Initialization storage for ORM models
-     * @var array
-     */
-    protected static $_init_cache = [];
+    protected static $initCache = [];
 
     /**
      * Creates and returns a new model.
@@ -57,25 +51,25 @@ class ORM extends \Bootphp\Model
      * "Has one" relationships
      * @var array
      */
-    protected $_has_one = [];
+    protected $hasOne = [];
 
     /**
      * "Belongs to" relationships
      * @var array
      */
-    protected $_belongs_to = [];
+    protected $belongsTo = [];
 
     /**
      * "Has many" relationships
      * @var array
      */
-    protected $_has_many = [];
+    protected $hasMany = [];
 
     /**
      * Relationships that should always be joined
      * @var array
      */
-    protected $_load_with = [];
+    protected $loadWith = [];
 
     /**
      * Validation object created before saving/updating
@@ -92,12 +86,12 @@ class ORM extends \Bootphp\Model
     /**
      * @var array
      */
-    protected $_changed = [];
+    protected $changed = [];
 
     /**
      * @var array
      */
-    protected $_original_values = [];
+    protected $originalValues = [];
 
     /**
      * @var array
@@ -112,23 +106,23 @@ class ORM extends \Bootphp\Model
     /**
      * @var bool
      */
-    protected $_loaded = false;
+    protected $loaded = false;
 
     /**
      * @var bool
      */
-    protected $_saved = false;
+    protected $saved = false;
 
     /**
      * @var array
      */
-    protected $_sorting;
+    protected $sorting;
 
     /**
      * Foreign key suffix
      * @var string
      */
-    protected $_foreign_key_suffix = '_id';
+    protected $foreignKeySuffix = '_id';
 
     /**
      * Model name
@@ -140,13 +134,13 @@ class ORM extends \Bootphp\Model
      * Table name
      * @var string
      */
-    protected $_table_name;
+    protected $tableName;
 
     /**
      * Table columns
      * @var array
      */
-    protected $_table_columns;
+    protected $tableColumns;
 
     /**
      * Auto-update columns for updates
@@ -161,12 +155,6 @@ class ORM extends \Bootphp\Model
     protected $_created_column = null;
 
     /**
-     * Auto-serialize and unserialize columns on get/set
-     * @var array
-     */
-    protected $_serialize_columns = [];
-
-    /**
      * Table primary key
      * @var string
      */
@@ -176,13 +164,7 @@ class ORM extends \Bootphp\Model
      * Primary key value
      * @var mixed
      */
-    protected $_primary_key_value;
-
-    /**
-     * Model configuration, reload on wakeup?
-     * @var bool
-     */
-    protected $_reload_on_wakeup = true;
+    protected $primaryKeyValue;
 
     /**
      * Database Object
@@ -194,7 +176,7 @@ class ORM extends \Bootphp\Model
      * Database config group
      * @var String
      */
-    protected $_db_group = null;
+    protected $dbGroup = null;
 
     /**
      * Database methods applied
@@ -206,19 +188,13 @@ class ORM extends \Bootphp\Model
      * Database methods pending
      * @var array
      */
-    protected $_db_pending = [];
-
-    /**
-     * Reset builder
-     * @var bool
-     */
-    protected $_db_reset = true;
+    protected $dbPending = [];
 
     /**
      * Database query builder
      * @var Database_Query_Builder_Select
      */
-    protected $_db_builder;
+    protected $dbBuilder;
 
     /**
      * With calls already applied
@@ -239,7 +215,7 @@ class ORM extends \Bootphp\Model
      */
     public function __construct($id = null)
     {
-        $this->_initialize();
+        $this->initialize();
 
         if ($id !== null) {
             if (is_array($id)) {
@@ -255,7 +231,7 @@ class ORM extends \Bootphp\Model
             }
         } elseif (!empty($this->_cast_data)) {
             // Load preloaded data from a database call cast
-            $this->_load_values($this->_cast_data);
+            $this->loadValues($this->_cast_data);
 
             $this->_cast_data = [];
         }
@@ -267,7 +243,7 @@ class ORM extends \Bootphp\Model
      *
      * @return void
      */
-    protected function _initialize()
+    protected function initialize()
     {
         // Set the object name if none predefined
         if (empty($this->_object_name)) {
@@ -275,61 +251,61 @@ class ORM extends \Bootphp\Model
         }
 
         // Check if this model has already been initialized
-        if (!$init = (isset(self::$_init_cache[$this->_object_name]) ? self::$_init_cache[$this->_object_name] : false)) {
+        if (!$init = (isset(self::$initCache[$this->_object_name]) ? self::$initCache[$this->_object_name] : false)) {
             $init = [
-                '_belongs_to' => [],
-                '_has_one' => [],
-                '_has_many' => [],
+                'belongsTo' => [],
+                'hasOne' => [],
+                'hasMany' => [],
             ];
 
             if (!is_object($this->_db)) {
                 // Get database instance
-                $init['_db'] = Database::instance($this->_db_group);
+                $init['_db'] = Database::instance($this->dbGroup);
             }
 
-            if (empty($this->_table_name)) {
+            if (empty($this->tableName)) {
                 // Table name is the same as the object name
-                $init['_table_name'] = $this->_object_name;
+                $init['tableName'] = $this->_object_name;
             }
 
             $defaults = [];
 
-            foreach ($this->_belongs_to as $alias => $details) {
+            foreach ($this->belongsTo as $alias => $details) {
                 if (!isset($details['model'])) {
                     $defaults['model'] = ucwords($alias);
                 }
 
-                $defaults['foreign_key'] = $alias . $this->_foreign_key_suffix;
+                $defaults['foreign_key'] = $alias . $this->foreignKeySuffix;
 
-                $init['_belongs_to'][$alias] = array_merge($defaults, $details);
+                $init['belongsTo'][$alias] = array_merge($defaults, $details);
             }
 
-            foreach ($this->_has_one as $alias => $details) {
+            foreach ($this->hasOne as $alias => $details) {
                 if (!isset($details['model'])) {
                     $defaults['model'] = ucwords($alias);
                 }
 
-                $defaults['foreign_key'] = $this->_object_name . $this->_foreign_key_suffix;
+                $defaults['foreign_key'] = $this->_object_name . $this->foreignKeySuffix;
 
-                $init['_has_one'][$alias] = array_merge($defaults, $details);
+                $init['hasOne'][$alias] = array_merge($defaults, $details);
             }
 
-            foreach ($this->_has_many as $alias => $details) {
+            foreach ($this->hasMany as $alias => $details) {
                 if (!isset($details['model'])) {
                     $defaults['model'] = ucwords($alias);
                 }
 
-                $defaults['foreign_key'] = $this->_object_name . $this->_foreign_key_suffix;
+                $defaults['foreign_key'] = $this->_object_name . $this->foreignKeySuffix;
                 $defaults['through'] = null;
 
                 if (!isset($details['far_key'])) {
-                    $defaults['far_key'] = $alias . $this->_foreign_key_suffix;
+                    $defaults['far_key'] = $alias . $this->foreignKeySuffix;
                 }
 
-                $init['_has_many'][$alias] = array_merge($defaults, $details);
+                $init['hasMany'][$alias] = array_merge($defaults, $details);
             }
 
-            self::$_init_cache[$this->_object_name] = $init;
+            self::$initCache[$this->_object_name] = $init;
         }
 
         // Assign initialized properties to the current object
@@ -338,30 +314,31 @@ class ORM extends \Bootphp\Model
         }
 
         // Load column information
-        $this->reload_columns();
+        $this->tableColumns = $this->_db->listColumns($this->tableName);
+
         // Clear initial model state
         $this->clear();
     }
 
     /**
-     * Initializes validation rules, and labels
+     * Initializes validation rules, and labels.
      *
      * @return void
      */
     protected function _validation()
     {
         // Build the validation object with its rules
-        $this->_validation = Validation::factory($this->_object)
+        $this->_validation = \Bootphp\Validation::factory($this->_object)
                 ->bind(':model', $this)
-                ->bind(':original_values', $this->_original_values)
-                ->bind(':changed', $this->_changed);
+                ->bind(':original_values', $this->originalValues)
+                ->bind(':changed', $this->changed);
 
         foreach ($this->rules() as $field => $rules) {
             $this->_validation->rules($field, $rules);
         }
 
         // Use column names by default for labels
-        $columns = array_keys($this->_table_columns);
+        $columns = array_keys($this->tableColumns);
 
         // Merge user-defined labels
         $labels = array_merge(array_combine($columns, $columns), $this->labels());
@@ -372,31 +349,6 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Reload column definitions.
-     *
-     * @chainable
-     * @param   boolean $force Force reloading
-     * @return  ORM
-     */
-    public function reload_columns($force = false)
-    {
-        if ($force === true OR empty($this->_table_columns)) {
-            if (isset(ORM::$_column_cache[$this->_object_name])) {
-                // Use cached column information
-                $this->_table_columns = ORM::$_column_cache[$this->_object_name];
-            } else {
-                // Grab column information from database
-                $this->_table_columns = $this->list_columns();
-
-                // Load column cache
-                ORM::$_column_cache[$this->_object_name] = $this->_table_columns;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * Unloads the current object and clears the status.
      *
      * @chainable
@@ -404,19 +356,20 @@ class ORM extends \Bootphp\Model
      */
     public function clear()
     {
-        // Create an array with all the columns set to null
-        $values = array_combine(array_keys($this->_table_columns), array_fill(0, count($this->_table_columns), null));
-        //$values = [];
         // Replace the object and reset the object status
-        $this->_object = $this->_changed = $this->_related = $this->_original_values = [];
+        $this->_object = $this->changed = $this->_related = $this->originalValues = [];
+
+        // Create an array with all the columns set to null
+        $values = array_combine(array_keys($this->tableColumns), array_fill(0, count($this->tableColumns), null));
 
         // Replace the current object with an empty one
-        $this->_load_values($values);
+        $this->loadValues($values);
+
         // Reset primary key
-        $this->_primary_key_value = null;
+        $this->primaryKeyValue = null;
 
         // Reset the loaded state
-        $this->_loaded = false;
+        $this->loaded = false;
 
         $this->reset();
 
@@ -424,62 +377,29 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Reloads the current object from the database.
-     *
-     * @chainable
-     * @return ORM
-     */
-    public function reload()
-    {
-        $primary_key = $this->pk();
-
-        // Replace the object and reset the object status
-        $this->_object = $this->_changed = $this->_related = $this->_original_values = [];
-
-        // Only reload the object if we have one to reload
-        if ($this->_loaded) {
-            return $this->clear()
-                            ->where($this->_object_name . '.' . $this->_primary_key, '=', $primary_key)
-                            ->find();
-        } else {
-            return $this->clear();
-        }
-    }
-
-    /**
      * Checks if object data is set.
      *
-     * @param  string $column Column name
-     * @return boolean
+     * @param   string  $column Column name
+     * @return  boolean
      */
     public function __isset($column)
     {
-        return (isset($this->_object[$column]) OR
-                isset($this->_related[$column]) OR
-                isset($this->_has_one[$column]) OR
-                isset($this->_belongs_to[$column]) OR
-                isset($this->_has_many[$column]));
+        return isset($this->_object[$column]) ||
+                isset($this->_related[$column]) ||
+                isset($this->hasOne[$column]) ||
+                isset($this->belongsTo[$column]) ||
+                isset($this->hasMany[$column]);
     }
 
     /**
      * Unsets object data.
      *
-     * @param  string $column Column name
-     * @return void
+     * @param   string  $column Column name
+     * @return  void
      */
     public function __unset($column)
     {
-        unset($this->_object[$column], $this->_changed[$column], $this->_related[$column]);
-    }
-
-    /**
-     * Displays the primary key of a model when it is converted to a string.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return (string) $this->pk();
+        unset($this->_object[$column], $this->changed[$column], $this->_related[$column]);
     }
 
     /**
@@ -487,11 +407,11 @@ class ORM extends \Bootphp\Model
      * If $field is specified, checks whether that field was modified.
      *
      * @param   string  $field  Field to check for changes
-     * @return  boolean     Whether or not the field has changed
+     * @return  boolean Whether or not the field has changed
      */
     public function changed($field = null)
     {
-        return ($field === null) ? $this->_changed : Arr::get($this->_changed, $field);
+        return $field === null ? $this->changed : isset($this->changed[$field]);
     }
 
     /**
@@ -520,12 +440,12 @@ class ORM extends \Bootphp\Model
         } elseif (isset($this->_related[$column])) {
             // Return related model that has already been fetched
             return $this->_related[$column];
-        } elseif (isset($this->_belongs_to[$column])) {
-            $model = $this->_related($column);
+        } elseif (isset($this->belongsTo[$column])) {
+            $model = $this->related($column);
 
             // Use this model's column and foreign model's primary key
             $col = $model->_primary_key;
-            $val = $this->_object[$this->_belongs_to[$column]['foreign_key']];
+            $val = $this->_object[$this->belongsTo[$column]['foreign_key']];
 
             // Make sure we don't run WHERE "AUTO_INCREMENT column" = null queries. This would
             // return the last inserted record instead of an empty result.
@@ -535,35 +455,35 @@ class ORM extends \Bootphp\Model
             }
 
             return $this->_related[$column] = $model;
-        } elseif (isset($this->_has_one[$column])) {
-            $model = $this->_related($column);
+        } elseif (isset($this->hasOne[$column])) {
+            $model = $this->related($column);
 
             // Use this model's primary key value and foreign model's column
-            $col = $this->_has_one[$column]['foreign_key'];
+            $col = $this->hasOne[$column]['foreign_key'];
             $val = $this->pk();
 
             $model->where($col, '=', $val)->find();
 
             return $this->_related[$column] = $model;
-        } elseif (isset($this->_has_many[$column])) {
-            $model = self::factory($this->_has_many[$column]['model']);
+        } elseif (isset($this->hasMany[$column])) {
+            $model = self::factory($this->hasMany[$column]['model']);
 
-            if (isset($this->_has_many[$column]['through'])) {
+            if (isset($this->hasMany[$column]['through'])) {
                 // Grab has_many "through" relationship table
-                $through = $this->_has_many[$column]['through'];
+                $through = $this->hasMany[$column]['through'];
 
                 // Join on through model's target foreign key (far_key) and target model's primary key
-                $join_col1 = $through . '.' . $this->_has_many[$column]['far_key'];
-                $join_col2 = $model->_object_name . '.' . $model->_primary_key;
+                $join_col1 = $through . '.' . $this->hasMany[$column]['far_key'];
+                $join_col2 = $model->tableName . '.' . $model->_primary_key;
 
                 $model->join($through)->on($join_col1, '=', $join_col2);
 
                 // Through table's source foreign key (foreign_key) should be this model's primary key
-                $col = $through . '.' . $this->_has_many[$column]['foreign_key'];
+                $col = $through . '.' . $this->hasMany[$column]['foreign_key'];
                 $val = $this->pk();
             } else {
                 // Simple has_many relationship, search where target model's foreign key is this model's primary key
-                $col = $this->_has_many[$column]['foreign_key'];
+                $col = $this->hasMany[$column]['foreign_key'];
                 $val = $this->pk();
             }
 
@@ -587,13 +507,13 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Handles setting of columns
-     * Override this method to add custom set behavior
+     * Handles setting of columns.
+     * Override this method to add custom set behavior.
      *
-     * @param  string $column Column name
-     * @param  mixed  $value  Column value
-     * @throws BootphpException
-     * @return ORM
+     * @param   string  $column Column name
+     * @param   mixed   $value  Column value
+     * @throws  BootphpException
+     * @return  ORM
      */
     public function set($column, $value)
     {
@@ -606,26 +526,26 @@ class ORM extends \Bootphp\Model
 
         if (array_key_exists($column, $this->_object)) {
             // Filter the data
-            $value = $this->run_filter($column, $value);
+            $value = $this->runFilter($column, $value);
 
             // See if the data really changed
             if ($value !== $this->_object[$column]) {
                 $this->_object[$column] = $value;
 
                 // Data has changed
-                $this->_changed[$column] = $column;
+                $this->changed[$column] = $column;
 
                 // Object is no longer saved or valid
-                $this->_saved = $this->_valid = false;
+                $this->saved = $this->_valid = false;
             }
-        } elseif (isset($this->_belongs_to[$column])) {
+        } elseif (isset($this->belongsTo[$column])) {
             // Update related object itself
             $this->_related[$column] = $value;
 
             // Update the foreign key of this model
-            $this->_object[$this->_belongs_to[$column]['foreign_key']] = ($value instanceof ORM) ? $value->pk() : null;
+            $this->_object[$this->belongsTo[$column]['foreign_key']] = ($value instanceof ORM) ? $value->pk() : null;
 
-            $this->_changed[$column] = $this->_belongs_to[$column]['foreign_key'];
+            $this->changed[$column] = $this->belongsTo[$column]['foreign_key'];
         } else {
             throw new BootphpException('The ' . $column . ' property does not exist in the ' . get_class($this) . ' class');
         }
@@ -637,15 +557,15 @@ class ORM extends \Bootphp\Model
      * Set values from an array with support for one-one relationships.  This method should be used
      * for loading in post data, etc.
      *
-     * @param  array $values   Array of column => val
-     * @param  array $expected Array of keys to take from $values
-     * @return ORM
+     * @param   array   $values     Array of column => val
+     * @param   array   $expected   Array of keys to take from $values
+     * @return  ORM
      */
     public function values(array $values, array $expected = null)
     {
         // Default to expecting everything except the primary key
         if ($expected === null) {
-            $expected = array_keys($this->_table_columns);
+            $expected = array_keys($this->_object);
 
             // Don't set the primary key by default
             unset($values[$this->_primary_key]);
@@ -659,8 +579,7 @@ class ORM extends \Bootphp\Model
 
                 // Try to set values to a related model
                 $this->{$key}->values($values[$key], $column);
-            }
-            else {
+            } else {
                 // isset() fails when the value is null (we want it to pass)
                 if (!array_key_exists($column, $values))
                     continue;
@@ -679,7 +598,7 @@ class ORM extends \Bootphp\Model
      *
      * @return array
      */
-    public function as_array()
+    public function asArray()
     {
         $object = [];
 
@@ -716,7 +635,7 @@ class ORM extends \Bootphp\Model
         foreach ($aliases as $alias) {
             // Go down the line of objects to find the given target
             $parent = $target;
-            $target = $parent->_related($alias);
+            $target = $parent->related($alias);
 
             if (!$target) {
                 // Can't find related object
@@ -753,18 +672,18 @@ class ORM extends \Bootphp\Model
             $this->select([$name, $alias]);
         }
 
-        if (isset($parent->_belongs_to[$target_alias])) {
+        if (isset($parent->belongsTo[$target_alias])) {
             // Parent belongs_to target, use target's primary key and parent's foreign key
             $join_col1 = $target_path . '.' . $target->_primary_key;
-            $join_col2 = $parent_path . '.' . $parent->_belongs_to[$target_alias]['foreign_key'];
+            $join_col2 = $parent_path . '.' . $parent->belongsTo[$target_alias]['foreign_key'];
         } else {
             // Parent has_one target, use parent's primary key as target's foreign key
             $join_col1 = $parent_path . '.' . $parent->_primary_key;
-            $join_col2 = $target_path . '.' . $parent->_has_one[$target_alias]['foreign_key'];
+            $join_col2 = $target_path . '.' . $parent->hasOne[$target_alias]['foreign_key'];
         }
 
         // Join the related object into the result
-        $this->join([$target->_table_name, $target_path], 'LEFT')->on($join_col1, '=', $join_col2);
+        $this->join([$target->tableName, $target_path], 'LEFT')->on($join_col1, '=', $join_col2);
 
         return $this;
     }
@@ -775,29 +694,29 @@ class ORM extends \Bootphp\Model
      * @param  integer $type Type of Database query
      * @return ORM
      */
-    protected function _build($type)
+    protected function build($type)
     {
         // Construct new builder object based on query type
         switch ($type) {
             case 'select':
-                $this->_db_builder = DB::select();
+                $this->dbBuilder = DB::select();
                 break;
             case 'update':
-                $this->_db_builder = DB::update([$this->_table_name, $this->_object_name]);
+                $this->dbBuilder = DB::update([$this->tableName, $this->_object_name]);
                 break;
             case 'delete':
                 // Cannot use an alias for DELETE queries
-                $this->_db_builder = DB::delete($this->_table_name);
+                $this->dbBuilder = DB::delete($this->tableName);
         }
 
         // Process pending database method calls
-        foreach ($this->_db_pending as $method) {
+        foreach ($this->dbPending as $method) {
             $name = $method['name'];
             $args = $method['args'];
 
             $this->_db_applied[$name] = $name;
 
-            call_user_func_array([$this->_db_builder, $name], $args);
+            call_user_func_array([$this->dbBuilder, $name], $args);
         }
 
         return $this;
@@ -812,19 +731,19 @@ class ORM extends \Bootphp\Model
      */
     public function find()
     {
-        if ($this->_loaded)
+        if ($this->loaded)
             throw new BootphpException('Method find() cannot be called on loaded objects');
 
-        if (!empty($this->_load_with)) {
-            foreach ($this->_load_with as $alias) {
+        if (!empty($this->loadWith)) {
+            foreach ($this->loadWith as $alias) {
                 // Bind auto relationships
                 $this->with($alias);
             }
         }
 
-        $this->_build('select');
+        $this->build('select');
 
-        return $this->_load_result(false);
+        return $this->loadResult(false);
     }
 
     /**
@@ -833,38 +752,21 @@ class ORM extends \Bootphp\Model
      * @throws BootphpException
      * @return Database_Result
      */
-    public function find_all()
+    public function findAll()
     {
-        if ($this->_loaded)
+        if ($this->loaded)
             throw new BootphpException('Method find_all() cannot be called on loaded objects');
 
-        if (!empty($this->_load_with)) {
-            foreach ($this->_load_with as $alias) {
+        if (!empty($this->loadWith)) {
+            foreach ($this->loadWith as $alias) {
                 // Bind auto relationships
                 $this->with($alias);
             }
         }
 
-        $this->_build('select');
+        $this->build('select');
 
-        return $this->_load_result(true);
-    }
-
-    /**
-     * Returns an array of columns to include in the select query. This method
-     * can be overridden to change the default select behavior.
-     *
-     * @return array Columns to select
-     */
-    protected function _build_select()
-    {
-        $columns = [];
-
-        foreach ($this->_table_columns as $column => $_) {
-            $columns[] = [$this->_object_name . '.' . $column, $column];
-        }
-
-        return $columns;
+        return $this->loadResult(true);
     }
 
     /**
@@ -875,42 +777,49 @@ class ORM extends \Bootphp\Model
      * @param  bool $multiple Return an iterator or load a single row
      * @return ORM|Database_Result
      */
-    protected function _load_result($multiple = false)
+    protected function loadResult($multiple = false)
     {
-        $this->_db_builder->from($this->_table_name);
+        $this->dbBuilder->from($this->tableName);
 
         if ($multiple === false) {
             // Only fetch 1 record
-            $this->_db_builder->limit(1);
+            $this->dbBuilder->limit(1);
         }
 
-        if (!isset($this->_db_applied['order_by']) AND ! empty($this->_sorting)) {
-            foreach ($this->_sorting as $column => $direction) {
+        // Select all columns by default
+        if ($this->hasMany || $this->belongsTo) {
+            $this->dbBuilder->select();
+        } else {
+            $this->dbBuilder->select($this->tableName . '.*');
+        }
+
+        if (!isset($this->_db_applied['order_by']) && !empty($this->sorting)) {
+            foreach ($this->sorting as $column => $direction) {
                 if (strpos($column, '.') === false) {
                     // Sorting column for use in JOINs
                     $column = $this->_object_name . '.' . $column;
                 }
 
-                $this->_db_builder->order_by($column, $direction);
+                $this->dbBuilder->order_by($column, $direction);
             }
         }
 
         if ($multiple === true) {
             // Return database iterator casting to this object type
-            $result = $this->_db_builder->as_object(get_class($this))->execute($this->_db);
+            $result = $this->dbBuilder->as_object(get_class($this))->execute($this->_db);
 
             $this->reset();
 
             return $result;
         } else {
             // Load the result as an associative array
-            $result = $this->_db_builder->as_assoc()->execute($this->_db);
+            $result = $this->dbBuilder->as_assoc()->execute($this->_db);
 
             $this->reset();
 
             if ($result->count() === 1) {
                 // Load object values
-                $this->_load_values($result->current());
+                $this->loadValues($result->current());
             } else {
                 // Clear the object, nothing was found
                 $this->clear();
@@ -927,18 +836,18 @@ class ORM extends \Bootphp\Model
      * @param  array $values Values to load
      * @return ORM
      */
-    protected function _load_values(array $values)
+    protected function loadValues(array $values)
     {
         if (array_key_exists($this->_primary_key, $values)) {
             if ($values[$this->_primary_key] !== null) {
                 // Flag as loaded and valid
-                $this->_loaded = $this->_valid = true;
+                $this->loaded = $this->_valid = true;
 
                 // Store primary key
-                $this->_primary_key_value = $values[$this->_primary_key];
+                $this->primaryKeyValue = $values[$this->_primary_key];
             } else {
                 // Not loaded or valid
-                $this->_loaded = $this->_valid = false;
+                $this->loaded = $this->_valid = false;
             }
         }
 
@@ -960,13 +869,13 @@ class ORM extends \Bootphp\Model
         if (!empty($related)) {
             foreach ($related as $object => $values) {
                 // Load the related objects with the values in the result
-                $this->_related($object)->_load_values($values);
+                $this->related($object)->loadValues($values);
             }
         }
 
-        if ($this->_loaded) {
+        if ($this->loaded) {
             // Store the object in its original state
-            $this->_original_values = $this->_object;
+            $this->originalValues = $this->_object;
         }
 
         return $this;
@@ -989,7 +898,7 @@ class ORM extends \Bootphp\Model
      * @param  string $value  The value to filter
      * @return string
      */
-    protected function run_filter($field, $value)
+    protected function runFilter($field, $value)
     {
         $filters = $this->filters();
 
@@ -1016,18 +925,18 @@ class ORM extends \Bootphp\Model
             $params = Arr::get($array, 1, [':value']);
 
             foreach ($params as $key => $param) {
-                if (is_string($param) AND array_key_exists($param, $_bound)) {
+                if (is_string($param) && array_key_exists($param, $_bound)) {
                     // Replace with bound value
                     $params[$key] = $_bound[$param];
                 }
             }
 
-            if (is_array($filter) OR ! is_string($filter)) {
+            if (is_array($filter) || !is_string($filter)) {
                 // This is either a callback as an array or a lambda
                 $value = call_user_func_array($filter, $params);
             } elseif (strpos($filter, '::') === false) {
                 // Use a function call
-                $function = new ReflectionFunction($filter);
+                $function = new \ReflectionFunction($filter);
 
                 // Call $function($this[$field], $param, ...) with Reflection
                 $value = $function->invokeArgs($params);
@@ -1076,14 +985,14 @@ class ORM extends \Bootphp\Model
     public function check(Validation $extra_validation = null)
     {
         // Determine if any external validation failed
-        $extra_errors = ($extra_validation AND ! $extra_validation->check());
+        $extra_errors = ($extra_validation && !$extra_validation->check());
 
         // Always build a new validation object
         $this->_validation();
 
         $array = $this->_validation;
 
-        if (($this->_valid = $array->check()) === false OR $extra_errors) {
+        if (($this->_valid = $array->check()) === false || $extra_errors) {
             $exception = new ORM_Validation_Exception($this->_object_name, $array);
 
             if ($extra_errors) {
@@ -1097,23 +1006,24 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Insert a new object to the database
-     * @param  Validation $validation Validation object
-     * @throws BootphpException
-     * @return ORM
+     * Insert a new object to the database.
+     *
+     * @param   Validation  $validation Validation object
+     * @throws  BootphpException
+     * @return  ORM
      */
     public function create(Validation $validation = null)
     {
-        if ($this->_loaded)
+        if ($this->loaded)
             throw new BootphpException('Cannot create ' . $this->_object_name . ' model because it is already loaded.');
 
         // Require model validation before saving
-        if (!$this->_valid OR $validation) {
+        if (!$this->_valid || $validation) {
             $this->check($validation);
         }
 
         $data = [];
-        foreach ($this->_changed as $column) {
+        foreach ($this->changed as $column) {
             // Generate list of column => values
             $data[$column] = $this->_object[$column];
         }
@@ -1126,53 +1036,53 @@ class ORM extends \Bootphp\Model
             $data[$column] = $this->_object[$column] = ($format === true) ? time() : date($format);
         }
 
-        $result = DB::insert($this->_table_name)
+        $result = DB::insert($this->tableName)
                 ->columns(array_keys($data))
                 ->values(array_values($data))
                 ->execute($this->_db);
 
         if (!array_key_exists($this->_primary_key, $data)) {
             // Load the insert id as the primary key if it was left out
-            $this->_object[$this->_primary_key] = $this->_primary_key_value = $result[0];
+            $this->_object[$this->_primary_key] = $this->primaryKeyValue = $result[0];
         } else {
-            $this->_primary_key_value = $this->_object[$this->_primary_key];
+            $this->primaryKeyValue = $this->_object[$this->_primary_key];
         }
 
         // Object is now loaded and saved
-        $this->_loaded = $this->_saved = true;
+        $this->loaded = $this->saved = true;
 
         // All changes have been saved
-        $this->_changed = [];
-        $this->_original_values = $this->_object;
+        $this->changed = [];
+        $this->originalValues = $this->_object;
 
         return $this;
     }
 
     /**
-     * Updates a single record or multiple records
+     * Updates a single record or multiple records.
      *
      * @chainable
-     * @param  Validation $validation Validation object
-     * @throws BootphpException
-     * @return ORM
+     * @param   Validation  $validation Validation object
+     * @throws  BootphpException
+     * @return  ORM
      */
     public function update(Validation $validation = null)
     {
-        if (!$this->_loaded)
+        if (!$this->loaded)
             throw new BootphpException('Cannot update ' . $this->_object_name . ' model because it is not loaded.');
 
         // Run validation if the model isn't valid or we have additional validation rules.
-        if (!$this->_valid OR $validation) {
+        if (!$this->_valid || $validation) {
             $this->check($validation);
         }
 
-        if (empty($this->_changed)) {
+        if (empty($this->changed)) {
             // Nothing to update
             return $this;
         }
 
         $data = [];
-        foreach ($this->_changed as $column) {
+        foreach ($this->changed as $column) {
             // Compile changed data
             $data[$column] = $this->_object[$column];
         }
@@ -1189,32 +1099,32 @@ class ORM extends \Bootphp\Model
         $id = $this->pk();
 
         // Update a single record
-        DB::update($this->_table_name)
+        DB::update($this->tableName)
                 ->set($data)
                 ->where($this->_primary_key, '=', $id)
                 ->execute($this->_db);
 
         if (isset($data[$this->_primary_key])) {
             // Primary key was changed, reflect it
-            $this->_primary_key_value = $data[$this->_primary_key];
+            $this->primaryKeyValue = $data[$this->_primary_key];
         }
 
         // Object has been saved
-        $this->_saved = true;
+        $this->saved = true;
 
         // All changes have been saved
-        $this->_changed = [];
-        $this->_original_values = $this->_object;
+        $this->changed = [];
+        $this->originalValues = $this->_object;
 
         return $this;
     }
 
     /**
-     * Updates or Creates the record depending on loaded()
+     * Updates or creates the record depending on loaded().
      *
      * @chainable
-     * @param  Validation $validation Validation object
-     * @return ORM
+     * @param   Validation  $validation Validation object
+     * @return  ORM
      */
     public function save(Validation $validation = null)
     {
@@ -1225,19 +1135,19 @@ class ORM extends \Bootphp\Model
      * Deletes a single record while ignoring relationships.
      *
      * @chainable
-     * @throws BootphpException
-     * @return ORM
+     * @throws  BootphpException
+     * @return  ORM
      */
     public function delete()
     {
-        if (!$this->_loaded)
+        if (!$this->loaded)
             throw new BootphpException('Cannot delete ' . $this->_object_name . ' model because it is not loaded.');
 
         // Use primary key value
         $id = $this->pk();
 
         // Delete the object
-        DB::delete($this->_table_name)
+        DB::delete($this->tableName)
                 ->where($this->_primary_key, '=', $id)
                 ->execute($this->_db);
 
@@ -1260,16 +1170,16 @@ class ORM extends \Bootphp\Model
      *     $model->has('roles')
      *
      * @param  string  $alias    Alias of the has_many "through" relationship
-     * @param  mixed   $far_keys Related model, primary key, or an array of primary keys
+     * @param  mixed   $farKeys Related model, primary key, or an array of primary keys
      * @return boolean
      */
-    public function has($alias, $far_keys = null)
+    public function has($alias, $farKeys = null)
     {
-        $count = $this->count_relations($alias, $far_keys);
-        if ($far_keys === null) {
+        $count = $this->count_relations($alias, $farKeys);
+        if ($farKeys === null) {
             return (bool) $count;
         } else {
-            return $count === count($far_keys);
+            return $count === count($farKeys);
         }
     }
 
@@ -1287,13 +1197,13 @@ class ORM extends \Bootphp\Model
      *     // Check if $model has any roles
      *     $model->has('roles')
      *
-     * @param  string  $alias    Alias of the has_many "through" relationship
-     * @param  mixed   $far_keys Related model, primary key, or an array of primary keys
-     * @return boolean
+     * @param   string  $alias      Alias of the has_many "through" relationship
+     * @param   mixed   $farKeys   Related model, primary key, or an array of primary keys
+     * @return  boolean
      */
-    public function has_any($alias, $far_keys = null)
+    public function has_any($alias, $farKeys = null)
     {
-        return (bool) $this->count_relations($alias, $far_keys);
+        return (bool) $this->count_relations($alias, $farKeys);
     }
 
     /**
@@ -1310,31 +1220,31 @@ class ORM extends \Bootphp\Model
      *     $model->count_relations('roles')
      *
      * @param  string  $alias    Alias of the has_many "through" relationship
-     * @param  mixed   $far_keys Related model, primary key, or an array of primary keys
+     * @param  mixed   $farKeys Related model, primary key, or an array of primary keys
      * @return integer
      */
-    public function count_relations($alias, $far_keys = null)
+    public function count_relations($alias, $farKeys = null)
     {
-        if ($far_keys === null) {
+        if ($farKeys === null) {
             return (int) DB::select([DB::expr('COUNT(*)'), 'records_found'])
-                            ->from($this->_has_many[$alias]['through'])
-                            ->where($this->_has_many[$alias]['foreign_key'], '=', $this->pk())
+                            ->from($this->hasMany[$alias]['through'])
+                            ->where($this->hasMany[$alias]['foreign_key'], '=', $this->pk())
                             ->execute($this->_db)->get('records_found');
         }
 
-        $far_keys = ($far_keys instanceof ORM) ? $far_keys->pk() : $far_keys;
+        $farKeys = ($farKeys instanceof ORM) ? $farKeys->pk() : $farKeys;
 
         // We need an array to simplify the logic
-        $far_keys = (array) $far_keys;
+        $farKeys = (array) $farKeys;
 
         // Nothing to check if the model isn't loaded or we don't have any far_keys
-        if (!$far_keys OR ! $this->_loaded)
+        if (!$farKeys || !$this->loaded)
             return 0;
 
         $count = (int) DB::select([DB::expr('COUNT(*)'), 'records_found'])
-                        ->from($this->_has_many[$alias]['through'])
-                        ->where($this->_has_many[$alias]['foreign_key'], '=', $this->pk())
-                        ->where($this->_has_many[$alias]['far_key'], 'IN', $far_keys)
+                        ->from($this->hasMany[$alias]['through'])
+                        ->where($this->hasMany[$alias]['foreign_key'], '=', $this->pk())
+                        ->where($this->hasMany[$alias]['far_key'], 'IN', $farKeys)
                         ->execute($this->_db)->get('records_found');
 
         // Rows found need to match the rows searched
@@ -1352,19 +1262,19 @@ class ORM extends \Bootphp\Model
      *     $model->add('roles', [1, 2, 3, 4]);
      *
      * @param  string  $alias    Alias of the has_many "through" relationship
-     * @param  mixed   $far_keys Related model, primary key, or an array of primary keys
+     * @param  mixed   $farKeys Related model, primary key, or an array of primary keys
      * @return ORM
      */
-    public function add($alias, $far_keys)
+    public function add($alias, $farKeys)
     {
-        $far_keys = ($far_keys instanceof ORM) ? $far_keys->pk() : $far_keys;
+        $farKeys = ($farKeys instanceof ORM) ? $farKeys->pk() : $farKeys;
 
-        $columns = [$this->_has_many[$alias]['foreign_key'], $this->_has_many[$alias]['far_key']];
+        $columns = [$this->hasMany[$alias]['foreign_key'], $this->hasMany[$alias]['far_key']];
         $foreign_key = $this->pk();
 
-        $query = DB::insert($this->_has_many[$alias]['through'], $columns);
+        $query = DB::insert($this->hasMany[$alias]['through'], $columns);
 
-        foreach ((array) $far_keys as $key) {
+        foreach ((array) $farKeys as $key) {
             $query->values([$foreign_key, $key]);
         }
 
@@ -1386,19 +1296,19 @@ class ORM extends \Bootphp\Model
      *     $model->remove('roles');
      *
      * @param  string $alias    Alias of the has_many "through" relationship
-     * @param  mixed  $far_keys Related model, primary key, or an array of primary keys
+     * @param  mixed  $farKeys Related model, primary key, or an array of primary keys
      * @return ORM
      */
-    public function remove($alias, $far_keys = null)
+    public function remove($alias, $farKeys = null)
     {
-        $far_keys = ($far_keys instanceof ORM) ? $far_keys->pk() : $far_keys;
+        $farKeys = ($farKeys instanceof ORM) ? $farKeys->pk() : $farKeys;
 
-        $query = DB::delete($this->_has_many[$alias]['through'])
-                ->where($this->_has_many[$alias]['foreign_key'], '=', $this->pk());
+        $query = DB::delete($this->hasMany[$alias]['through'])
+                ->where($this->hasMany[$alias]['foreign_key'], '=', $this->pk());
 
-        if ($far_keys !== null) {
+        if ($farKeys !== null) {
             // Remove all the relationships in the array
-            $query->where($this->_has_many[$alias]['far_key'], 'IN', (array) $far_keys);
+            $query->where($this->hasMany[$alias]['far_key'], 'IN', (array) $farKeys);
         }
 
         $query->execute($this->_db);
@@ -1411,34 +1321,34 @@ class ORM extends \Bootphp\Model
      *
      * @return integer
      */
-    public function count_all()
+    public function countAll()
     {
         $selects = [];
 
-        foreach ($this->_db_pending as $key => $method) {
+        foreach ($this->dbPending as $key => $method) {
             if ($method['name'] == 'select') {
                 // Ignore any selected columns for now
                 $selects[$key] = $method;
-                unset($this->_db_pending[$key]);
+                unset($this->dbPending[$key]);
             }
         }
 
-        if (!empty($this->_load_with)) {
-            foreach ($this->_load_with as $alias) {
+        if (!empty($this->loadWith)) {
+            foreach ($this->loadWith as $alias) {
                 // Bind relationship
                 $this->with($alias);
             }
         }
 
-        $this->_build('select');
+        $this->build('select');
 
-        $records = $this->_db_builder->from([$this->_table_name, $this->_object_name])
+        $records = $this->dbBuilder->from([$this->tableName, $this->_object_name])
                 ->select([DB::expr('COUNT(' . $this->_db->quote_column($this->_object_name . '.' . $this->_primary_key) . ')'), 'records_found'])
                 ->execute($this->_db)
                 ->get('records_found');
 
         // Add back in selected columns
-        $this->_db_pending += $selects;
+        $this->dbPending += $selects;
 
         $this->reset();
 
@@ -1447,43 +1357,32 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Proxy method to Database list_columns.
-     *
-     * @return array
-     */
-    public function list_columns()
-    {
-        // Proxy to database
-        return $this->_db->list_columns($this->_table_name);
-    }
-
-    /**
      * Returns an ORM model for the given one-one related alias
      *
      * @param  string $alias Alias name
      * @return ORM
      */
-    protected function _related($alias)
+    protected function related($alias)
     {
         if (isset($this->_related[$alias])) {
             return $this->_related[$alias];
-        } elseif (isset($this->_has_one[$alias])) {
-            return $this->_related[$alias] = self::factory($this->_has_one[$alias]['model']);
-        } elseif (isset($this->_belongs_to[$alias])) {
-            return $this->_related[$alias] = self::factory($this->_belongs_to[$alias]['model']);
+        } elseif (isset($this->hasOne[$alias])) {
+            return $this->_related[$alias] = self::factory($this->hasOne[$alias]['model']);
+        } elseif (isset($this->belongsTo[$alias])) {
+            return $this->_related[$alias] = self::factory($this->belongsTo[$alias]['model']);
         } else {
             return false;
         }
     }
 
     /**
-     * Returns the value of the primary key
+     * Returns the value of the primary key.
      *
      * @return mixed Primary key
      */
     public function pk()
     {
-        return $this->_primary_key_value;
+        return $this->primaryKeyValue;
     }
 
     /**
@@ -1491,41 +1390,36 @@ class ORM extends \Bootphp\Model
      *
      * @return string
      */
-    public function last_query()
+    public function lastQuery()
     {
         return $this->_db->last_query;
     }
 
     /**
-     * Clears query builder.  Passing false is useful to keep the existing
+     * Clears query builder. Passing false is useful to keep the existing
      * query conditions for another query.
      *
      * @param bool $next Pass false to avoid resetting on the next call
      * @return ORM
      */
-    public function reset($next = true)
+    public function reset()
     {
-        if ($next AND $this->_db_reset) {
-            $this->_db_pending = [];
-            $this->_db_applied = [];
-            $this->_db_builder = null;
-            $this->_with_applied = [];
-        }
-
-        // Reset on the next call?
-        $this->_db_reset = $next;
+        $this->dbPending = [];
+        $this->_db_applied = [];
+        $this->dbBuilder = null;
+        $this->_with_applied = [];
 
         return $this;
     }
 
     public function loaded()
     {
-        return $this->_loaded;
+        return $this->loaded;
     }
 
     public function saved()
     {
-        return $this->_saved;
+        return $this->saved;
     }
 
     public function primaryKey()
@@ -1533,49 +1427,9 @@ class ORM extends \Bootphp\Model
         return $this->_primary_key;
     }
 
-    public function table_name()
+    public function tableName()
     {
-        return $this->_table_name;
-    }
-
-    public function table_columns()
-    {
-        return $this->_table_columns;
-    }
-
-    public function has_one()
-    {
-        return $this->_has_one;
-    }
-
-    public function belongs_to()
-    {
-        return $this->_belongs_to;
-    }
-
-    public function has_many()
-    {
-        return $this->_has_many;
-    }
-
-    public function load_with()
-    {
-        return $this->_load_with;
-    }
-
-    public function original_values()
-    {
-        return $this->_original_values;
-    }
-
-    public function created_column()
-    {
-        return $this->_created_column;
-    }
-
-    public function updated_column()
-    {
-        return $this->_updated_column;
+        return $this->tableName;
     }
 
     public function validation()
@@ -1588,23 +1442,18 @@ class ORM extends \Bootphp\Model
         return $this->_validation;
     }
 
-    public function object()
-    {
-        return $this->_object;
-    }
-
     /**
      * Creates a new "AND WHERE" condition for the query.
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
+     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $value  Column value
      * @return  $this
      */
     public function where($column, $op, $value)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'and_where',
             'args' => [$column, $op, $value],
         ];
@@ -1615,15 +1464,15 @@ class ORM extends \Bootphp\Model
     /**
      * Creates a new "OR WHERE" condition for the query.
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
+     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $value  Column value
      * @return  $this
      */
-    public function or_where($column, $op, $value)
+    public function orWhere($column, $op, $value)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'or_where',
             'args' => [$column, $op, $value],
         ];
@@ -1636,10 +1485,10 @@ class ORM extends \Bootphp\Model
      *
      * @return  $this
      */
-    public function where_open()
+    public function whereOpen()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'and_where_open',
             'args' => [],
         ];
@@ -1652,10 +1501,10 @@ class ORM extends \Bootphp\Model
      *
      * @return  $this
      */
-    public function or_where_open()
+    public function orWhereOpen()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = array(
+        $this->dbPending[] = array(
             'name' => 'or_where_open',
             'args' => [],
         );
@@ -1668,10 +1517,10 @@ class ORM extends \Bootphp\Model
      *
      * @return  $this
      */
-    public function where_close()
+    public function whereClose()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'and_where_close',
             'args' => [],
         ];
@@ -1684,10 +1533,10 @@ class ORM extends \Bootphp\Model
      *
      * @return  $this
      */
-    public function or_where_close()
+    public function orWhereClose()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'or_where_close',
             'args' => [],
         ];
@@ -1696,16 +1545,16 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Applies sorting with "ORDER BY ..."
+     * Applies sorting with "ORDER BY ...".
      *
      * @param   mixed   $column     Column name or array($column, $alias) or object
      * @param   string  $direction  Direction of sorting
      * @return  $this
      */
-    public function order_by($column, $direction = null)
+    public function orderBy($column, $direction = null)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'order_by',
             'args' => [$column, $direction],
         ];
@@ -1714,15 +1563,15 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Return up to "LIMIT ..." results
+     * Return up to "LIMIT ..." results.
      *
-     * @param   integer  $number  Maximum results to return
+     * @param   integer $number Maximum results to return
      * @return  $this
      */
     public function limit($number)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'limit',
             'args' => [$number],
         ];
@@ -1733,13 +1582,13 @@ class ORM extends \Bootphp\Model
     /**
      * Enables or disables selecting only unique columns using "SELECT DISTINCT"
      *
-     * @param   boolean  $value  enable or disable distinct columns
+     * @param   boolean  $value Enable or disable distinct columns
      * @return  $this
      */
     public function distinct($value)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'distinct',
             'args' => [$value],
         ];
@@ -1750,7 +1599,7 @@ class ORM extends \Bootphp\Model
     /**
      * Choose the columns to select from.
      *
-     * @param   mixed  $columns  column name or array($column, $alias) or object
+     * @param   mixed  $columns Column name or array($column, $alias) or object
      * @param   ...
      * @return  $this
      */
@@ -1759,7 +1608,7 @@ class ORM extends \Bootphp\Model
         $columns = func_get_args();
 
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'select',
             'args' => $columns,
         ];
@@ -1770,7 +1619,7 @@ class ORM extends \Bootphp\Model
     /**
      * Choose the tables to select "FROM ..."
      *
-     * @param   mixed  $tables  table name or array($table, $alias) or object
+     * @param   mixed  $tables  Table name or array($table, $alias) or object
      * @param   ...
      * @return  $this
      */
@@ -1779,7 +1628,7 @@ class ORM extends \Bootphp\Model
         $tables = func_get_args();
 
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'from',
             'args' => $tables,
         ];
@@ -1790,14 +1639,14 @@ class ORM extends \Bootphp\Model
     /**
      * Adds addition tables to "JOIN ...".
      *
-     * @param   mixed   $table  column name or array($column, $alias) or object
-     * @param   string  $type   join type (LEFT, RIGHT, INNER, etc)
+     * @param   mixed   $table  Column name or array($column, $alias) or object
+     * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc)
      * @return  $this
      */
     public function join($table, $type = null)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'join',
             'args' => [$table, $type],
         ];
@@ -1808,15 +1657,15 @@ class ORM extends \Bootphp\Model
     /**
      * Adds "ON ..." conditions for the last created JOIN statement.
      *
-     * @param   mixed   $c1  column name or array($column, $alias) or object
-     * @param   string  $op  logic operator
-     * @param   mixed   $c2  column name or array($column, $alias) or object
+     * @param   mixed   $c1 Column name or array($column, $alias) or object
+     * @param   string  $op Logic operator
+     * @param   mixed   $c2 Column name or array($column, $alias) or object
      * @return  $this
      */
     public function on($c1, $op, $c2)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'on',
             'args' => [$c1, $op, $c2],
         ];
@@ -1831,12 +1680,12 @@ class ORM extends \Bootphp\Model
      * @param   ...
      * @return  $this
      */
-    public function group_by($columns)
+    public function groupBy($columns)
     {
         $columns = func_get_args();
 
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'group_by',
             'args' => $columns,
         ];
@@ -1845,30 +1694,17 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Alias of and_having()
+     * Creates a new "AND HAVING" condition for the query.
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
+     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $value  Column value
      * @return  $this
      */
     public function having($column, $op, $value = null)
     {
-        return $this->and_having($column, $op, $value);
-    }
-
-    /**
-     * Creates a new "AND HAVING" condition for the query.
-     *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
-     * @return  $this
-     */
-    public function and_having($column, $op, $value = null)
-    {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'and_having',
             'args' => [$column, $op, $value],
         ];
@@ -1879,15 +1715,15 @@ class ORM extends \Bootphp\Model
     /**
      * Creates a new "OR HAVING" condition for the query.
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
+     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $value  Column value
      * @return  $this
      */
-    public function or_having($column, $op, $value = null)
+    public function orHaving($column, $op, $value = null)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'or_having',
             'args' => [$column, $op, $value],
         ];
@@ -1896,24 +1732,14 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Alias of and_having_open()
-     *
-     * @return  $this
-     */
-    public function having_open()
-    {
-        return $this->and_having_open();
-    }
-
-    /**
      * Opens a new "AND HAVING (...)" grouping.
      *
      * @return  $this
      */
-    public function and_having_open()
+    public function havingOpen()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'and_having_open',
             'args' => [],
         ];
@@ -1926,10 +1752,10 @@ class ORM extends \Bootphp\Model
      *
      * @return  $this
      */
-    public function or_having_open()
+    public function orHavingOpen()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'or_having_open',
             'args' => [],
         ];
@@ -1942,20 +1768,10 @@ class ORM extends \Bootphp\Model
      *
      * @return  $this
      */
-    public function having_close()
-    {
-        return $this->and_having_close();
-    }
-
-    /**
-     * Closes an open "AND HAVING (...)" grouping.
-     *
-     * @return  $this
-     */
-    public function and_having_close()
+    public function havingClose()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'and_having_close',
             'args' => [],
         ];
@@ -1968,10 +1784,10 @@ class ORM extends \Bootphp\Model
      *
      * @return  $this
      */
-    public function or_having_close()
+    public function orHavingClose()
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'or_having_close',
             'args' => [],
         ];
@@ -1982,13 +1798,13 @@ class ORM extends \Bootphp\Model
     /**
      * Start returning results after "OFFSET ..."
      *
-     * @param   integer   $number  starting result number
+     * @param   integer $number Starting result number
      * @return  $this
      */
     public function offset($number)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'offset',
             'args' => [$number],
         ];
@@ -2005,7 +1821,7 @@ class ORM extends \Bootphp\Model
     public function cached($lifetime = null)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'cached',
             'args' => [$lifetime],
         ];
@@ -2016,14 +1832,14 @@ class ORM extends \Bootphp\Model
     /**
      * Set the value of a parameter in the query.
      *
-     * @param   string   $param  Parameter key to replace
-     * @param   mixed    $value  Value to use
+     * @param   string  $param  Parameter key to replace
+     * @param   mixed   $value  Value to use
      * @return  $this
      */
     public function param($param, $value)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'param',
             'args' => [$param, $value],
         ];
@@ -2034,13 +1850,13 @@ class ORM extends \Bootphp\Model
     /**
      * Adds "USING ..." conditions for the last created JOIN statement.
      *
-     * @param   string  $columns  column name
+     * @param   string  $columns    Column name
      * @return  $this
      */
     public function using($columns)
     {
         // Add pending database call which is executed after query type is determined
-        $this->_db_pending[] = [
+        $this->dbPending[] = [
             'name' => 'using',
             'args' => [$columns],
         ];
@@ -2052,9 +1868,9 @@ class ORM extends \Bootphp\Model
      * Checks whether a column value is unique.
      * Excludes itself if loaded.
      *
-     * @param   string   $field  The field to check for uniqueness
-     * @param   mixed    $value  The value to check for uniqueness
-     * @return  boolean     Whteher the value is unique
+     * @param   string  $field  The field to check for uniqueness
+     * @param   mixed   $value  The value to check for uniqueness
+     * @return  boolean Whteher the value is unique
      */
     public function unique($field, $value)
     {

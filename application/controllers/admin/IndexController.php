@@ -8,7 +8,6 @@ use Bootphp\View;
 use App\controllers\admin\AdministrationController;
 use App\models\UserModel;
 
-
 /**
  * 后台首页控制器。
  *
@@ -45,15 +44,19 @@ class IndexController extends AdministrationController
         //$user = ORM::factory('User');
         //$user->where('id', '=', 1)->find();
         //$user->article;
-        //$articles = $user->article->find_all();
+        //$articles = $user->article->findAll();
         //print_r($user);
 
-        $article = ORM::factory('Article');
-        $articles = $article->where('id', '>', 1)->find_all();
-        $categories = $article->categories->find_all();
-        exit;
+        $article = ORM::factory('Article')->where('id', '=', 2)->find();
+        //$articles = $article->categories->findAll();
+        //$article->has('categories', $category);
+        //print_r($article);
+        $article->introduce = 'introduce_' . mt_rand();
+       // $result = $article->save();
 
+        print_r($article);
 
+        //exit;
         // $user = DB::select()->from('users')->where('id', '=', 1)->as_object()->execute();
         // $aa = $user[0];
         // 统计评论数

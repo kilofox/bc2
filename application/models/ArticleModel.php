@@ -16,18 +16,13 @@ use Bootphp\Database\DB;
 class ArticleModel extends \Bootphp\ORM\ORM
 {
     protected $_object_name = 'article';
-    protected $_tableName = 'articles';
-    protected $_table_name = 'articles';
-    protected $_belongs_to = array(
-        'user' => array(
-            'model' => 'user',
-            'foreign_key' => 'author_id',
-        ),
-    );
-    protected $_has_many = array(
+    protected $tableName = 'articles';
+    protected $hasMany = array(
         'categories' => array(
-            'model' => 'article',
-            'through' => 'article_categories',
+            'model' => 'category',
+            'through' => 'articles_categories',
+            'far_key' => 'category_id',
+            //'foreign_key' => 'id'
         ),
     );
 

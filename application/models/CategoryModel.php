@@ -16,11 +16,17 @@ use Bootphp\Database\DB;
 class CategoryModel extends \Bootphp\ORM\ORM
 {
     protected $_tableName = 'article_categories';
-    protected $_table_name = 'article_categories';
-    protected $_has_many = array(
+    protected $tableName = 'categories';
+    protected $D_has_many = array(
         'articles' => array(
-            //'model' => 'article',
-            'through' => 'article_categories',
+            'model' => 'article',
+           // 'through' => 'articles_categories',
+        ),
+    );
+    protected $d_belongs_to = array(
+        'articles' => array(
+            'model' => 'article',
+           // 'through' => 'articles_categories',
         ),
     );
 

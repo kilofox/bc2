@@ -11,7 +11,7 @@ namespace Bootphp;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class Validation implements ArrayAccess
+class Validation implements \ArrayAccess
 {
     /**
      * Creates a new Validation instance.
@@ -234,7 +234,7 @@ class Validation implements ArrayAccess
     public function rules($field, array $rules)
     {
         foreach ($rules as $rule) {
-            $this->rule($field, $rule[0], Arr::get($rule, 1));
+            $this->rule($field, $rule[0], isset($rule[1]) ? $rule[1] : null);
         }
 
         return $this;
@@ -289,14 +289,14 @@ class Validation implements ArrayAccess
         $original = $this->_data;
 
         // Get a list of the expected fields
-        $expected = Arr::merge(array_keys($original), array_keys($this->_labels));
+        $expected = array_merge(array_keys($original), array_keys($this->_labels));
 
         // Import the rules locally
         $rules = $this->_rules;
 
         foreach ($expected as $field) {
             // Use the submitted value or null if no data exists
-            $data[$field] = Arr::get($this, $field);
+            $data[$field] = isset($this[$field]) ? $this[$field] : null;
 
             if (isset($rules[true])) {
                 if (!isset($rules[$field])) {
@@ -481,19 +481,19 @@ class Validation implements ArrayAccess
             // Start the translation values list
             $values = array(
                 ':field' => $label,
-                ':value' => Arr::get($this, $field),
+                ':value' => isset($this[$field]) ? $this[$field] : null,
             );
 
             if (is_array($values[':value'])) {
                 // All values must be strings
-                $values[':value'] = implode(', ', Arr::flatten($values[':value']));
+                $values[':value'] = implode(', ', $values[':value']);
             }
 
             if ($params) {
                 foreach ($params as $key => $value) {
                     if (is_array($value)) {
                         // All values must be strings
-                        $value = implode(', ', Arr::flatten($value));
+                        $value = implode(', ', $value);
                     } elseif (is_object($value)) {
                         // Objects cannot be used in message files
                         continue;

@@ -333,24 +333,19 @@ abstract class Database
      */
     abstract public function list_tables($like = null);
     /**
-     * Lists all of the columns in a table. Optionally, a LIKE string can be
-     * used to search for specific fields.
+     * Lists all of the columns in a table.
      *
      *     // Get all columns from the "users" table
      *     $columns = $db->list_columns('users');
      *
-     *     // Get all name-related columns
-     *     $columns = $db->list_columns('users', '%name%');
-     *
      *     // Get the columns from a table that doesn't use the table prefix
      *     $columns = $db->list_columns('users', null, false);
      *
-     * @param   string  $table       table to get columns from
-     * @param   string  $like        column to search for
-     * @param   boolean $add_prefix  whether to add the table prefix automatically or not
+     * @param   string  $table      Table to get columns from
+     * @param   boolean $addPrefix  Whether to add the table prefix automatically or not
      * @return  array
      */
-    abstract public function list_columns($table, $like = null, $add_prefix = true);
+    abstract public function listColumns($table, $addPrefix = true);
     /**
      * Extracts the text between parentheses, if any.
      *

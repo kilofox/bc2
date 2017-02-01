@@ -80,7 +80,7 @@ class Query
     {
         if ($lifetime === null) {
             // Use the global setting
-            $lifetime = Core::$cache_life;
+            $lifetime = Core::$cacheLife;
         }
 
         $this->_force_execute = $force;
