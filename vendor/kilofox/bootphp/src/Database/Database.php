@@ -3,7 +3,7 @@
 namespace Bootphp\Database;
 
 use Bootphp\Database\Query;
-use Bootphp\Database\Expression;
+use Bootphp\Database\Database\Expression;
 
 /**
  * Database connection wrapper/helper.

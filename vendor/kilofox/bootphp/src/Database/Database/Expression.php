@@ -1,17 +1,17 @@
 <?php
 
-namespace Bootphp\Database;
+namespace Bootphp\Database\Database;
 
 /**
  * Database expressions can be used to add unescaped SQL fragments to a
- * [Database_Query_Builder] object.
+ * [Database\Query\Builder] object.
  *
  * For example, you can use an expression to generate a column alias:
  *
  *     // SELECT CONCAT(first_name, last_name) AS full_name
  *     $query = DB::select(array(DB::expr('CONCAT(first_name, last_name)'), 'full_name')));
  *
- * More examples are available on the [Query Builder](database/query/builder#database-expressions) page
+ * More examples are available on the [Query Builder](database/query/builder#database-expressions) page.
  *
  * @package    Bootphp/Database
  * @category   Base
@@ -19,7 +19,7 @@ namespace Bootphp\Database;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class DatabaseExpression
+class Expression
 {
     // Unquoted parameters
     protected $_parameters;
@@ -29,13 +29,13 @@ class DatabaseExpression
     /**
      * Sets the expression string.
      *
-     *     $expression = new Database_Expression('COUNT(users.id)');
+     *     $expression = new Database\Expression('COUNT(users.id)');
      *
-     * @param   string  $value      raw SQL expression string
-     * @param   array   $parameters unquoted parameter values
+     * @param   string  $value      Raw SQL expression string
+     * @param   array   $parameters Unquoted parameter values
      * @return  void
      */
-    public function __construct($value, $parameters = array())
+    public function __construct($value, $parameters = [])
     {
         // Set the expression string
         $this->_value = $value;

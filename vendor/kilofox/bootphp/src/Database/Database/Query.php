@@ -3,9 +3,10 @@
 namespace Bootphp\Database\Database;
 
 use Bootphp\Database\Database;
+use Bootphp\Core;
 
 /**
- * Database query wrapper.  See [Parameterized Statements](database/query/parameterized) for usage and examples.
+ * Database query wrapper. See [Parameterized Statements](database/query/parameterized) for usage and examples.
  *
  * @package    Bootphp/Database
  * @category   Query
@@ -15,20 +16,54 @@ use Bootphp\Database\Database;
  */
 class Query
 {
-    // Query type
-    protected $_type;
-    // Execute the query during a cache hit
-    protected $_force_execute = false;
-    // Cache lifetime
-    protected $_lifetime = null;
-    // SQL statement
+    /**
+     * Query type.
+     *
+     * @var string
+     */
+    protected $type;
+
+    /**
+     * Execute the query during a cache hit.
+     *
+     * @var boolean
+     */
+    protected $forceExecute = false;
+
+    /**
+     * Cache lifetime.
+     *
+     * @var mixed
+     */
+    protected $lifetime = null;
+
+    /**
+     * SQL statement.
+     *
+     * @var string
+     */
     protected $_sql;
-    // Quoted query parameters
-    protected $_parameters = array();
-    // Return results as associative arrays or objects
+
+    /**
+     * Quoted query parameters.
+     *
+     * @var array
+     */
+    protected $_parameters = [];
+
+    /**
+     * Return results as associative arrays or objects.
+     *
+     * @var boolean
+     */
     protected $_as_object = false;
-    // Parameters for __construct when using object results
-    protected $_object_params = array();
+
+    /**
+     * Parameters for __construct when using object results.
+     *
+     * @var array
+     */
+    protected $_object_params = [];
 
     /**
      * Creates a new SQL query of the specified type.
@@ -39,7 +74,7 @@ class Query
      */
     public function __construct($type, $sql)
     {
-        $this->_type = $type;
+        $this->type = $type;
         $this->_sql = $sql;
     }
 
@@ -53,8 +88,8 @@ class Query
         try {
             // Return the SQL string
             return $this->compile(Database::instance());
-        } catch (Exception $e) {
-            return Kohana_Exception::text($e);
+        } catch (\Exception $e) {
+            return \Bootphp\BootphpException::text($e);
         }
     }
 
@@ -65,7 +100,7 @@ class Query
      */
     public function type()
     {
-        return $this->_type;
+        return $this->type;
     }
 
     /**
@@ -74,7 +109,7 @@ class Query
      * @param   integer  $lifetime  number of seconds to cache, 0 deletes it from the cache
      * @param   boolean  whether or not to execute the query during a cache hit
      * @return  $this
-     * @uses    Core::$cache_life
+     * @uses    Core::$cacheLife
      */
     public function cached($lifetime = null, $force = false)
     {
@@ -83,8 +118,8 @@ class Query
             $lifetime = Core::$cacheLife;
         }
 
-        $this->_force_execute = $force;
-        $this->_lifetime = $lifetime;
+        $this->forceExecute = $force;
+        $this->lifetime = $lifetime;
 
         return $this;
     }
@@ -98,7 +133,7 @@ class Query
     {
         $this->_as_object = false;
 
-        $this->_object_params = array();
+        $this->_object_params = [];
 
         return $this;
     }
@@ -197,14 +232,14 @@ class Query
     /**
      * Execute the current query on the given database.
      *
-     * @param   mixed    $db  Database instance or name of instance
-     * @param   string   result object classname, true for stdClass or false for array
-     * @param   array    result object constructor arguments
+     * @param   mixed    $db            Database instance or name of instance
+     * @param   string   $as_object     Result object classname, true for stdClass or false for array
+     * @param   array    $objectParams Result object constructor arguments
      * @return  object   Database_Result for SELECT queries
-     * @return  mixed    the insert id for INSERT queries
-     * @return  integer  number of affected rows for all other queries
+     * @return  mixed    The insert id for INSERT queries
+     * @return  integer  Number of affected rows for all other queries
      */
-    public function execute($db = null, $as_object = null, $object_params = null)
+    public function execute($db = null, $as_object = null, $objectParams = null)
     {
         if (!is_object($db)) {
             // Get the database instance
@@ -215,36 +250,33 @@ class Query
             $as_object = $this->_as_object;
         }
 
-        if ($object_params === null) {
-            $object_params = $this->_object_params;
+        if ($objectParams === null) {
+            $objectParams = $this->_object_params;
         }
 
         // Compile the SQL query
         $sql = $this->compile($db);
 
-        if ($this->_lifetime !== null AND $this->_type === 'select') {
+        if ($this->lifetime !== null AND $this->type === 'select') {
             // Set the cache key based on the database instance name and SQL
-            $cache_key = 'Database::query("' . $db . '", "' . $sql . '")';
+            $cacheKey = 'Database::query("' . $db . '", "' . $sql . '")';
 
             // Read the cache first to delete a possible hit with lifetime <= 0
-            if (($result = Core::cache($cache_key, null, $this->_lifetime)) !== null
-                    AND ! $this->_force_execute) {
+            if (($result = Core::cache($cacheKey, null, $this->lifetime)) !== null AND ! $this->forceExecute) {
                 // Return a cached result
-                return new Database_Result_Cached($result, $sql, $as_object, $object_params);
+                return new Database_Result_Cached($result, $sql, $as_object, $objectParams);
             }
         }
 
         // Execute the query
-        $result = $db->query($this->_type, $sql, $as_object, $object_params);
+        $result = $db->query($this->type, $sql, $as_object, $objectParams);
 
-        if (isset($cache_key) AND $this->_lifetime > 0) {
+        if (isset($cacheKey) AND $this->lifetime > 0) {
             // Cache the result array
-            Core::cache($cache_key, $result->as_array(), $this->_lifetime);
+            Core::cache($cacheKey, $result->as_array(), $this->lifetime);
         }
 
         return $result;
     }
 
 }
-
-// End Database_Query

@@ -1,5 +1,9 @@
 <?php
-namespace Bootphp\Database\Query\Builder;
+
+namespace Bootphp\Database\Database\Query\Builder;
+
+use Bootphp\BootphpException;
+
 /**
  * Database query builder for INSERT statements. See [Query Builder](/database/query/builder) for usage and examples.
  *
@@ -9,20 +13,20 @@ namespace Bootphp\Database\Query\Builder;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
+class Insert extends \Bootphp\Database\Database\Query\Builder
 {
     // INSERT INTO ...
     protected $_table;
     // (...)
-    protected $_columns = array();
+    protected $_columns = [];
     // VALUES (...)
-    protected $_values = array();
+    protected $_values = [];
 
     /**
      * Set the table and columns for an insert.
      *
-     * @param   mixed  $table    table name or array($table, $alias) or object
-     * @param   array  $columns  column names
+     * @param   mixed   $table  Table name or array($table, $alias) or object
+     * @param   array  $columns Column names
      * @return  void
      */
     public function __construct($table = null, array $columns = null)
@@ -38,19 +42,19 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
         }
 
         // Start the query with no SQL
-        return parent::__construct(Database::INSERT, '');
+        return parent::__construct('insert', '');
     }
 
     /**
      * Sets the table to insert into.
      *
-     * @param   string  $table  table name
+     * @param   string  $table  Table name
      * @return  $this
      */
     public function table($table)
     {
         if (!is_string($table))
-            throw new Kohana_Exception('INSERT INTO syntax does not allow table aliasing');
+            throw new BootphpException('INSERT INTO syntax does not allow table aliasing');
 
         $this->_table = $table;
 
@@ -60,7 +64,7 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
     /**
      * Set the columns that will be inserted.
      *
-     * @param   array  $columns  column names
+     * @param   array   $columns    Column names
      * @return  $this
      */
     public function columns(array $columns)
@@ -73,14 +77,14 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
     /**
      * Adds or overwrites values. Multiple value sets can be added.
      *
-     * @param   array   $values  values list
+     * @param   array   $values Values list
      * @param   ...
      * @return  $this
      */
     public function values(array $values)
     {
         if (!is_array($this->_values)) {
-            throw new Kohana_Exception('INSERT INTO ... SELECT statements cannot be combined with INSERT INTO ... VALUES');
+            throw new BootphpException('INSERT INTO ... SELECT statements cannot be combined with INSERT INTO ... VALUES');
         }
 
         // Get all of the passed values
@@ -99,10 +103,10 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
      * @param   object  $query  Database_Query of SELECT type
      * @return  $this
      */
-    public function select(Database_Query $query)
+    public function select(Query $query)
     {
-        if ($query->type() !== Database::SELECT) {
-            throw new Kohana_Exception('Only SELECT queries can be combined with INSERT queries');
+        if ($query->type() !== 'select') {
+            throw new BootphpException('Only SELECT queries can be combined with INSERT queries');
         }
 
         $this->_values = $query;
@@ -113,7 +117,7 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
     /**
      * Compile the SQL query and return it.
      *
-     * @param   mixed  $db  Database instance or name of instance
+     * @param   mixed   $db     Database instance or name of instance
      * @return  string
      */
     public function compile($db = null)
@@ -133,7 +137,7 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
             // Callback for quoting values
             $quote = array($db, 'quote');
 
-            $groups = array();
+            $groups = [];
             foreach ($this->_values as $group) {
                 foreach ($group as $offset => $value) {
                     if ((is_string($value) AND array_key_exists($value, $this->_parameters)) === false) {
@@ -162,9 +166,9 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
     {
         $this->_table = null;
 
-        $this->_columns = $this->_values = array();
+        $this->_columns = $this->_values = [];
 
-        $this->_parameters = array();
+        $this->_parameters = [];
 
         $this->_sql = null;
 
@@ -172,5 +176,3 @@ class DatabaseQueryBuilderInsert extends \Bootphp\DatabaseQueryBuilder
     }
 
 }
-
-// End Database_Query_Builder_Insert

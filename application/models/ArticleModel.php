@@ -15,14 +15,14 @@ use Bootphp\Database\DB;
  */
 class ArticleModel extends \Bootphp\ORM\ORM
 {
-    protected $_object_name = 'article';
+    protected $objectName = 'article';
     protected $tableName = 'articles';
     protected $hasMany = array(
         'categories' => array(
             'model' => 'category',
             'through' => 'articles_categories',
-            'far_key' => 'category_id',
-            //'foreign_key' => 'id'
+            'farKey' => 'category_id',
+        //'foreign_key' => 'id'
         ),
     );
 

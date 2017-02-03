@@ -7,12 +7,12 @@ namespace Bootphp\Database;
  *
  * Shortcut     | Returned Object
  * -------------|---------------
- * [`DB::query()`](#query)   | [Database_Query]
- * [`DB::insert()`](#insert) | [Database_Query_Builder_Insert]
- * [`DB::select()`](#select),<br />[`DB::select_array()`](#select_array) | [Database_Query_Builder_Select]
- * [`DB::update()`](#update) | [Database_Query_Builder_Update]
- * [`DB::delete()`](#delete) | [Database_Query_Builder_Delete]
- * [`DB::expr()`](#expr)     | [Database_Expression]
+ * [`DB::query()`](#query)   | [Database\Query]
+ * [`DB::insert()`](#insert) | [Database\Query\Builder\Insert]
+ * [`DB::select()`](#select),<br />[`DB::select_array()`](#select_array) | [Database\Query\Builder\Select]
+ * [`DB::update()`](#update) | [Database\Query\Builder\Update]
+ * [`DB::delete()`](#delete) | [Database\Query\Builder\Delete]
+ * [`DB::expr()`](#expr)     | [Database\Expression]
  *
  * You pass the same parameters to these functions as you pass to the objects they return.
  *
@@ -25,22 +25,22 @@ namespace Bootphp\Database;
 class DB
 {
     /**
-     * Create a new [Database_Query] of the given type.
+     * Create a new [Database\Query] of the given type.
      *
      *     // Create a new SELECT query
-     *     $query = DB::query(Database::SELECT, 'SELECT * FROM users');
+     *     $query = DB::query('select', 'SELECT * FROM users');
      *
      *     // Create a new DELETE query
-     *     $query = DB::query(Database::DELETE, 'DELETE FROM users WHERE id = 5');
+     *     $query = DB::query('delete', 'DELETE FROM users WHERE id = 2');
      *
-     * Specifying the type changes the returned result. When using
-     * `Database::SELECT`, a [Database_Query_Result] will be returned.
-     * `Database::INSERT` queries will return the insert id and number of rows.
+     * Specifying the type changes the returned result. When using `select`, a
+     * [Database\Query\Result] will be returned.
+     * `insert` queries will return the insert id and number of rows.
      * For all other queries, the number of affected rows is returned.
      *
-     * @param   integer  $type  type: Database::SELECT, Database::UPDATE, etc
+     * @param   integer  $type  Type: 'select', 'update', etc
      * @param   string   $sql   SQL statement
-     * @return  Database_Query
+     * @return  Database\Query
      */
     public static function query($type, $sql)
     {
@@ -48,7 +48,7 @@ class DB
     }
 
     /**
-     * Create a new [Database_Query_Builder_Select]. Each argument will be
+     * Create a new [Database\Query\Builder\Select]. Each argument will be
      * treated as a column. To generate a `foo AS bar` alias, use an array.
      *
      *     // SELECT id, username
@@ -57,8 +57,8 @@ class DB
      *     // SELECT id AS user_id
      *     $query = DB::select(array('id', 'user_id'));
      *
-     * @param   mixed   $columns  column name or array($column, $alias) or object
-     * @return  Database_Query_Builder_Select
+     * @param   mixed   $columns    Column name or array($column, $alias) or object
+     * @return  Database\Query\Builder\Select
      */
     public static function select($columns = null)
     {
@@ -66,13 +66,13 @@ class DB
     }
 
     /**
-     * Create a new [Database_Query_Builder_Select] from an array of columns.
+     * Create a new [Database\Query\Builder\Select] from an array of columns.
      *
      *     // SELECT id, username
      *     $query = DB::select_array(array('id', 'username'));
      *
-     * @param   array   $columns  columns to select
-     * @return  Database_Query_Builder_Select
+     * @param   array   $columns    Columns to select
+     * @return  Database\Query\Builder\Select
      */
     public static function select_array(array $columns = null)
     {
@@ -80,14 +80,14 @@ class DB
     }
 
     /**
-     * Create a new [Database_Query_Builder_Insert].
+     * Create a new [Database\Query\Builder\Insert].
      *
      *     // INSERT INTO users (id, username)
      *     $query = DB::insert('users', array('id', 'username'));
      *
-     * @param   string  $table    table to insert into
-     * @param   array   $columns  list of column names or array($column, $alias) or object
-     * @return  Database_Query_Builder_Insert
+     * @param   string  $table      Table to insert into
+     * @param   array   $columns    List of column names or array($column, $alias) or object
+     * @return  Database\Query\Builder\Insert
      */
     public static function insert($table = null, array $columns = null)
     {
@@ -95,13 +95,13 @@ class DB
     }
 
     /**
-     * Create a new [Database_Query_Builder_Update].
+     * Create a new [Database\Query\Builder\Update].
      *
      *     // UPDATE users
      *     $query = DB::update('users');
      *
-     * @param   string  $table  table to update
-     * @return  Database_Query_Builder_Update
+     * @param   string  $table  Table to update
+     * @return  Database\Query\Builder\Update
      */
     public static function update($table = null)
     {
@@ -109,13 +109,13 @@ class DB
     }
 
     /**
-     * Create a new [Database_Query_Builder_Delete].
+     * Create a new [Database\Query\Builder\Delete].
      *
      *     // DELETE FROM users
      *     $query = DB::delete('users');
      *
-     * @param   string  $table  table to delete from
-     * @return  Database_Query_Builder_Delete
+     * @param   string  $table  Table to delete from
+     * @return  Database\Query\Builder\Delete
      */
     public static function delete($table = null)
     {
@@ -123,18 +123,17 @@ class DB
     }
 
     /**
-     * Create a new [Database_Expression] which is not escaped. An expression
-     * is the only way to use SQL functions within query builders.
+     * Create a new [Database\Expression] which is not escaped. An expression is
+     * the only way to use SQL functions within query builders.
      *
      *     $expression = DB::expr('COUNT(users.id)');
      *     $query = DB::update('users')->set(array('login_count' => DB::expr('login_count + 1')))->where('id', '=', $id);
-     *     $users = ORM::factory('user')->where(DB::expr("BINARY `hash`"), '=', $hash)->find();
      *
-     * @param   string  $string  expression
-     * @param   array   parameters
-     * @return  Database_Expression
+     * @param   string  $string     Expression
+     * @param   array   $parameters Parameters
+     * @return  Database\Expression
      */
-    public static function expr($string, $parameters = array())
+    public static function expr($string, $parameters = [])
     {
         return new Database\Expression($string, $parameters);
     }

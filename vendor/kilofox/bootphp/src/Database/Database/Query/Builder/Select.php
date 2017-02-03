@@ -14,21 +14,21 @@ namespace Bootphp\Database\Database\Query\Builder;
 class Select extends Where
 {
     // SELECT ...
-    protected $_select = array();
+    protected $_select = [];
     // DISTINCT
     protected $_distinct = false;
     // FROM ...
-    protected $_from = array();
+    protected $_from = [];
     // JOIN ...
-    protected $_join = array();
+    protected $_join = [];
     // GROUP BY ...
-    protected $_group_by = array();
+    protected $_group_by = [];
     // HAVING ...
-    protected $_having = array();
+    protected $_having = [];
     // OFFSET ...
     protected $_offset = null;
     // UNION ...
-    protected $_union = array();
+    protected $_union = [];
     // The last JOIN statement created
     protected $_last_join;
 
@@ -288,8 +288,8 @@ class Select extends Where
         if (is_string($select)) {
             $select = DB::select()->from($select);
         }
-        if (!$select instanceof Database_Query_Builder_Select)
-            throw new Kohana_Exception('first parameter must be a string or an instance of Database_Query_Builder_Select');
+        if (!$select instanceof Database\Query\Builder\Select)
+            throw new \Bootphp\BootphpException('first parameter must be a string or an instance of Database_Query_Builder_Select');
         $this->_union [] = array('select' => $select, 'all' => $all);
         return $this;
     }
@@ -320,12 +320,6 @@ class Select extends Where
             $db = \Bootphp\Database::instance($db);
         }
 
-        // Callback to quote columns
-        $quote_column = array($db, 'quote_column');
-
-        // Callback to quote tables
-        $quote_table = array($db, 'quote_table');
-
         // Start a selection query
         $query = 'SELECT ';
 
@@ -339,12 +333,12 @@ class Select extends Where
             $query .= '*';
         } else {
             // Select all columns
-            $query .= implode(', ', array_unique(array_map($quote_column, $this->_select)));
+            $query .= implode(', ', array_unique(array_map([$db, 'quote_column'], $this->_select)));
         }
 
         if (!empty($this->_from)) {
             // Set tables to select from
-            $query .= ' FROM ' . implode(', ', array_unique(array_map($quote_table, $this->_from)));
+            $query .= ' FROM ' . implode(', ', array_unique(array_map([$db, 'quote_table'], $this->_from)));
         }
 
         if (!empty($this->_join)) {
@@ -400,13 +394,13 @@ class Select extends Where
 
     public function reset()
     {
-        $this->_select = $this->_from = $this->_join = $this->_where = $this->_group_by = $this->_having = $this->_order_by = $this->_union = array();
+        $this->_select = $this->_from = $this->_join = $this->_where = $this->_group_by = $this->_having = $this->_order_by = $this->_union = [];
 
         $this->_distinct = false;
 
         $this->_limit = $this->_offset = $this->_last_join = null;
 
-        $this->_parameters = array();
+        $this->_parameters = [];
 
         $this->_sql = null;
 
@@ -414,5 +408,3 @@ class Select extends Where
     }
 
 }
-
-// End Database_Query_Select

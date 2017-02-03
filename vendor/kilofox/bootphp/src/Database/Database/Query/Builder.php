@@ -216,5 +216,3 @@ abstract class Builder extends \Bootphp\Database\Database\Query
      */
     abstract public function reset();
 }
-
-// End Database_Query_Builder

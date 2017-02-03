@@ -47,12 +47,13 @@ class IndexController extends AdministrationController
         //$articles = $user->article->findAll();
         //print_r($user);
 
-        $article = ORM::factory('Article')->where('id', '=', 2)->find();
-        //$articles = $article->categories->findAll();
+        $article = ORM::factory('Article')->where('id', '=', 1)->orWhere('id', '=', 2)->find();
+        $articles = $article->categories->findAll();
         //$article->has('categories', $category);
         //print_r($article);
         $article->introduce = 'introduce_' . mt_rand();
-       // $result = $article->save();
+        //$article->save();
+        $article->countAll();
 
         print_r($article);
 
