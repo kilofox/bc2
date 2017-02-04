@@ -542,8 +542,8 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Set values from an array with support for one-one relationships.  This method should be used
-     * for loading in post data, etc.
+     * Set values from an array with support for one-one relationships. This
+     * method should be used for loading in post data, etc.
      *
      * @param   array   $values     Array of column => val
      * @param   array   $expected   Array of keys to take from $values
@@ -964,16 +964,16 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Validates the current model's data
+     * Validates the current model's data.
      *
-     * @param  Validation $extra_validation Validation object
-     * @throws ORM_Validation_Exception
-     * @return ORM
+     * @param   Validation  $extraValidation   Validation object
+     * @throws  ORM\Validation\Exception
+     * @return  ORM
      */
-    public function check(Validation $extra_validation = null)
+    public function check(Validation $extraValidation = null)
     {
         // Determine if any external validation failed
-        $extra_errors = $extra_validation && !$extra_validation->check();
+        $extra_errors = $extraValidation && !$extraValidation->check();
 
         // Always build a new validation object
         $this->_validation();
@@ -981,11 +981,11 @@ class ORM extends \Bootphp\Model
         $array = $this->_validation;
 
         if (($this->_valid = $array->check()) === false || $extra_errors) {
-            $exception = new ORM_Validation_Exception($this->objectName, $array);
+            $exception = new ORM\Validation\Exception($this->objectName, $array);
 
             if ($extra_errors) {
                 // Merge any possible errors from the external object
-                $exception->add_object('_external', $extra_validation);
+                $exception->add_object('_external', $extraValidation);
             }
             throw $exception;
         }
@@ -1147,7 +1147,7 @@ class ORM extends \Bootphp\Model
      */
     public function has($alias, $farKeys = null)
     {
-        $count = $this->count_relations($alias, $farKeys);
+        $count = $this->countRelations($alias, $farKeys);
         if ($farKeys === null) {
             return (bool) $count;
         } else {
@@ -1175,27 +1175,27 @@ class ORM extends \Bootphp\Model
      */
     public function has_any($alias, $farKeys = null)
     {
-        return (bool) $this->count_relations($alias, $farKeys);
+        return (bool) $this->countRelations($alias, $farKeys);
     }
 
     /**
      * Returns the number of relationships
      *
      *     // Counts the number of times the login role is attached to $model
-     *     $model->count_relations('roles', ORM::factory('role', ['name' => 'login']));
+     *     $model->countRelations('roles', ORM::factory('role', ['name' => 'login']));
      *     // Counts the number of times role 5 is attached to $model
-     *     $model->count_relations('roles', 5);
+     *     $model->countRelations('roles', 5);
      *     // Counts the number of times any of roles 1, 2, 3, or 4 are attached to
      *     // $model
-     *     $model->count_relations('roles', [1, 2, 3, 4]);
+     *     $model->countRelations('roles', [1, 2, 3, 4]);
      *     // Counts the number roles attached to $model
-     *     $model->count_relations('roles')
+     *     $model->countRelations('roles')
      *
      * @param  string  $alias    Alias of the has_many "through" relationship
      * @param  mixed   $farKeys Related model, primary key, or an array of primary keys
      * @return integer
      */
-    public function count_relations($alias, $farKeys = null)
+    public function countRelations($alias, $farKeys = null)
     {
         if ($farKeys === null) {
             return (int) DB::select([DB::expr('COUNT(*)'), 'records_found'])
@@ -1552,9 +1552,9 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Enables or disables selecting only unique columns using "SELECT DISTINCT"
+     * Enables or disables selecting only unique columns using "SELECT DISTINCT".
      *
-     * @param   boolean  $value Enable or disable distinct columns
+     * @param   boolean $value  Enable or disable distinct columns
      * @return  $this
      */
     public function distinct($value)
@@ -1677,7 +1677,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'and_having',
+            'name' => 'having',
             'args' => [$column, $op, $value],
         ];
 
@@ -1696,7 +1696,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'or_having',
+            'name' => 'orHaving',
             'args' => [$column, $op, $value],
         ];
 
@@ -1712,7 +1712,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'and_having_open',
+            'name' => 'havingOpen',
             'args' => [],
         ];
 
@@ -1728,7 +1728,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'or_having_open',
+            'name' => 'orHavingOpen',
             'args' => [],
         ];
 
@@ -1744,7 +1744,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'and_having_close',
+            'name' => 'havingClose',
             'args' => [],
         ];
 
@@ -1760,7 +1760,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'or_having_close',
+            'name' => 'orHavingClose',
             'args' => [],
         ];
 

@@ -50,9 +50,9 @@ class Select extends Where
     }
 
     /**
-     * Enables or disables selecting only unique columns using "SELECT DISTINCT"
+     * Enables or disables selecting only unique columns using "SELECT DISTINCT".
      *
-     * @param   boolean  $value  enable or disable distinct columns
+     * @param   boolean $value  Enable or disable distinct columns
      * @return  $this
      */
     public function distinct($value)
@@ -65,7 +65,7 @@ class Select extends Where
     /**
      * Choose the columns to select from.
      *
-     * @param   mixed  $columns  column name or array($column, $alias) or object
+     * @param   mixed   $columns    Column name or array($column, $alias) or object
      * @return  $this
      */
     public function select($columns = null)
@@ -80,7 +80,7 @@ class Select extends Where
     /**
      * Choose the columns to select from, using an array.
      *
-     * @param   array  $columns  list of column names or aliases
+     * @param   array   $columns    List of column names or aliases
      * @return  $this
      */
     public function select_array(array $columns)
@@ -91,9 +91,9 @@ class Select extends Where
     }
 
     /**
-     * Choose the tables to select "FROM ..."
+     * Choose the tables to select "FROM ...".
      *
-     * @param   mixed  $table  table name or array($table, $alias) or object
+     * @param   mixed   $table  Table name or array($table, $alias) or object
      * @return  $this
      */
     public function from($tables)
@@ -108,8 +108,8 @@ class Select extends Where
     /**
      * Adds addition tables to "JOIN ...".
      *
-     * @param   mixed   $table  column name or array($column, $alias) or object
-     * @param   string  $type   join type (LEFT, RIGHT, INNER, etc)
+     * @param   mixed   $table  Column name or array($column, $alias) or object
+     * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc)
      * @return  $this
      */
     public function join($table, $type = null)
@@ -122,9 +122,9 @@ class Select extends Where
     /**
      * Adds "ON ..." conditions for the last created JOIN statement.
      *
-     * @param   mixed   $c1  column name or array($column, $alias) or object
-     * @param   string  $op  logic operator
-     * @param   mixed   $c2  column name or array($column, $alias) or object
+     * @param   mixed   $c1     Column name or array($column, $alias) or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $c2     Column name or array($column, $alias) or object
      * @return  $this
      */
     public function on($c1, $op, $c2)
@@ -137,7 +137,7 @@ class Select extends Where
     /**
      * Adds "USING ..." conditions for the last created JOIN statement.
      *
-     * @param   string  $columns  column name
+     * @param   string  $columns    Column name
      * @return  $this
      */
     public function using($columns)
@@ -152,7 +152,7 @@ class Select extends Where
     /**
      * Creates a "GROUP BY ..." filter.
      *
-     * @param   mixed   $columns  column name or array($column, $alias) or object
+     * @param   mixed   $columns    Column name or array($column, $alias) or object
      * @return  $this
      */
     public function group_by($columns)
@@ -165,27 +165,14 @@ class Select extends Where
     }
 
     /**
-     * Alias of and_having()
+     * Creates a new "AND HAVING" condition for the query.
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
+     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $value  Column value
      * @return  $this
      */
     public function having($column, $op, $value = null)
-    {
-        return $this->and_having($column, $op, $value);
-    }
-
-    /**
-     * Creates a new "AND HAVING" condition for the query.
-     *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
-     * @return  $this
-     */
-    public function and_having($column, $op, $value = null)
     {
         $this->_having[] = array('AND' => array($column, $op, $value));
 
@@ -208,21 +195,11 @@ class Select extends Where
     }
 
     /**
-     * Alias of and_having_open()
-     *
-     * @return  $this
-     */
-    public function having_open()
-    {
-        return $this->and_having_open();
-    }
-
-    /**
      * Opens a new "AND HAVING (...)" grouping.
      *
      * @return  $this
      */
-    public function and_having_open()
+    public function havingOpen()
     {
         $this->_having[] = array('AND' => '(');
 
@@ -234,7 +211,7 @@ class Select extends Where
      *
      * @return  $this
      */
-    public function or_having_open()
+    public function orHavingOpen()
     {
         $this->_having[] = array('OR' => '(');
 
@@ -246,17 +223,7 @@ class Select extends Where
      *
      * @return  $this
      */
-    public function having_close()
-    {
-        return $this->and_having_close();
-    }
-
-    /**
-     * Closes an open "AND HAVING (...)" grouping.
-     *
-     * @return  $this
-     */
-    public function and_having_close()
+    public function havingClose()
     {
         $this->_having[] = array('AND' => ')');
 
@@ -268,7 +235,7 @@ class Select extends Where
      *
      * @return  $this
      */
-    public function or_having_close()
+    public function orHavingClose()
     {
         $this->_having[] = array('OR' => ')');
 
@@ -279,7 +246,7 @@ class Select extends Where
      * Adds an other UNION clause.
      *
      * @param mixed $select  if string, it must be the name of a table. Else
-     *  must be an instance of Database_Query_Builder_Select
+     *  must be an instance of Database\Query\Builder\Select
      * @param boolean $all  decides if it's an UNION or UNION ALL clause
      * @return $this
      */
@@ -295,9 +262,9 @@ class Select extends Where
     }
 
     /**
-     * Start returning results after "OFFSET ..."
+     * Start returning results after "OFFSET ...".
      *
-     * @param   integer   $number  starting result number or null to reset
+     * @param   integer $number Starting result number or null to reset
      * @return  $this
      */
     public function offset($number)
@@ -310,7 +277,7 @@ class Select extends Where
     /**
      * Compile the SQL query and return it.
      *
-     * @param   mixed  $db  Database instance or name of instance
+     * @param   mixed   $db     Database instance or name of instance
      * @return  string
      */
     public function compile($db = null)

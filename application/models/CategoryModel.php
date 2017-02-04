@@ -15,8 +15,7 @@ use Bootphp\Database\DB;
  */
 class CategoryModel extends \Bootphp\ORM\ORM
 {
-    protected $_tableName = 'article_categories';
-    protected $tableName = 'categories';
+    protected $tableName = 'article_categories';
     protected $D_has_many = array(
         'articles' => array(
             'model' => 'article',
