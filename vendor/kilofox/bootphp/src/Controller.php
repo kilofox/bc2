@@ -132,8 +132,6 @@ abstract class Controller
     {
         // Assigns the [View] as the request response.
         if ($this->autoRender === true) {
-            $this->view->layout($this->layout)
-                    ->template($this->template);
             $this->response->body($this->view->render());
         }
     }

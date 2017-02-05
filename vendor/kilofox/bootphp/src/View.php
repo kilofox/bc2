@@ -17,8 +17,31 @@ use Bootphp\BootphpException;
  */
 class View
 {
-    // Array of global variables
-    protected static $globalData = [];
+    /**
+     * Static config setup for usage.
+     *
+     * @var array
+     */
+    protected static $config = [
+        'defaultFormat' => 'html',
+        'defaultExtension' => 'php',
+        'path' => null,
+        'layoutPath' => null
+    ];
+
+    /**
+     * Config setup for main templates directory, etc.
+     */
+    public static function config($cfg = null)
+    {
+        // Getter
+        if ($cfg === null) {
+            return self::$config;
+        }
+
+        // Setter
+        self::$config = array_merge(self::$config, (array) $cfg);
+    }
 
     /**
      * Captures the output that is generated when a view is included.
@@ -37,11 +60,6 @@ class View
         // Import the view variables to local namespace
         extract($viewData, EXTR_SKIP);
 
-        if (self::$globalData) {
-            // Import the global view variables to local namespace
-            extract(self::$globalData, EXTR_SKIP | EXTR_REFS);
-        }
-
         // Capture the view output
         ob_start();
 
@@ -58,51 +76,6 @@ class View
 
         // Get the captured output and close the buffer
         return ob_get_clean();
-    }
-
-    /**
-     * Sets a global variable, similar to [View::set], except that the
-     * variable will be accessible to all views.
-     *
-     *     View::set_global($name, $value);
-     *
-     * You can also use an array or Traversable object to set several values at once:
-     *
-     *     // Create the values $food and $beverage in the view
-     *     View::set_global(array('food' => 'bread', 'beverage' => 'water'));
-     *
-     * [!!] Note: When setting with using Traversable object we're not attaching
-     * the whole object to the view, i.e. the object's standard properties will
-     * not be available in the view context.
-     *
-     * @param   string|array|Traversable    $key    Variable name or an array of variables
-     * @param   mixed                       $value  Value
-     * @return  void
-     */
-    public static function set_global($key, $value = null)
-    {
-        if (is_array($key) || $key instanceof Traversable) {
-            foreach ($key as $name => $value) {
-                self::$globalData[$name] = $value;
-            }
-        } else {
-            self::$globalData[$key] = $value;
-        }
-    }
-
-    /**
-     * Assigns a global variable by reference, similar to [View::bind], except
-     * that the variable will be accessible to all views.
-     *
-     *     View::bind_global($key, $value);
-     *
-     * @param   string  $key    Variable name
-     * @param   mixed   $value  Referenced variable
-     * @return  void
-     */
-    public static function bind_global($key, & $value)
-    {
-        self::$globalData[$key] = & $value;
     }
 
     /**
@@ -164,8 +137,6 @@ class View
     {
         if (array_key_exists($key, $this->data)) {
             return $this->data[$key];
-        } elseif (array_key_exists($key, self::$globalData)) {
-            return self::$globalData[$key];
         } else {
             throw new BootphpException('View variable is not set: ' . $key);
         }
@@ -197,7 +168,7 @@ class View
      */
     public function __isset($key)
     {
-        return isset($this->data[$key]) || isset(self::$globalData[$key]);
+        return isset($this->data[$key]);
     }
 
     /**
@@ -210,7 +181,7 @@ class View
      */
     public function __unset($key)
     {
-        unset($this->data[$key], self::$globalData[$key]);
+        unset($this->data[$key]);
     }
 
     /**
@@ -237,22 +208,18 @@ class View
     }
 
     /**
-     * Sets the layout filename.
+     * Layout template getter/setter.
      *
-     *     $view->layout($file);
-     *
-     * @param   string  $file   Layout filename
+     * @param   $layout
      * @return  $this
-     * @throws  BootphpException
      */
-    public function layout($file)
+    public function layout($layout = null)
     {
-        if (!is_file($file)) {
-            throw new BootphpException('The requested view ' . $file . ' could not be found');
+        if ($layout === null) {
+            return $this->layout;
         }
 
-        // Store the file path locally
-        $this->layout = $file;
+        $this->layout = $layout;
 
         return $this;
     }
@@ -264,32 +231,31 @@ class View
      *
      * @param   string  $file   Template filename
      * @return  $this
-     * @throws  BootphpException
      */
-    public function template($file)
+    public function template($file = null)
     {
-        if (!is_file($file)) {
-            throw new BootphpException('The requested view ' . $file . ' could not be found');
+        if ($file === null) {
+            return $this->template;
         }
 
-        // Store the file path locally
         $this->template = $file;
 
         return $this;
     }
 
     /**
-     * Sets the template filename.
+     * Sets the template path.
      *
-     *     $view->template($file);
-     *
-     * @param   string  $file   Template filename
+     * @param   string  $path   Template path
      * @return  $this
      * @throws  BootphpException
      */
-    public function templatePath($path)
+    public function templatePath($path = null)
     {
-        // Store the template path locally
+        if ($path === null) {
+            return $this->templatePath;
+        }
+
         $this->templatePath = $path;
 
         return $this;
@@ -323,26 +289,6 @@ class View
         } else {
             $this->data[$key] = $value;
         }
-
-        return $this;
-    }
-
-    /**
-     * Assigns a value by reference. The benefit of binding is that values can
-     * be altered without re-setting them. It is also possible to bind variables
-     * before they have values. Assigned values will be available as a
-     * variable within the view file:
-     *
-     *     // This reference can be accessed as $ref within the view
-     *     $view->bind('ref', $bar);
-     *
-     * @param   string  $key    Variable name
-     * @param   mixed   $value  Referenced variable
-     * @return  $this
-     */
-    public function bind($key, & $value)
-    {
-        $this->data[$key] = & $value;
 
         return $this;
     }
