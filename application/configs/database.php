@@ -19,11 +19,6 @@ return [
             'password' => 'root',
             'persistent' => false,
         ],
-        /**
-         * The following extra options are available for PDO_MYSQL:
-         *
-         * string	identifier	Set the escaping identifier
-         */
         'tablePrefix' => 'bc_',
         'charset' => 'utf8',
         'caching' => false,
@@ -31,6 +26,14 @@ return [
     'alternate' => [
         'type' => 'oracle',
         'connection' => [
+            /**
+             * The following options are available for PDO_ORACLE:
+             *
+             * string	dsn			Data Source Name
+             * string	username	Database username
+             * string	password	Database password
+             * boolean	persistent	Use persistent connections?
+             */
             'dsn' => 'oci:dbname=bootphp',
             'username' => false,
             'password' => false,

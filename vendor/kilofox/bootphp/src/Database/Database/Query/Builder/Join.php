@@ -13,49 +13,68 @@ namespace Bootphp\Database\Database\Query\Builder;
  */
 class Join extends \Bootphp\Database\Database\Query\Builder
 {
-    // Type of JOIN
-    protected $_type;
-    // JOIN ...
-    protected $_table;
-    // ON ...
-    protected $_on = array();
-    // USING ...
-    protected $_using = array();
+    /**
+     * Type of JOIN.
+     *
+     * @var string
+     */
+    protected $type;
+
+    /**
+     * JOIN ...
+     *
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * ON ...
+     *
+     * @var array
+     */
+    protected $on = [];
+
+    /**
+     * USING ...
+     *
+     * @var array
+     */
+    protected $using = [];
 
     /**
      * Creates a new JOIN statement for a table. Optionally, the type of JOIN
      * can be specified as the second parameter.
      *
-     * @param   mixed   $table  column name or array($column, $alias) or object
-     * @param   string  $type   type of JOIN: INNER, RIGHT, LEFT, etc
+     * @param   mixed   $table  Column name or [$column, $alias] or object
+     * @param   string  $type   Type of JOIN: INNER, RIGHT, LEFT, etc
      * @return  void
      */
     public function __construct($table, $type = null)
     {
         // Set the table to JOIN on
-        $this->_table = $table;
+        $this->table = $table;
 
         if ($type !== null) {
             // Set the JOIN type
-            $this->_type = (string) $type;
+            $this->type = (string) $type;
         }
     }
 
     /**
      * Adds a new condition for joining.
      *
-     * @param   mixed   $c1  column name or array($column, $alias) or object
-     * @param   string  $op  logic operator
-     * @param   mixed   $c2  column name or array($column, $alias) or object
+     * @param   mixed   $c1     Column name or [$column, $alias] or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $c2     Column name or [$column, $alias] or object
      * @return  $this
      */
     public function on($c1, $op, $c2)
     {
-        if (!empty($this->_using)) {
-            throw new Kohana_Exception('JOIN ... ON ... cannot be combined with JOIN ... USING ...');
+        if (!empty($this->using)) {
+            throw new BootphpException('JOIN ... ON ... cannot be combined with JOIN ... USING ...');
         }
 
-        $this->_on[] = array($c1, $op, $c2);
+        $this->on[] = [$c1, $op, $c2];
 
         return $this;
     }
@@ -63,18 +82,18 @@ class Join extends \Bootphp\Database\Database\Query\Builder
     /**
      * Adds a new condition for joining.
      *
-     * @param   string  $columns  column name
+     * @param   string  $columns    Column name
      * @return  $this
      */
     public function using($columns)
     {
-        if (!empty($this->_on)) {
-            throw new Kohana_Exception('JOIN ... ON ... cannot be combined with JOIN ... USING ...');
+        if (!empty($this->on)) {
+            throw new BootphpException('JOIN ... ON ... cannot be combined with JOIN ... USING ...');
         }
 
         $columns = func_get_args();
 
-        $this->_using = array_merge($this->_using, $columns);
+        $this->using = array_merge($this->using, $columns);
 
         return $this;
     }
@@ -82,7 +101,7 @@ class Join extends \Bootphp\Database\Database\Query\Builder
     /**
      * Compile the SQL partial for a JOIN statement and return it.
      *
-     * @param   mixed  $db  Database instance or name of instance
+     * @param   mixed   $db     Database instance or name of instance
      * @return  string
      */
     public function compile($db = null)
@@ -92,21 +111,21 @@ class Join extends \Bootphp\Database\Database\Query\Builder
             $db = Database::instance($db);
         }
 
-        if ($this->_type) {
-            $sql = strtoupper($this->_type) . ' JOIN';
+        if ($this->type) {
+            $sql = strtoupper($this->type) . ' JOIN';
         } else {
             $sql = 'JOIN';
         }
 
         // Quote the table name that is being joined
-        $sql .= ' ' . $db->quote_table($this->_table);
+        $sql .= ' ' . $db->quoteTable($this->table);
 
-        if (!empty($this->_using)) {
+        if (!empty($this->using)) {
             // Quote and concat the columns
-            $sql .= ' USING (' . implode(', ', array_map(array($db, 'quote_column'), $this->_using)) . ')';
+            $sql .= ' USING (' . implode(', ', array_map(array($db, 'quoteColumn'), $this->using)) . ')';
         } else {
-            $conditions = array();
-            foreach ($this->_on as $condition) {
+            $conditions = [];
+            foreach ($this->on as $condition) {
                 // Split the condition
                 list($c1, $op, $c2) = $condition;
 
@@ -116,7 +135,7 @@ class Join extends \Bootphp\Database\Database\Query\Builder
                 }
 
                 // Quote each of the columns used for the condition
-                $conditions[] = $db->quote_column($c1) . $op . ' ' . $db->quote_column($c2);
+                $conditions[] = $db->quoteColumn($c1) . $op . ' ' . $db->quoteColumn($c2);
             }
 
             // Concat the conditions "... AND ..."
@@ -126,13 +145,16 @@ class Join extends \Bootphp\Database\Database\Query\Builder
         return $sql;
     }
 
+    /**
+     * Reset the current builder status.
+     *
+     * @return  $this
+     */
     public function reset()
     {
-        $this->_type = $this->_table = null;
+        $this->type = $this->table = null;
 
-        $this->_on = array();
+        $this->on = [];
     }
 
 }
-
-// End Database_Query_Builder_Join

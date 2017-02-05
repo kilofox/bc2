@@ -42,28 +42,28 @@ class Query
      *
      * @var string
      */
-    protected $_sql;
+    protected $sql;
 
     /**
      * Quoted query parameters.
      *
      * @var array
      */
-    protected $_parameters = [];
+    protected $parameters = [];
 
     /**
      * Return results as associative arrays or objects.
      *
      * @var boolean
      */
-    protected $_as_object = false;
+    protected $asObject = false;
 
     /**
      * Parameters for __construct when using object results.
      *
      * @var array
      */
-    protected $_object_params = [];
+    protected $objectParams = [];
 
     /**
      * Creates a new SQL query of the specified type.
@@ -75,7 +75,7 @@ class Query
     public function __construct($type, $sql)
     {
         $this->type = $type;
-        $this->_sql = $sql;
+        $this->sql = $sql;
     }
 
     /**
@@ -129,11 +129,11 @@ class Query
      *
      * @return  $this
      */
-    public function as_assoc()
+    public function asAssoc()
     {
-        $this->_as_object = false;
+        $this->asObject = false;
 
-        $this->_object_params = [];
+        $this->objectParams = [];
 
         return $this;
     }
@@ -145,13 +145,13 @@ class Query
      * @param   array   $params
      * @return  $this
      */
-    public function as_object($class = true, array $params = null)
+    public function asObject($class = true, array $params = null)
     {
-        $this->_as_object = $class;
+        $this->asObject = $class;
 
         if ($params) {
             // Add object parameters
-            $this->_object_params = $params;
+            $this->objectParams = $params;
         }
 
         return $this;
@@ -167,7 +167,7 @@ class Query
     public function param($param, $value)
     {
         // Add or overload a new parameter
-        $this->_parameters[$param] = $value;
+        $this->parameters[$param] = $value;
 
         return $this;
     }
@@ -182,7 +182,7 @@ class Query
     public function bind($param, & $var)
     {
         // Bind a value to a variable
-        $this->_parameters[$param] = & $var;
+        $this->parameters[$param] = & $var;
 
         return $this;
     }
@@ -196,7 +196,7 @@ class Query
     public function parameters(array $params)
     {
         // Merge the new parameters in
-        $this->_parameters = $params + $this->_parameters;
+        $this->parameters = $params + $this->parameters;
 
         return $this;
     }
@@ -216,11 +216,11 @@ class Query
         }
 
         // Import the SQL locally
-        $sql = $this->_sql;
+        $sql = $this->sql;
 
-        if (!empty($this->_parameters)) {
+        if (!empty($this->parameters)) {
             // Quote all of the values
-            $values = array_map(array($db, 'quote'), $this->_parameters);
+            $values = array_map(array($db, 'quote'), $this->parameters);
 
             // Replace the values in the SQL
             $sql = strtr($sql, $values);
@@ -247,22 +247,22 @@ class Query
         }
 
         if ($as_object === null) {
-            $as_object = $this->_as_object;
+            $as_object = $this->asObject;
         }
 
         if ($objectParams === null) {
-            $objectParams = $this->_object_params;
+            $objectParams = $this->objectParams;
         }
 
         // Compile the SQL query
         $sql = $this->compile($db);
 
-        if ($this->lifetime !== null AND $this->type === 'select') {
+        if ($this->lifetime !== null && $this->type === 'select') {
             // Set the cache key based on the database instance name and SQL
             $cacheKey = 'Database::query("' . $db . '", "' . $sql . '")';
 
             // Read the cache first to delete a possible hit with lifetime <= 0
-            if (($result = Core::cache($cacheKey, null, $this->lifetime)) !== null AND ! $this->forceExecute) {
+            if (($result = Core::cache($cacheKey, null, $this->lifetime)) !== null && !$this->forceExecute) {
                 // Return a cached result
                 return new Database_Result_Cached($result, $sql, $as_object, $objectParams);
             }
@@ -271,7 +271,7 @@ class Query
         // Execute the query
         $result = $db->query($this->type, $sql, $as_object, $objectParams);
 
-        if (isset($cacheKey) AND $this->lifetime > 0) {
+        if (isset($cacheKey) && $this->lifetime > 0) {
             // Cache the result array
             Core::cache($cacheKey, $result->as_array(), $this->lifetime);
         }

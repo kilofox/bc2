@@ -13,22 +13,31 @@ namespace Bootphp\Database\Database\Query\Builder;
  */
 class Update extends Where
 {
-    // UPDATE ...
-    protected $_table;
-    // SET ...
-    protected $_set = array();
+    /**
+     * UPDATE ...
+     *
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * SET ...
+     *
+     * @var array
+     */
+    protected $set = [];
 
     /**
      * Set the table for a update.
      *
-     * @param   mixed  $table  table name or array($table, $alias) or object
+     * @param   mixed   $table  Table name or [$table, $alias] or object
      * @return  void
      */
     public function __construct($table = null)
     {
         if ($table) {
             // Set the inital table name
-            $this->_table = $table;
+            $this->table = $table;
         }
 
         // Start the query with no SQL
@@ -38,12 +47,12 @@ class Update extends Where
     /**
      * Sets the table to update.
      *
-     * @param   mixed  $table  table name or array($table, $alias) or object
+     * @param   mixed   $table  Table name or [$table, $alias] or object
      * @return  $this
      */
     public function table($table)
     {
-        $this->_table = $table;
+        $this->table = $table;
 
         return $this;
     }
@@ -51,13 +60,13 @@ class Update extends Where
     /**
      * Set the values to update with an associative array.
      *
-     * @param   array   $pairs  associative (column => value) list
+     * @param   array   $pairs  Associative (column => value) list
      * @return  $this
      */
     public function set(array $pairs)
     {
         foreach ($pairs as $column => $value) {
-            $this->_set[] = array($column, $value);
+            $this->set[] = [$column, $value];
         }
 
         return $this;
@@ -66,13 +75,13 @@ class Update extends Where
     /**
      * Set the value of a single column.
      *
-     * @param   mixed  $column  table name or array($table, $alias) or object
+     * @param   mixed  $column  table name or [$table, $alias] or object
      * @param   mixed  $value   column value
      * @return  $this
      */
     public function value($column, $value)
     {
-        $this->_set[] = array($column, $value);
+        $this->set[] = [$column, $value];
 
         return $this;
     }
@@ -91,19 +100,19 @@ class Update extends Where
         }
 
         // Start an update query
-        $query = 'UPDATE ' . $db->quote_table($this->_table);
+        $query = 'UPDATE ' . $db->quoteTable($this->table);
 
         // Add the columns to update
-        $query .= ' SET ' . $this->_compile_set($db, $this->_set);
+        $query .= ' SET ' . $this->compileSet($db, $this->set);
 
         if (!empty($this->_where)) {
             // Add selection conditions
-            $query .= ' WHERE ' . $this->_compile_conditions($db, $this->_where);
+            $query .= ' WHERE ' . $this->compileConditions($db, $this->_where);
         }
 
         if (!empty($this->_order_by)) {
             // Add sorting
-            $query .= ' ' . $this->_compile_order_by($db, $this->_order_by);
+            $query .= ' ' . $this->compileOrderBy($db, $this->_order_by);
         }
 
         if ($this->_limit !== null) {
@@ -116,15 +125,20 @@ class Update extends Where
         return parent::compile($db);
     }
 
+    /**
+     * Reset the current builder status.
+     *
+     * @return  $this
+     */
     public function reset()
     {
-        $this->_table = null;
+        $this->table = null;
 
-        $this->_set = $this->_where = array();
+        $this->set = $this->_where = [];
 
         $this->_limit = null;
 
-        $this->_parameters = array();
+        $this->_parameters = [];
 
         $this->_sql = null;
 
@@ -132,5 +146,3 @@ class Update extends Where
     }
 
 }
-
-// End Database_Query_Builder_Update

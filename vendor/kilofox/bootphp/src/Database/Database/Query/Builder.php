@@ -19,10 +19,10 @@ abstract class Builder extends \Bootphp\Database\Database\Query
      * Compiles an array of JOIN statements into an SQL partial.
      *
      * @param   object  $db     Database instance
-     * @param   array   $joins  join statements
+     * @param   array   $joins  Join statements
      * @return  string
      */
-    protected function _compile_join(Database $db, array $joins)
+    protected function compileJoin(Database $db, array $joins)
     {
         $statements = [];
 
@@ -35,14 +35,13 @@ abstract class Builder extends \Bootphp\Database\Database\Query
     }
 
     /**
-     * Compiles an array of conditions into an SQL partial. Used for WHERE
-     * and HAVING.
+     * Compiles an array of conditions into an SQL partial. Used for WHERE and HAVING.
      *
      * @param   object  $db          Database instance
-     * @param   array   $conditions  condition statements
+     * @param   array   $conditions  Condition statements
      * @return  string
      */
-    protected function _compile_conditions(Database $db, array $conditions)
+    protected function compileConditions(Database $db, array $conditions)
     {
         $last_condition = null;
 
@@ -51,7 +50,7 @@ abstract class Builder extends \Bootphp\Database\Database\Query
             // Process groups of conditions
             foreach ($group as $logic => $condition) {
                 if ($condition === '(') {
-                    if (!empty($sql) AND $last_condition !== '(') {
+                    if (!empty($sql) && $last_condition !== '(') {
                         // Include logic operator
                         $sql .= ' ' . $logic . ' ';
                     }
@@ -60,7 +59,7 @@ abstract class Builder extends \Bootphp\Database\Database\Query
                 } elseif ($condition === ')') {
                     $sql .= ')';
                 } else {
-                    if (!empty($sql) AND $last_condition !== '(') {
+                    if (!empty($sql) && $last_condition !== '(') {
                         // Add the logic operator
                         $sql .= ' ' . $logic . ' ';
                     }
@@ -81,23 +80,23 @@ abstract class Builder extends \Bootphp\Database\Database\Query
                     // Database operators are always uppercase
                     $op = strtoupper($op);
 
-                    if ($op === 'BETWEEN' AND is_array($value)) {
+                    if ($op === 'BETWEEN' && is_array($value)) {
                         // BETWEEN always has exactly two arguments
                         list($min, $max) = $value;
 
-                        if ((is_string($min) AND array_key_exists($min, $this->_parameters)) === false) {
+                        if ((is_string($min) && array_key_exists($min, $this->_parameters)) === false) {
                             // Quote the value, it is not a parameter
                             $min = $db->quote($min);
                         }
 
-                        if ((is_string($max) AND array_key_exists($max, $this->_parameters)) === false) {
+                        if ((is_string($max) && array_key_exists($max, $this->_parameters)) === false) {
                             // Quote the value, it is not a parameter
                             $max = $db->quote($max);
                         }
 
                         // Quote the min and max value
                         $value = $min . ' AND ' . $max;
-                    } elseif ((is_string($value) AND array_key_exists($value, $this->_parameters)) === false) {
+                    } elseif ((is_string($value) && array_key_exists($value, $this->_parameters)) === false) {
                         // Quote the value, it is not a parameter
                         $value = $db->quote($value);
                     }
@@ -105,10 +104,10 @@ abstract class Builder extends \Bootphp\Database\Database\Query
                     if ($column) {
                         if (is_array($column)) {
                             // Use the column name
-                            $column = $db->quote_identifier(reset($column));
+                            $column = $db->quoteIdentifier(reset($column));
                         } else {
                             // Apply proper quoting to the column
-                            $column = $db->quote_column($column);
+                            $column = $db->quoteColumn($column);
                         }
                     }
 
@@ -127,20 +126,20 @@ abstract class Builder extends \Bootphp\Database\Database\Query
      * Compiles an array of set values into an SQL partial. Used for UPDATE.
      *
      * @param   object  $db      Database instance
-     * @param   array   $values  updated values
+     * @param   array   $values  Updated values
      * @return  string
      */
-    protected function _compile_set(Database $db, array $values)
+    protected function compileSet(Database $db, array $values)
     {
-        $set = array();
+        $set = [];
         foreach ($values as $group) {
             // Split the set
             list ($column, $value) = $group;
 
             // Quote the column name
-            $column = $db->quote_column($column);
+            $column = $db->quoteColumn($column);
 
-            if ((is_string($value) AND array_key_exists($value, $this->_parameters)) === false) {
+            if ((is_string($value) && array_key_exists($value, $this->_parameters)) === false) {
                 // Quote the value, it is not a parameter
                 $value = $db->quote($value);
             }
@@ -158,17 +157,17 @@ abstract class Builder extends \Bootphp\Database\Database\Query
      * @param   array   $columns
      * @return  string
      */
-    protected function _compile_group_by(Database $db, array $columns)
+    protected function compileGroupBy(Database $db, array $columns)
     {
-        $group = array();
+        $group = [];
 
         foreach ($columns as $column) {
             if (is_array($column)) {
                 // Use the column alias
-                $column = $db->quote_identifier(end($column));
+                $column = $db->quoteIdentifier(end($column));
             } else {
                 // Apply proper quoting to the column
-                $column = $db->quote_column($column);
+                $column = $db->quoteColumn($column);
             }
 
             $group[] = $column;
@@ -181,21 +180,21 @@ abstract class Builder extends \Bootphp\Database\Database\Query
      * Compiles an array of ORDER BY statements into an SQL partial.
      *
      * @param   object  $db       Database instance
-     * @param   array   $columns  sorting columns
+     * @param   array   $columns  Sorting columns
      * @return  string
      */
-    protected function _compile_order_by(Database $db, array $columns)
+    protected function compileOrderBy(Database $db, array $columns)
     {
-        $sort = array();
+        $sort = [];
         foreach ($columns as $group) {
             list ($column, $direction) = $group;
 
             if (is_array($column)) {
                 // Use the column alias
-                $column = $db->quote_identifier(end($column));
+                $column = $db->quoteIdentifier(end($column));
             } else {
                 // Apply proper quoting to the column
-                $column = $db->quote_column($column);
+                $column = $db->quoteColumn($column);
             }
 
             if ($direction) {

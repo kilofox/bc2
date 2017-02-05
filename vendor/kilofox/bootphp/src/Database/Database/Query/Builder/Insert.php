@@ -15,18 +15,32 @@ use Bootphp\BootphpException;
  */
 class Insert extends \Bootphp\Database\Database\Query\Builder
 {
-    // INSERT INTO ...
-    protected $_table;
-    // (...)
-    protected $_columns = [];
-    // VALUES (...)
-    protected $_values = [];
+    /**
+     * INSERT INTO ...
+     *
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * (...)
+     *
+     * @var array
+     */
+    protected $columns = [];
+
+    /**
+     * VALUES (...)
+     *
+     * @var array
+     */
+    protected $values = [];
 
     /**
      * Set the table and columns for an insert.
      *
-     * @param   mixed   $table  Table name or array($table, $alias) or object
-     * @param   array  $columns Column names
+     * @param   mixed   $table      Table name or [$table, $alias] or object
+     * @param   array   $columns    Column names
      * @return  void
      */
     public function __construct($table = null, array $columns = null)
@@ -38,7 +52,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
 
         if ($columns) {
             // Set the column names
-            $this->_columns = $columns;
+            $this->columns = $columns;
         }
 
         // Start the query with no SQL
@@ -56,7 +70,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
         if (!is_string($table))
             throw new BootphpException('INSERT INTO syntax does not allow table aliasing');
 
-        $this->_table = $table;
+        $this->table = $table;
 
         return $this;
     }
@@ -69,7 +83,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
      */
     public function columns(array $columns)
     {
-        $this->_columns = $columns;
+        $this->columns = $columns;
 
         return $this;
     }
@@ -83,7 +97,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
      */
     public function values(array $values)
     {
-        if (!is_array($this->_values)) {
+        if (!is_array($this->values)) {
             throw new BootphpException('INSERT INTO ... SELECT statements cannot be combined with INSERT INTO ... VALUES');
         }
 
@@ -91,7 +105,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
         $values = func_get_args();
 
         foreach ($values as $value) {
-            $this->_values[] = $value;
+            $this->values[] = $value;
         }
 
         return $this;
@@ -100,7 +114,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
     /**
      * Use a sub-query to for the inserted values.
      *
-     * @param   object  $query  Database_Query of SELECT type
+     * @param   object  $query  Database\Query of SELECT type
      * @return  $this
      */
     public function select(Query $query)
@@ -109,7 +123,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
             throw new BootphpException('Only SELECT queries can be combined with INSERT queries');
         }
 
-        $this->_values = $query;
+        $this->values = $query;
 
         return $this;
     }
@@ -128,19 +142,19 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
         }
 
         // Start an insertion query
-        $query = 'INSERT INTO ' . $db->quote_table($this->_table);
+        $query = 'INSERT INTO ' . $db->quoteTable($this->table);
 
         // Add the column names
-        $query .= ' (' . implode(', ', array_map(array($db, 'quote_column'), $this->_columns)) . ') ';
+        $query .= ' (' . implode(', ', array_map(array($db, 'quoteColumn'), $this->columns)) . ') ';
 
-        if (is_array($this->_values)) {
+        if (is_array($this->values)) {
             // Callback for quoting values
             $quote = array($db, 'quote');
 
             $groups = [];
-            foreach ($this->_values as $group) {
+            foreach ($this->values as $group) {
                 foreach ($group as $offset => $value) {
-                    if ((is_string($value) AND array_key_exists($value, $this->_parameters)) === false) {
+                    if ((is_string($value) AND array_key_exists($value, $this->parameters)) === false) {
                         // Quote the value, it is not a parameter
                         $group[$offset] = $db->quote($value);
                     }
@@ -153,24 +167,29 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
             $query .= 'VALUES ' . implode(', ', $groups);
         } else {
             // Add the sub-query
-            $query .= (string) $this->_values;
+            $query .= (string) $this->values;
         }
 
-        $this->_sql = $query;
+        $this->sql = $query;
 
         return parent::compile($db);
         ;
     }
 
+    /**
+     * Reset the current builder status.
+     *
+     * @return  $this
+     */
     public function reset()
     {
-        $this->_table = null;
+        $this->table = null;
 
-        $this->_columns = $this->_values = [];
+        $this->columns = $this->values = [];
 
-        $this->_parameters = [];
+        $this->parameters = [];
 
-        $this->_sql = null;
+        $this->sql = null;
 
         return $this;
     }

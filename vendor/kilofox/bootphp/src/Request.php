@@ -5,8 +5,7 @@ namespace Bootphp;
 use Bootphp\Request\Client;
 
 /**
- * Request. Uses the [Route] class to determine what
- * [Controller] to send the request to.
+ * Request. Uses the [Route] class to determine what [Controller] to send the request to.
  *
  * @package    Bootphp
  * @category   Base
@@ -17,27 +16,27 @@ use Bootphp\Request\Client;
 class Request
 {
     /**
-     * @var  string  client user agent
+     * @var string  client user agent
      */
-    public static $user_agent = '';
+    public static $userAgent = '';
 
     /**
-     * @var  string  client IP address
+     * @var string  client IP address
      */
-    public static $client_ip = '0.0.0.0';
+    public static $clientIp = '0.0.0.0';
 
     /**
-     * @var  string  trusted proxy server IPs
+     * @var string  trusted proxy server IPs
      */
-    public static $trusted_proxies = array('127.0.0.1', 'localhost', 'localhost.localdomain');
+    public static $trustedProxies = ['127.0.0.1', 'localhost', 'localhost.localdomain'];
 
     /**
-     * @var  Request  main request instance
+     * @var Request  main request instance
      */
     public static $initial;
 
     /**
-     * @var  Request  currently executing request instance
+     * @var Request  currently executing request instance
      */
     public static $current;
 
@@ -59,7 +58,7 @@ class Request
      * @uses    Route::all
      * @uses    Route::matches
      */
-    public static function factory($uri = true, $client_params = array(), $allow_external = true, $injected_routes = array())
+    public static function factory($uri = true, $client_params = [], $allow_external = true, $injected_routes = [])
     {
         // If this is the initial request
         if (!self::$initial) {
@@ -76,7 +75,7 @@ class Request
             if ((!empty($_SERVER['HTTPS']) AND filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN))
                     OR ( isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
                     AND $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trusted_proxies)) {
+                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // This request is secure
                 $secure = true;
             }
@@ -88,38 +87,38 @@ class Request
 
             if (isset($_SERVER['HTTP_USER_AGENT'])) {
                 // Browser type
-                self::$user_agent = $_SERVER['HTTP_USER_AGENT'];
+                self::$userAgent = $_SERVER['HTTP_USER_AGENT'];
             }
 
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
                 // Typically used to denote AJAX requests
-                $requested_with = $_SERVER['HTTP_X_REQUESTED_WITH'];
+                $requestedWith = $_SERVER['HTTP_X_REQUESTED_WITH'];
             }
 
             if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])
                     AND isset($_SERVER['REMOTE_ADDR'])
-                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trusted_proxies)) {
+                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // Use the forwarded IP address, typically set when the
                 // client is using a proxy server.
                 // Format: "X-Forwarded-For: client1, proxy1, proxy2"
-                $client_ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                $clientIps = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
 
-                self::$client_ip = array_shift($client_ips);
+                self::$clientIp = array_shift($clientIps);
 
-                unset($client_ips);
+                unset($clientIps);
             } elseif (isset($_SERVER['HTTP_CLIENT_IP'])
                     AND isset($_SERVER['REMOTE_ADDR'])
-                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trusted_proxies)) {
+                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // Use the forwarded IP address, typically set when the
                 // client is using a proxy server.
-                $client_ips = explode(',', $_SERVER['HTTP_CLIENT_IP']);
+                $clientIps = explode(',', $_SERVER['HTTP_CLIENT_IP']);
 
-                self::$client_ip = array_shift($client_ips);
+                self::$clientIp = array_shift($clientIps);
 
-                unset($client_ips);
+                unset($clientIps);
             } elseif (isset($_SERVER['REMOTE_ADDR'])) {
                 // The remote IP address
-                self::$client_ip = $_SERVER['REMOTE_ADDR'];
+                self::$clientIp = $_SERVER['REMOTE_ADDR'];
             }
 
             if ($method !== 'GET') {
@@ -132,7 +131,7 @@ class Request
                 $uri = self::detect_uri();
             }
 
-            $cookies = array();
+            $cookies = [];
 
             if (($cookie_keys = array_keys($_COOKIE))) {
                 foreach ($cookie_keys as $key) {
@@ -163,9 +162,9 @@ class Request
                 $request->referrer($referrer);
             }
 
-            if (isset($requested_with)) {
+            if (isset($requestedWith)) {
                 // Apply the requested with variable
-                $request->requested_with($requested_with);
+                $request->requestedWith($requestedWith);
             }
 
             if (isset($body)) {
@@ -214,7 +213,6 @@ class Request
      *     $request = Request::current();
      *
      * @return  Request
-     * @since   3.0.5
      */
     public static function current()
     {
@@ -233,7 +231,6 @@ class Request
      *          // Do something useful
      *
      * @return  Request
-     * @since   3.1.0
      */
     public static function initial()
     {
@@ -245,104 +242,12 @@ class Request
      *
      * @param   mixed   $value  array or string to return: browser, version, robot, mobile, platform
      * @return  mixed   requested information, false if nothing is found
-     * @uses    Request::$user_agent
-     * @uses    Text::user_agent
+     * @uses    Request::$userAgent
+     * @uses    Text::userAgent
      */
-    public static function user_agent($value)
+    public static function userAgent($value)
     {
-        return Text::user_agent(self::$user_agent, $value);
-    }
-
-    /**
-     * Returns the accepted content types. If a specific type is defined,
-     * the quality of that type will be returned.
-     *
-     *     $types = Request::accept_type();
-     *
-     * [!!] Deprecated in favor of using [HTTP\Header::accepts_at_quality].
-     *
-     * @deprecated  since version 3.3.0
-     * @param   string  $type Content MIME type
-     * @return  mixed   An array of all types or a specific type as a string
-     * @uses    Request::_parse_accept
-     */
-    public static function accept_type($type = null)
-    {
-        static $accepts;
-
-        if ($accepts === null) {
-            // Parse the HTTP_ACCEPT header
-            $accepts = self::_parse_accept($_SERVER['HTTP_ACCEPT'], array('*/*' => 1.0));
-        }
-
-        if (isset($type)) {
-            // Return the quality setting for this type
-            return isset($accepts[$type]) ? $accepts[$type] : $accepts['*/*'];
-        }
-
-        return $accepts;
-    }
-
-    /**
-     * Returns the accepted languages. If a specific language is defined,
-     * the quality of that language will be returned. If the language is not
-     * accepted, false will be returned.
-     *
-     *     $langs = Request::accept_lang();
-     *
-     * [!!] Deprecated in favor of using [HTTP\Header::accepts_language_at_quality].
-     *
-     * @deprecated  since version 3.3.0
-     * @param   string  $lang  Language code
-     * @return  mixed   An array of all types or a specific type as a string
-     * @uses    Request::_parse_accept
-     */
-    public static function accept_lang($lang = null)
-    {
-        static $accepts;
-
-        if ($accepts === null) {
-            // Parse the HTTP_ACCEPT_LANGUAGE header
-            $accepts = self::_parse_accept($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-        }
-
-        if (isset($lang)) {
-            // Return the quality setting for this lang
-            return isset($accepts[$lang]) ? $accepts[$lang] : false;
-        }
-
-        return $accepts;
-    }
-
-    /**
-     * Returns the accepted encodings. If a specific encoding is defined,
-     * the quality of that encoding will be returned. If the encoding is not
-     * accepted, false will be returned.
-     *
-     *     $encodings = Request::accept_encoding();
-     *
-     * [!!] Deprecated in favor of using [HTTP\Header::accepts_encoding_at_quality].
-     *
-     * @deprecated  since version 3.3.0
-     * @param   string  $type Encoding type
-     * @return  mixed   An array of all types or a specific type as a string
-     * @uses    Request::_parse_accept
-     */
-    public static function accept_encoding($type = null)
-    {
-        static $accepts;
-
-        if ($accepts === null) {
-            // Parse the HTTP_ACCEPT_LANGUAGE header
-            $accepts = self::_parse_accept($_SERVER['HTTP_ACCEPT_ENCODING']);
-        }
-
-        if (isset($type)) {
-            // Return the quality setting for this type
-            return isset($accepts[$type]) ? $accepts[$type] : false;
-        }
-
-        return $accepts;
+        return Text::userAgent(self::$userAgent, $value);
     }
 
     /**
@@ -354,7 +259,7 @@ class Request
      * @uses    Num::bytes
      * @uses    Arr::get
      */
-    public static function post_max_size_exceeded()
+    public static function postMaxSizeExceeded()
     {
         // Make sure the request method is POST
         if (self::$initial->method() !== 'POST')
@@ -399,152 +304,129 @@ class Request
     }
 
     /**
-     * Parses an accept header and returns an array (type => quality) of the
-     * accepted types, ordered by quality.
-     *
-     *     $accept = Request::_parse_accept($header, $defaults);
-     *
-     * @param   string   $header   Header to parse
-     * @param   array    $accepts  Default values
-     * @return  array
+     * @var string  The x-requested-with header which most likely will be xmlhttprequest.
      */
-    protected static function _parse_accept(& $header, array $accepts = null)
-    {
-        if (!empty($header)) {
-            // Get all of the types
-            $types = explode(',', $header);
-
-            foreach ($types as $type) {
-                // Split the type into parts
-                $parts = explode(';', $type);
-
-                // Make the type only the MIME
-                $type = trim(array_shift($parts));
-
-                // Default quality is 1.0
-                $quality = 1.0;
-
-                foreach ($parts as $part) {
-                    // Prevent undefined $value notice below
-                    if (strpos($part, '=') === false)
-                        continue;
-
-                    // Separate the key and value
-                    list ($key, $value) = explode('=', trim($part));
-
-                    if ($key === 'q') {
-                        // There is a quality for this type
-                        $quality = (float) trim($value);
-                    }
-                }
-
-                // Add the accept type and quality
-                $accepts[$type] = $quality;
-            }
-        }
-
-        // Make sure that accepts is an array
-        $accepts = (array) $accepts;
-
-        // Order by quality
-        arsort($accepts);
-
-        return $accepts;
-    }
+    protected $requestedWith;
 
     /**
-     * @var  string  the x-requested-with header which most likely
-     *               will be xmlhttprequest
-     */
-    protected $_requested_with;
-
-    /**
-     * @var  string  method: GET, POST, PUT, DELETE, HEAD, etc
+     * Method: GET, POST, PUT, DELETE, HEAD, etc.
+     *
+     * @var string
      */
     protected $_method = 'GET';
 
     /**
-     * @var  string  protocol: HTTP/1.1, FTP, CLI, etc
+     * Protocol: HTTP/1.1, FTP, CLI, etc.
+     *
+     * @var string
      */
     protected $_protocol;
 
     /**
-     * @var  boolean
+     * @var boolean
      */
     protected $_secure = false;
 
     /**
-     * @var  string  referring URL
+     * Referring URL.
+     *
+     * @var string
      */
     protected $_referrer;
 
     /**
-     * @var  Route       route matched for this request
+     * Route matched for this request.
+     *
+     * @var Route
      */
     protected $_route;
 
     /**
-     * @var  Route       array of routes to manually look at instead of the global namespace
+     * Array of routes to manually look at instead of the global namespace.
+     *
+     * @var Route
      */
     protected $_routes;
 
     /**
-     * @var  HTTP\Header  headers to sent as part of the request
+     * Headers to sent as part of the request.
+     *
+     * @var HTTP\Header
      */
     protected $_header;
 
     /**
-     * @var  string the body
+     * The body.
+     *
+     * @var string
      */
     protected $_body;
 
     /**
-     * @var  string  controller directory
+     * Controller directory.
+     *
+     * @var string
      */
     protected $_directory = '';
 
     /**
-     * @var  string  controller to be executed
+     * Controller to be executed.
+     *
+     * @var string
      */
     protected $_controller;
 
     /**
-     * @var  string  action to be executed in the controller
+     * Action to be executed in the controller.
+     *
+     * @var string
      */
     protected $_action;
 
     /**
-     * @var  string  the URI of the request
+     * The URI of the request.
+     *
+     * @var string
      */
     protected $_uri;
 
     /**
-     * @var  boolean  external request
+     * External request.
+     *
+     * @var boolean
      */
     protected $_external = false;
 
     /**
-     * @var  array   parameters from the route
+     * Parameters from the route.
+     *
+     * @var array
      */
-    protected $_params = array();
+    protected $_params = [];
 
     /**
-     * @var array    query parameters
+     * Query parameters.
+     *
+     * @var array
      */
-    protected $_get = array();
+    protected $_get = [];
 
     /**
-     * @var array    post parameters
+     * Post parameters.
+     *
+     * @var array
      */
-    protected $_post = array();
+    protected $_post = [];
 
     /**
-     * @var array    cookies to send with the request
+     * Cookies to send with the request.
+     *
+     * @var array
      */
-    protected $_cookies = array();
+    protected $_cookies = [];
 
     /**
-     * @var Kohana_Client
+     * @var Client
      */
     protected $_client;
 
@@ -557,21 +439,21 @@ class Request
      * If $cache parameter is set, the response for the request will attempt to
      * be retrieved from the cache.
      *
-     * @param   string  $uri              URI of the request
-     * @param   array   $client_params    Array of params to pass to the request client
-     * @param   bool    $allow_external   Allow external requests? (deprecated in 3.3)
-     * @param   array   $injected_routes  An array of routes to use, for testing
+     * @param   string  $uri                URI of the request
+     * @param   array   $client_params      Array of params to pass to the request client
+     * @param   bool    $allow_external     Allow external requests? (deprecated in 3.3)
+     * @param   array   $injected_routes    An array of routes to use, for testing
      * @return  void
      * @throws  BootphpException
      * @uses    Route::all
      * @uses    Route::matches
      */
-    public function __construct($uri, $client_params = array(), $allow_external = true, $injected_routes = array())
+    public function __construct($uri, $client_params = [], $allow_external = true, $injected_routes = [])
     {
-        $client_params = is_array($client_params) ? $client_params : array();
+        $client_params = is_array($client_params) ? $client_params : [];
 
         // Initialise the header
-        $this->_header = new HTTP\Header(array());
+        $this->_header = new HTTP\Header([]);
 
         // Assign injected routes
         $this->_routes = $injected_routes;
@@ -628,7 +510,7 @@ class Request
     /**
      * Sets and gets the uri from the request.
      *
-     * @param   string $uri
+     * @param   string  $uri
      * @return  mixed
      */
     public function uri($uri = null)
@@ -651,7 +533,6 @@ class Request
      *
      * @param   mixed    $protocol  protocol string or Request object
      * @return  string
-     * @since   3.0.7
      * @uses    URL::site
      */
     public function url($protocol = null)
@@ -670,8 +551,8 @@ class Request
      *
      *     $id = $request->param('id');
      *
-     * @param   string   $key      Key of the value
-     * @param   mixed    $default  Default value if the key is not set
+     * @param   string  $key        Key of the value
+     * @param   mixed   $default    Default value if the key is not set
      * @return  mixed
      */
     public function param($key = null, $default = null)
@@ -687,7 +568,7 @@ class Request
     /**
      * Sets and gets the referrer from the request.
      *
-     * @param   string $referrer
+     * @param   string  $referrer
      * @return  mixed
      */
     public function referrer($referrer = null)
@@ -706,7 +587,7 @@ class Request
     /**
      * Sets and gets the route from the request.
      *
-     * @param   string $route
+     * @param   string  $route
      * @return  mixed
      */
     public function route(Route $route = null)
@@ -725,7 +606,7 @@ class Request
     /**
      * Sets and gets the directory for the controller.
      *
-     * @param   string   $directory  Directory to execute the controller from
+     * @param   string  $directory  Directory to execute the controller from
      * @return  mixed
      */
     public function directory($directory = null)
@@ -744,7 +625,7 @@ class Request
     /**
      * Sets and gets the controller for the matched route.
      *
-     * @param   string   $controller  Controller to execute the action
+     * @param   string  $controller Controller to execute the action
      * @return  mixed
      */
     public function controller($controller = null)
@@ -763,7 +644,7 @@ class Request
     /**
      * Sets and gets the action for the controller.
      *
-     * @param   string   $action  Action to execute the controller from
+     * @param   string  $action Action to execute the controller from
      * @return  mixed
      */
     public function action($action = null)
@@ -799,18 +680,18 @@ class Request
      * Gets and sets the requested with property, which should
      * be relative to the x-requested-with pseudo header.
      *
-     * @param   string    $requested_with Requested with value
+     * @param   string  $requestedWith  Requested with value
      * @return  mixed
      */
-    public function requested_with($requested_with = null)
+    public function requestedWith($requestedWith = null)
     {
-        if ($requested_with === null) {
+        if ($requestedWith === null) {
             // Act as a getter
-            return $this->_requested_with;
+            return $this->requestedWith;
         }
 
         // Act as a setter
-        $this->_requested_with = strtolower($requested_with);
+        $this->requestedWith = strtolower($requestedWith);
 
         return $this;
     }
@@ -832,7 +713,6 @@ class Request
      *
      * @return  Response
      * @throws  BootphpException
-     * @throws  HTTP_Exception_404
      * @uses    [Core::$profiling]
      * @uses    [Profiler]
      */
@@ -886,7 +766,7 @@ class Request
      * Returns whether this request is the initial request Kohana received.
      * Can be used to test for sub requests.
      *
-     *     if ( ! $request->is_initial())
+     *     if (!$request->is_initial())
      *         // This is a sub request
      *
      * @return  boolean
@@ -914,9 +794,9 @@ class Request
      *
      * @return  boolean
      */
-    public function is_ajax()
+    public function isAjax()
     {
-        return ($this->requested_with() === 'xmlhttprequest');
+        return $this->requestedWith() === 'xmlhttprequest';
     }
 
     /**
@@ -1113,7 +993,7 @@ class Request
 
         // Prepare cookies
         if ($this->_cookies) {
-            $cookie_string = array();
+            $cookie_string = [];
 
             // Parse each
             foreach ($this->_cookies as $key => $value) {

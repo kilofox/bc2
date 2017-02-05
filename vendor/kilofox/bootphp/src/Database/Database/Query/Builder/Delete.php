@@ -11,37 +11,41 @@ namespace Bootphp\Database\Query\Builder;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class DatabaseQueryBuilderDelete extends \Bootphp\Database\Query\Builder\Where
+class Delete extends \Bootphp\Database\Query\Builder\Where
 {
-    // DELETE FROM ...
-    protected $_table;
+    /**
+     * DELETE FROM ...
+     *
+     * @var string
+     */
+    protected $table;
 
     /**
      * Set the table for a delete.
      *
-     * @param   mixed  $table  table name or array($table, $alias) or object
+     * @param   mixed   $table  Table name or [$table, $alias] or object
      * @return  void
      */
     public function __construct($table = null)
     {
         if ($table) {
             // Set the inital table name
-            $this->_table = $table;
+            $this->table = $table;
         }
 
         // Start the query with no SQL
-        return parent::__construct(Database::DELETE, '');
+        return parent::__construct('delete', '');
     }
 
     /**
      * Sets the table to delete from.
      *
-     * @param   mixed  $table  table name or array($table, $alias) or object
+     * @param   mixed   $table  Table name or [$table, $alias] or object
      * @return  $this
      */
     public function table($table)
     {
-        $this->_table = $table;
+        $this->table = $table;
 
         return $this;
     }
@@ -49,7 +53,7 @@ class DatabaseQueryBuilderDelete extends \Bootphp\Database\Query\Builder\Where
     /**
      * Compile the SQL query and return it.
      *
-     * @param   mixed  $db  Database instance or name of instance
+     * @param   mixed   $db     Database instance or name of instance
      * @return  string
      */
     public function compile($db = null)
@@ -60,16 +64,16 @@ class DatabaseQueryBuilderDelete extends \Bootphp\Database\Query\Builder\Where
         }
 
         // Start a deletion query
-        $query = 'DELETE FROM ' . $db->quote_table($this->_table);
+        $query = 'DELETE FROM ' . $db->quoteTable($this->table);
 
         if (!empty($this->_where)) {
             // Add deletion conditions
-            $query .= ' WHERE ' . $this->_compile_conditions($db, $this->_where);
+            $query .= ' WHERE ' . $this->compileConditions($db, $this->_where);
         }
 
         if (!empty($this->_order_by)) {
             // Add sorting
-            $query .= ' ' . $this->_compile_order_by($db, $this->_order_by);
+            $query .= ' ' . $this->compileOrderBy($db, $this->_order_by);
         }
 
         if ($this->_limit !== null) {
@@ -82,12 +86,17 @@ class DatabaseQueryBuilderDelete extends \Bootphp\Database\Query\Builder\Where
         return parent::compile($db);
     }
 
+    /**
+     * Reset the current builder status.
+     *
+     * @return  $this
+     */
     public function reset()
     {
-        $this->_table = null;
-        $this->_where = array();
+        $this->table = null;
+        $this->_where = [];
 
-        $this->_parameters = array();
+        $this->_parameters = [];
 
         $this->_sql = null;
 
@@ -95,5 +104,3 @@ class DatabaseQueryBuilderDelete extends \Bootphp\Database\Query\Builder\Where
     }
 
 }
-
-// End Database_Query_Builder_Delete

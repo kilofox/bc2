@@ -18,22 +18,7 @@ use Bootphp\BootphpException;
 class View
 {
     // Array of global variables
-    protected static $_global_data = array();
-
-    /**
-     * Returns a new View object. If you do not define the "file" parameter,
-     * you must call [View::set_filename].
-     *
-     *     $view = View::factory($file);
-     *
-     * @param   string  $file   view filename
-     * @param   array   $data   array of values
-     * @return  View
-     */
-    public static function factory($file = null, array $data = null)
-    {
-        return new self($file, $data);
-    }
+    protected static $globalData = [];
 
     /**
      * Captures the output that is generated when a view is included.
@@ -42,19 +27,19 @@ class View
      *
      *     $output = View::capture($file, $data);
      *
-     * @param   string  $kohana_view_filename   filename
-     * @param   array   $kohana_view_data       variables
+     * @param   string  $viewFilename   Filename
+     * @param   array   $viewData       Variables
      * @return  string
      * @throws  Exception
      */
-    protected static function capture($kohana_view_filename, array $kohana_view_data)
+    protected static function capture($viewFilename, array $viewData)
     {
         // Import the view variables to local namespace
-        extract($kohana_view_data, EXTR_SKIP);
+        extract($viewData, EXTR_SKIP);
 
-        if (View::$_global_data) {
+        if (self::$globalData) {
             // Import the global view variables to local namespace
-            extract(View::$_global_data, EXTR_SKIP | EXTR_REFS);
+            extract(self::$globalData, EXTR_SKIP | EXTR_REFS);
         }
 
         // Capture the view output
@@ -62,7 +47,7 @@ class View
 
         try {
             // Load the view within the current scope
-            include $kohana_view_filename;
+            include $viewFilename;
         } catch (\Exception $e) {
             // Delete the output buffer
             ob_end_clean();
@@ -86,21 +71,22 @@ class View
      *     // Create the values $food and $beverage in the view
      *     View::set_global(array('food' => 'bread', 'beverage' => 'water'));
      *
-     * [!!] Note: When setting with using Traversable object we're not attaching the whole object to the view,
-     * i.e. the object's standard properties will not be available in the view context.
+     * [!!] Note: When setting with using Traversable object we're not attaching
+     * the whole object to the view, i.e. the object's standard properties will
+     * not be available in the view context.
      *
-     * @param   string|array|Traversable  $key    variable name or an array of variables
-     * @param   mixed                     $value  value
+     * @param   string|array|Traversable    $key    Variable name or an array of variables
+     * @param   mixed                       $value  Value
      * @return  void
      */
     public static function set_global($key, $value = null)
     {
-        if (is_array($key) OR $key instanceof Traversable) {
+        if (is_array($key) || $key instanceof Traversable) {
             foreach ($key as $name => $value) {
-                View::$_global_data[$name] = $value;
+                self::$globalData[$name] = $value;
             }
         } else {
-            View::$_global_data[$key] = $value;
+            self::$globalData[$key] = $value;
         }
     }
 
@@ -110,19 +96,35 @@ class View
      *
      *     View::bind_global($key, $value);
      *
-     * @param   string  $key    variable name
-     * @param   mixed   $value  referenced variable
+     * @param   string  $key    Variable name
+     * @param   mixed   $value  Referenced variable
      * @return  void
      */
     public static function bind_global($key, & $value)
     {
-        View::$_global_data[$key] = & $value;
+        self::$globalData[$key] = & $value;
     }
 
-    // View filename
-    protected $_file;
-    // Array of local variables
-    protected $_data = array();
+    /**
+     * Layout filename.
+     *
+     * @var string
+     */
+    protected $layout;
+
+    /**
+     * Template filename.
+     *
+     * @var string
+     */
+    protected $template;
+
+    /**
+     * Array of local variables.
+     *
+     * @var array
+     */
+    protected $data = [];
 
     /**
      * Sets the initial view filename and local data. Views should almost
@@ -130,19 +132,19 @@ class View
      *
      *     $view = new View($file);
      *
-     * @param   string  $file   view filename
-     * @param   array   $data   array of values
-     * @uses    View::set_filename
+     * @param   string  $file   View filename
+     * @param   array   $data   Array of values
+     * @uses    View::template
      */
     public function __construct($file = null, array $data = null)
     {
         if ($file !== null) {
-            $this->set_filename($file);
+            $this->template($file, false);
         }
 
         if ($data !== null) {
             // Add the values to the current data
-            $this->_data = $data + $this->_data;
+            $this->data = $data + $this->data;
         }
     }
 
@@ -154,18 +156,18 @@ class View
      *
      * [!!] If the variable has not yet been set, an exception will be thrown.
      *
-     * @param   string  $key    variable name
+     * @param   string  $key    Variable name
      * @return  mixed
      * @throws  BootphpException
      */
     public function & __get($key)
     {
-        if (array_key_exists($key, $this->_data)) {
-            return $this->_data[$key];
-        } elseif (array_key_exists($key, View::$_global_data)) {
-            return View::$_global_data[$key];
+        if (array_key_exists($key, $this->data)) {
+            return $this->data[$key];
+        } elseif (array_key_exists($key, self::$globalData)) {
+            return self::$globalData[$key];
         } else {
-            throw new BootphpException('View variable is not set: :var', array(':var' => $key));
+            throw new BootphpException('View variable is not set: ' . $key);
         }
     }
 
@@ -190,12 +192,12 @@ class View
      *
      * [!!] `null` variables are not considered to be set by [isset](http://php.net/isset).
      *
-     * @param   string  $key    variable name
+     * @param   string  $key    Variable name
      * @return  boolean
      */
     public function __isset($key)
     {
-        return (isset($this->_data[$key]) OR isset(View::$_global_data[$key]));
+        return isset($this->data[$key]) || isset(self::$globalData[$key]);
     }
 
     /**
@@ -203,12 +205,12 @@ class View
      *
      *     unset($view->foo);
      *
-     * @param   string  $key    variable name
+     * @param   string  $key    Variable name
      * @return  void
      */
     public function __unset($key)
     {
-        unset($this->_data[$key], View::$_global_data[$key]);
+        unset($this->data[$key], self::$globalData[$key]);
     }
 
     /**
@@ -228,29 +230,67 @@ class View
              * We use this method here because it's impossible to throw an
              * exception from __toString().
              */
-            $error_response = BootphpException::handler($e);
+            $errorResponse = BootphpException::handler($e);
 
-            return $error_response->body();
+            return $errorResponse->body();
         }
     }
 
     /**
-     * Sets the view filename.
+     * Sets the layout filename.
      *
-     *     $view->set_filename($file);
+     *     $view->layout($file);
      *
-     * @param   string  $file   view filename
-     * @return  View
-     * @throws  View_Exception
+     * @param   string  $file   Layout filename
+     * @return  $this
+     * @throws  BootphpException
      */
-    public function set_filename($file)
+    public function layout($file)
     {
         if (!is_file($file)) {
             throw new BootphpException('The requested view ' . $file . ' could not be found');
         }
 
         // Store the file path locally
-        $this->_file = $file;
+        $this->layout = $file;
+
+        return $this;
+    }
+
+    /**
+     * Sets the template filename.
+     *
+     *     $view->template($file);
+     *
+     * @param   string  $file   Template filename
+     * @return  $this
+     * @throws  BootphpException
+     */
+    public function template($file)
+    {
+        if (!is_file($file)) {
+            throw new BootphpException('The requested view ' . $file . ' could not be found');
+        }
+
+        // Store the file path locally
+        $this->template = $file;
+
+        return $this;
+    }
+
+    /**
+     * Sets the template filename.
+     *
+     *     $view->template($file);
+     *
+     * @param   string  $file   Template filename
+     * @return  $this
+     * @throws  BootphpException
+     */
+    public function templatePath($path)
+    {
+        // Store the template path locally
+        $this->templatePath = $path;
 
         return $this;
     }
@@ -270,18 +310,18 @@ class View
      * [!!] Note: When setting with using Traversable object we're not attaching the whole object to the view,
      * i.e. the object's standard properties will not be available in the view context.
      *
-     * @param   string|array|Traversable  $key    variable name or an array of variables
-     * @param   mixed                     $value  value
+     * @param   string|array|Traversable    $key    Variable name or an array of variables
+     * @param   mixed                       $value  Value
      * @return  $this
      */
     public function set($key, $value = null)
     {
-        if (is_array($key) OR $key instanceof Traversable) {
+        if (is_array($key) || $key instanceof Traversable) {
             foreach ($key as $name => $value) {
-                $this->_data[$name] = $value;
+                $this->data[$name] = $value;
             }
         } else {
-            $this->_data[$key] = $value;
+            $this->data[$key] = $value;
         }
 
         return $this;
@@ -296,43 +336,43 @@ class View
      *     // This reference can be accessed as $ref within the view
      *     $view->bind('ref', $bar);
      *
-     * @param   string  $key    variable name
-     * @param   mixed   $value  referenced variable
+     * @param   string  $key    Variable name
+     * @param   mixed   $value  Referenced variable
      * @return  $this
      */
     public function bind($key, & $value)
     {
-        $this->_data[$key] = & $value;
+        $this->data[$key] = & $value;
 
         return $this;
     }
 
     /**
-     * Renders the view object to a string. Global and local data are merged
-     * and extracted to create local variables within the view file.
+     * Renders the view object to a string. Global and local data are merged and
+     * extracted to create local variables within the view file.
      *
      *     $output = $view->render();
      *
      * [!!] Global variables with the same key name as local variables will be
      * overwritten by the local variable.
      *
-     * @param   string  $file   view filename
+     * @param   string  $file   View filename
      * @return  string
-     * @throws  View_Exception
+     * @throws  BootphpException
      * @uses    View::capture
      */
     public function render($file = null)
     {
         if ($file !== null) {
-            $this->set_filename($file);
+            $this->template($file);
         }
 
-        if (empty($this->_file)) {
+        if (empty($this->template)) {
             throw new BootphpException('You must set the file to use within your view before rendering');
         }
 
         // Combine local and global data and capture the output
-        return self::capture($this->_file, $this->_data);
+        return self::capture($this->template, $this->data);
     }
 
 }

@@ -8,14 +8,14 @@ namespace Bootphp;
  * Controllers methods will be automatically called in the following order by
  * the request:
  *
- *     $controller = new Controller_Foo($request);
+ *     $controller = new FooController($request);
  *     $controller->before();
- *     $controller->action_bar();
+ *     $controller->barAction();
  *     $controller->after();
  *
  * The controller action should add the output it creates to
- * `$this->response->body($output)`, typically in the form of a [View], during the
- * "action" part of execution.
+ * `$this->response->body($output)`, typically in the form of a [View], during
+ * the "action" part of execution.
  *
  * @package    Bootphp
  * @category   Controller
@@ -26,21 +26,39 @@ namespace Bootphp;
 abstract class Controller
 {
     /**
-     * @var  Request  Request that created the controller
+     * Request that created the controller.
+     *
+     * @var Request
      */
     public $request;
 
     /**
-     * @var  Response The response that will be returned from controller
+     * The response that will be returned from controller.
+     *
+     * @var Response
      */
     public $response;
+
+    /**
+     * Page view.
+     *
+     * @var View
+     */
+    public $view;
+
+    /**
+     * Auto render template.
+     *
+     * @var boolean
+     * */
+    public $autoRender = true;
 
     /**
      * Creates a new controller instance. Each controller must be constructed
      * with the request object that created it.
      *
-     * @param   Request   $request  Request that created the controller
-     * @param   Response  $response The request's response
+     * @param   Request     $request    Request that created the controller
+     * @param   Response    $response   The request's response
      * @return  void
      */
     public function __construct(Request $request, Response $response)
@@ -63,7 +81,7 @@ abstract class Controller
      * 3. After the controller action is called, the [Controller::after] method
      * will be called.
      *
-     * @throws  HTTP_Exception_404
+     * @throws  BootphpException
      * @return  Response
      */
     public function execute()
@@ -76,7 +94,7 @@ abstract class Controller
 
         // If the action doesn't exist, it's a 404
         if (!method_exists($this, $action)) {
-            throw new BootphpException('The requested URL '.$this->request->uri().' was not found on this server.', 404);
+            throw new BootphpException('The requested URL ' . $this->request->uri() . ' was not found on this server.', 404);
         }
 
         // Execute the action itself
@@ -97,27 +115,35 @@ abstract class Controller
      */
     public function before()
     {
-        // Nothing by default
+        // Loads the [View] object.
+        if ($this->autoRender === true) {
+            $this->view = new \Bootphp\View();
+        }
     }
 
     /**
      * Automatically executed after the controller action. Can be used to apply
-     * transformation to the response, add extra output, and execute
-     * other custom code.
+     * transformation to the response, add extra output, and execute other
+     * custom code.
      *
      * @return  void
      */
     public function after()
     {
-        // Nothing by default
+        // Assigns the [View] as the request response.
+        if ($this->autoRender === true) {
+            $this->view->layout($this->layout)
+                    ->template($this->template);
+            $this->response->body($this->view->render());
+        }
     }
 
     /**
      * Issues a HTTP redirect.
      *
-     * @param  string  $uri   URI to redirect to
-     * @param  integer $code  HTTP Status code to use for the redirect
-     * @throws BootphpException
+     * @param   string  $uri    URI to redirect to
+     * @param   integer $code   HTTP Status code to use for the redirect
+     * @throws  BootphpException
      */
     public function redirect($uri = '', $code = 303)
     {

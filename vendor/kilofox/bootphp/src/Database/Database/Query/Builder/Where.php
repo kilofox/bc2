@@ -13,37 +13,38 @@ namespace Bootphp\Database\Database\Query\Builder;
  */
 abstract class Where extends \Bootphp\Database\Database\Query\Builder
 {
-    // WHERE ...
-    protected $_where = array();
-    // ORDER BY ...
-    protected $_order_by = array();
-    // LIMIT ...
-    protected $_limit = null;
+    /**
+     * WHERE ...
+     *
+     * @var array
+     */
+    protected $where = [];
 
     /**
-     * Alias of and_where()
+     * ORDER BY ...
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
-     * @return  $this
+     * @var array
      */
-    public function where($column, $op, $value)
-    {
-        return $this->and_where($column, $op, $value);
-    }
+    protected $orderBy = [];
+
+    /**
+     * LIMIT ...
+     *
+     * @var integer
+     */
+    protected $limit = null;
 
     /**
      * Creates a new "AND WHERE" condition for the query.
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
+     * @param   mixed   $column Column name or [$column, $alias] or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $value  Column value
      * @return  $this
      */
-    public function and_where($column, $op, $value)
+    public function where($column, $op, $value)
     {
-        $this->_where[] = array('AND' => array($column, $op, $value));
+        $this->where[] = array('AND' => [$column, $op, $value]);
 
         return $this;
     }
@@ -51,26 +52,16 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
     /**
      * Creates a new "OR WHERE" condition for the query.
      *
-     * @param   mixed   $column  column name or array($column, $alias) or object
-     * @param   string  $op      logic operator
-     * @param   mixed   $value   column value
+     * @param   mixed   $column Column name or [$column, $alias] or object
+     * @param   string  $op     Logic operator
+     * @param   mixed   $value  Column value
      * @return  $this
      */
-    public function or_where($column, $op, $value)
+    public function orWhere($column, $op, $value)
     {
-        $this->_where[] = array('OR' => array($column, $op, $value));
+        $this->where[] = array('OR' => [$column, $op, $value]);
 
         return $this;
-    }
-
-    /**
-     * Alias of and_where_open()
-     *
-     * @return  $this
-     */
-    public function where_open()
-    {
-        return $this->and_where_open();
     }
 
     /**
@@ -78,9 +69,9 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      *
      * @return  $this
      */
-    public function and_where_open()
+    public function whereOpen()
     {
-        $this->_where[] = array('AND' => '(');
+        $this->where[] = array('AND' => '(');
 
         return $this;
     }
@@ -90,35 +81,24 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      *
      * @return  $this
      */
-    public function or_where_open()
+    public function orWhereOpen()
     {
-        $this->_where[] = array('OR' => '(');
+        $this->where[] = array('OR' => '(');
 
         return $this;
     }
 
     /**
-     * Closes an open "WHERE (...)" grouping.
+     * Closes an open "WHERE (...)" grouping or removes the grouping when it is empty.
      *
      * @return  $this
      */
-    public function where_close()
+    public function whereCloseEmpty()
     {
-        return $this->and_where_close();
-    }
-
-    /**
-     * Closes an open "WHERE (...)" grouping or removes the grouping when it is
-     * empty.
-     *
-     * @return  $this
-     */
-    public function where_close_empty()
-    {
-        $group = end($this->_where);
+        $group = end($this->where);
 
         if ($group AND reset($group) === '(') {
-            array_pop($this->_where);
+            array_pop($this->where);
 
             return $this;
         }
@@ -131,9 +111,9 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      *
      * @return  $this
      */
-    public function and_where_close()
+    public function whereClose()
     {
-        $this->_where[] = array('AND' => ')');
+        $this->where[] = array('AND' => ')');
 
         return $this;
     }
@@ -143,40 +123,38 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      *
      * @return  $this
      */
-    public function or_where_close()
+    public function orWhereClose()
     {
-        $this->_where[] = array('OR' => ')');
+        $this->where[] = array('OR' => ')');
 
         return $this;
     }
 
     /**
-     * Applies sorting with "ORDER BY ..."
+     * Applies sorting with "ORDER BY ...".
      *
-     * @param   mixed   $column     column name or array($column, $alias) or object
-     * @param   string  $direction  direction of sorting
+     * @param   mixed   $column     Column name or [$column, $alias] or object
+     * @param   string  $direction  Direction of sorting
      * @return  $this
      */
-    public function order_by($column, $direction = null)
+    public function orderBy($column, $direction = null)
     {
-        $this->_order_by[] = array($column, $direction);
+        $this->orderBy[] = [$column, $direction];
 
         return $this;
     }
 
     /**
-     * Return up to "LIMIT ..." results
+     * Return up to "LIMIT ..." results.
      *
-     * @param   integer  $number  maximum results to return or null to reset
+     * @param   integer $number     Maximum results to return or null to reset
      * @return  $this
      */
     public function limit($number)
     {
-        $this->_limit = ($number === null) ? null : (int) $number;
+        $this->limit = $number === null ? null : (int) $number;
 
         return $this;
     }
 
 }
-
-// End Database_Query_Builder_Where

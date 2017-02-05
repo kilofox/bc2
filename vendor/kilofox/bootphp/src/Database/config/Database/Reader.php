@@ -9,7 +9,7 @@
  * @copyright  (c) 2012 Kohana Team
  * @license    http://kilofox.net/license
  */
-class Kohana_Config_Database_Reader implements Kohana_Config_Reader
+class Kohana_Config_Database_Reader implements Bootphp\Config\Reader
 {
     protected $_db_instance;
     protected $_table_name = 'config';
@@ -45,8 +45,6 @@ class Kohana_Config_Database_Reader implements Kohana_Config_Reader
         /**
          * Prevents the catch-22 scenario where the database config reader attempts to load the
          * database connections details from the database.
-         *
-         * @link http://dev.kilofox.net/issues/4316
          */
         if ($group === 'database')
             return false;

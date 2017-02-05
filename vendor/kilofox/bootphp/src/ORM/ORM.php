@@ -81,7 +81,7 @@ class ORM extends \Bootphp\Model
      *
      * @var Validation
      */
-    protected $_validation = null;
+    protected $validation = null;
 
     /**
      * Current object.
@@ -108,7 +108,7 @@ class ORM extends \Bootphp\Model
     /**
      * @var bool
      */
-    protected $_valid = false;
+    protected $valid = false;
 
     /**
      * @var bool
@@ -197,7 +197,7 @@ class ORM extends \Bootphp\Model
     /**
      * Database query builder.
      *
-     * @var Database_Query_Builder_Select
+     * @var Database\Query\Builder\Select
      */
     protected $dbBuilder;
 
@@ -323,13 +323,13 @@ class ORM extends \Bootphp\Model
     protected function _validation()
     {
         // Build the validation object with its rules
-        $this->_validation = \Bootphp\Validation::factory($this->object)
+        $this->validation = \Bootphp\Validation::factory($this->object)
                 ->bind(':model', $this)
                 ->bind(':original_values', $this->originalValues)
                 ->bind(':changed', $this->changed);
 
         foreach ($this->rules() as $field => $rules) {
-            $this->_validation->rules($field, $rules);
+            $this->validation->rules($field, $rules);
         }
 
         // Use column names by default for labels
@@ -339,7 +339,7 @@ class ORM extends \Bootphp\Model
         $labels = array_merge(array_combine($columns, $columns), $this->labels());
 
         foreach ($labels as $field => $label) {
-            $this->_validation->label($field, $label);
+            $this->validation->label($field, $label);
         }
     }
 
@@ -524,7 +524,7 @@ class ORM extends \Bootphp\Model
                 $this->changed[$column] = $column;
 
                 // Object is no longer saved or valid
-                $this->saved = $this->_valid = false;
+                $this->saved = $this->valid = false;
             }
         } elseif (isset($this->belongsTo[$column])) {
             // Update related object itself
@@ -788,20 +788,20 @@ class ORM extends \Bootphp\Model
                     $column = $this->objectName . '.' . $column;
                 }
 
-                $this->dbBuilder->order_by($column, $direction);
+                $this->dbBuilder->orderBy($column, $direction);
             }
         }
 
         if ($multiple === true) {
             // Return database iterator casting to this object type
-            $result = $this->dbBuilder->as_object(get_class($this))->execute($this->db);
+            $result = $this->dbBuilder->asObject(get_class($this))->execute($this->db);
 
             $this->reset();
 
             return $result;
         } else {
             // Load the result as an associative array
-            $result = $this->dbBuilder->as_assoc()->execute($this->db);
+            $result = $this->dbBuilder->asAssoc()->execute($this->db);
 
             $this->reset();
 
@@ -829,13 +829,13 @@ class ORM extends \Bootphp\Model
         if (array_key_exists($this->primaryKey, $values)) {
             if ($values[$this->primaryKey] !== null) {
                 // Flag as loaded and valid
-                $this->loaded = $this->_valid = true;
+                $this->loaded = $this->valid = true;
 
                 // Store primary key
                 $this->primaryKeyValue = $values[$this->primaryKey];
             } else {
                 // Not loaded or valid
-                $this->loaded = $this->_valid = false;
+                $this->loaded = $this->valid = false;
             }
         }
 
@@ -908,7 +908,7 @@ class ORM extends \Bootphp\Model
             // version that was modified by the filters that already ran
             $_bound[':value'] = $value;
 
-            // Filters are defined as array($filter, $params)
+            // Filters are defined as [$filter, $params]
             $filter = $array[0];
             $params = Arr::get($array, 1, [':value']);
 
@@ -978,9 +978,9 @@ class ORM extends \Bootphp\Model
         // Always build a new validation object
         $this->_validation();
 
-        $array = $this->_validation;
+        $array = $this->validation;
 
-        if (($this->_valid = $array->check()) === false || $extra_errors) {
+        if (($this->valid = $array->check()) === false || $extra_errors) {
             $exception = new ORM\Validation\Exception($this->objectName, $array);
 
             if ($extra_errors) {
@@ -1006,7 +1006,7 @@ class ORM extends \Bootphp\Model
             throw new BootphpException('Cannot create ' . $this->objectName . ' model because it is already loaded.');
 
         // Require model validation before saving
-        if (!$this->_valid || $validation) {
+        if (!$this->valid || $validation) {
             $this->check($validation);
         }
 
@@ -1052,7 +1052,7 @@ class ORM extends \Bootphp\Model
             throw new BootphpException('Cannot update ' . $this->objectName . ' model because it is not loaded.');
 
         // Run validation if the model isn't valid or we have additional validation rules.
-        if (!$this->_valid || $validation) {
+        if (!$this->valid || $validation) {
             $this->check($validation);
         }
 
@@ -1364,7 +1364,7 @@ class ORM extends \Bootphp\Model
      */
     public function lastQuery()
     {
-        return $this->db->last_query;
+        return $this->db->lastQuery;
     }
 
     /**
@@ -1406,18 +1406,18 @@ class ORM extends \Bootphp\Model
 
     public function validation()
     {
-        if (!isset($this->_validation)) {
+        if (!isset($this->validation)) {
             // Initialize the validation object
             $this->_validation();
         }
 
-        return $this->_validation;
+        return $this->validation;
     }
 
     /**
      * Creates a new "AND WHERE" condition for the query.
      *
-     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   mixed   $column Column name or [$column, $alias] or object
      * @param   string  $op     Logic operator
      * @param   mixed   $value  Column value
      * @return  $this
@@ -1426,7 +1426,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'and_where',
+            'name' => 'where',
             'args' => [$column, $op, $value],
         ];
 
@@ -1436,7 +1436,7 @@ class ORM extends \Bootphp\Model
     /**
      * Creates a new "OR WHERE" condition for the query.
      *
-     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   mixed   $column Column name or [$column, $alias] or object
      * @param   string  $op     Logic operator
      * @param   mixed   $value  Column value
      * @return  $this
@@ -1445,7 +1445,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'or_where',
+            'name' => 'orWhere',
             'args' => [$column, $op, $value],
         ];
 
@@ -1461,7 +1461,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'and_where_open',
+            'name' => 'whereOpen',
             'args' => [],
         ];
 
@@ -1477,7 +1477,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = array(
-            'name' => 'or_where_open',
+            'name' => 'orWhereOpen',
             'args' => [],
         );
 
@@ -1493,7 +1493,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'and_where_close',
+            'name' => 'whereClose',
             'args' => [],
         ];
 
@@ -1509,7 +1509,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'or_where_close',
+            'name' => 'orWhereClose',
             'args' => [],
         ];
 
@@ -1519,7 +1519,7 @@ class ORM extends \Bootphp\Model
     /**
      * Applies sorting with "ORDER BY ...".
      *
-     * @param   mixed   $column     Column name or array($column, $alias) or object
+     * @param   mixed   $column     Column name or [$column, $alias] or object
      * @param   string  $direction  Direction of sorting
      * @return  $this
      */
@@ -1527,7 +1527,7 @@ class ORM extends \Bootphp\Model
     {
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'order_by',
+            'name' => 'orderBy',
             'args' => [$column, $direction],
         ];
 
@@ -1571,7 +1571,7 @@ class ORM extends \Bootphp\Model
     /**
      * Choose the columns to select from.
      *
-     * @param   mixed  $columns Column name or array($column, $alias) or object
+     * @param   mixed  $columns Column name or [$column, $alias] or object
      * @param   ...
      * @return  $this
      */
@@ -1591,7 +1591,7 @@ class ORM extends \Bootphp\Model
     /**
      * Choose the tables to select "FROM ..."
      *
-     * @param   mixed  $tables  Table name or array($table, $alias) or object
+     * @param   mixed  $tables  Table name or [$table, $alias] or object
      * @param   ...
      * @return  $this
      */
@@ -1611,7 +1611,7 @@ class ORM extends \Bootphp\Model
     /**
      * Adds addition tables to "JOIN ...".
      *
-     * @param   mixed   $table  Column name or array($column, $alias) or object
+     * @param   mixed   $table  Column name or [$column, $alias] or object
      * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc)
      * @return  $this
      */
@@ -1629,9 +1629,9 @@ class ORM extends \Bootphp\Model
     /**
      * Adds "ON ..." conditions for the last created JOIN statement.
      *
-     * @param   mixed   $c1 Column name or array($column, $alias) or object
+     * @param   mixed   $c1 Column name or [$column, $alias] or object
      * @param   string  $op Logic operator
-     * @param   mixed   $c2 Column name or array($column, $alias) or object
+     * @param   mixed   $c2 Column name or [$column, $alias] or object
      * @return  $this
      */
     public function on($c1, $op, $c2)
@@ -1648,7 +1648,7 @@ class ORM extends \Bootphp\Model
     /**
      * Creates a "GROUP BY ..." filter.
      *
-     * @param   mixed   $columns  column name or array($column, $alias) or object
+     * @param   mixed   $columns  column name or [$column, $alias] or object
      * @param   ...
      * @return  $this
      */
@@ -1658,7 +1658,7 @@ class ORM extends \Bootphp\Model
 
         // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
-            'name' => 'group_by',
+            'name' => 'groupBy',
             'args' => $columns,
         ];
 
@@ -1668,7 +1668,7 @@ class ORM extends \Bootphp\Model
     /**
      * Creates a new "AND HAVING" condition for the query.
      *
-     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   mixed   $column Column name or [$column, $alias] or object
      * @param   string  $op     Logic operator
      * @param   mixed   $value  Column value
      * @return  $this
@@ -1687,7 +1687,7 @@ class ORM extends \Bootphp\Model
     /**
      * Creates a new "OR HAVING" condition for the query.
      *
-     * @param   mixed   $column Column name or array($column, $alias) or object
+     * @param   mixed   $column Column name or [$column, $alias] or object
      * @param   string  $op     Logic operator
      * @param   mixed   $value  Column value
      * @return  $this

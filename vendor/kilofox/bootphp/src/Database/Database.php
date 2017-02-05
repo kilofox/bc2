@@ -8,8 +8,8 @@ use Bootphp\Database\Database\Expression;
 /**
  * Database connection wrapper/helper.
  *
- * You may get a database instance using `Database::instance('name')` where
- * name is the [config](database/config) group.
+ * You may get a database instance using `Database::instance('name')` where name
+ * is the [config](database/config) group.
  *
  * This class provides connection instance management via Database Drivers, as
  * well as quoting, escaping and other related functions. Querys are done using
@@ -83,15 +83,35 @@ abstract class Database
     /**
      * @var  string  the last query executed
      */
-    public $last_query;
-    // Character that is used to quote identifiers
-    protected $_identifier = '"';
-    // Instance name
-    protected $_instance;
-    // Raw server connection
-    protected $_connection;
-    // Configuration array
-    protected $_config;
+    public $lastquery;
+
+    /**
+     * Character that is used to quote identifiers.
+     *
+     * @var string
+     */
+    protected $identifier = '"';
+
+    /**
+     * Instance name.
+     *
+     * @var string
+     */
+    protected $instance;
+
+    /**
+     * Raw server connection.
+     *
+     * @var object
+     */
+    protected $connection;
+
+    /**
+     * Configuration array.
+     *
+     * @var array
+     */
+    protected $config;
 
     /**
      * Stores the database configuration locally and name the instance.
@@ -103,13 +123,13 @@ abstract class Database
     public function __construct($name, array $config)
     {
         // Set the instance name
-        $this->_instance = $name;
+        $this->instance = $name;
 
         // Store the config locally
-        $this->_config = $config;
+        $this->config = $config;
 
-        if (empty($this->_config['tablePrefix'])) {
-            $this->_config['tablePrefix'] = '';
+        if (empty($this->config['tablePrefix'])) {
+            $this->config['tablePrefix'] = '';
         }
     }
 
@@ -138,12 +158,11 @@ abstract class Database
      */
     public function __toString()
     {
-        return $this->_instance;
+        return $this->instance;
     }
 
     /**
-     * Connect to the database. This is called automatically when the first
-     * query is executed.
+     * Connect to the database. This is called automatically when the first query is executed.
      *
      *     $db->connect();
      *
@@ -161,7 +180,7 @@ abstract class Database
      */
     public function disconnect()
     {
-        unset(Database::$instances[$this->_instance]);
+        unset(Database::$instances[$this->instance]);
 
         return true;
     }
@@ -169,13 +188,13 @@ abstract class Database
     /**
      * Set the connection character set. This is called automatically by [Database::connect].
      *
-     *     $db->set_charset('utf8');
+     *     $db->setCharset('utf8');
      *
      * @param   string   $charset   Character set name
      * @return  void
      * @throws  BootphpException
      */
-    abstract public function set_charset($charset);
+    abstract public function setCharset($charset);
     /**
      * Perform an SQL query of the given type.
      *
@@ -217,7 +236,7 @@ abstract class Database
      */
     abstract public function begin($mode = null);
     /**
-     * Commit the current transaction
+     * Commit the current transaction.
      *
      *     // Commit the database changes
      *     $db->commit();
@@ -226,7 +245,7 @@ abstract class Database
      */
     abstract public function commit();
     /**
-     * Abort the current transaction
+     * Abort the current transaction.
      *
      *     // Undo the changes
      *     $db->rollback();
@@ -238,15 +257,15 @@ abstract class Database
      * Count the number of records in a table.
      *
      *     // Get the total number of records in the "users" table
-     *     $count = $db->count_records('users');
+     *     $count = $db->countRecords('users');
      *
-     * @param   mixed    $table  table name string or array(query, alias)
+     * @param   mixed    $table  table name string or [query, alias]
      * @return  integer
      */
-    public function count_records($table)
+    public function countRecords($table)
     {
         // Quote the table name
-        $table = $this->quote_table($table);
+        $table = $this->quoteTable($table);
 
         return $this->query('select', 'SELECT COUNT(*) AS total_row_count FROM ' . $table, false)
                         ->get('total_row_count');
@@ -257,15 +276,15 @@ abstract class Database
      * be used to search for specific tables.
      *
      *     // Get all tables in the current database
-     *     $tables = $db->list_tables();
+     *     $tables = $db->listTables();
      *
      *     // Get all user-related tables
-     *     $tables = $db->list_tables('user%');
+     *     $tables = $db->listTables('user%');
      *
      * @param   string  $like   Table to search for
      * @return  array
      */
-    abstract public function list_tables($like = null);
+    abstract public function listTables($like = null);
     /**
      * Lists all of the columns in a table.
      *
@@ -283,13 +302,13 @@ abstract class Database
     /**
      * Return the table prefix defined in the current configuration.
      *
-     *     $prefix = $db->table_prefix();
+     *     $prefix = $db->tablePrefix();
      *
      * @return  string
      */
-    public function table_prefix()
+    public function tablePrefix()
     {
-        return $this->_config['tablePrefix'];
+        return $this->config['tablePrefix'];
     }
 
     /**
@@ -342,30 +361,30 @@ abstract class Database
     /**
      * Quote a database column name and add the table prefix if needed.
      *
-     *     $column = $db->quote_column($column);
+     *     $column = $db->quoteColumn($column);
      *
      * You can also use SQL methods within identifiers.
      *
-     *     $column = $db->quote_column(DB::expr('COUNT(`column`)'));
+     *     $column = $db->quoteColumn(DB::expr('COUNT(`column`)'));
      *
      * Objects passed to this function will be converted to strings.
      * [Expression] objects will be compiled.
      * [Database\Query] objects will be compiled and converted to a sub-query.
      * All other objects will be converted using the `__toString` method.
      *
-     * @param   mixed   $column Column name or array(column, alias)
+     * @param   mixed   $column Column name or [column, alias]
      * @return  string
-     * @uses    Database::quote_identifier
-     * @uses    Database::table_prefix
+     * @uses    Database::quoteIdentifier
+     * @uses    Database::tablePrefix
      */
-    public function quote_column($column)
+    public function quoteColumn($column)
     {
         // Identifiers are escaped by repeating them
-        $escaped_identifier = $this->_identifier . $this->_identifier;
+        $escapedIdentifier = $this->identifier . $this->identifier;
 
         if (is_array($column)) {
             list($column, $alias) = $column;
-            $alias = str_replace($this->_identifier, $escaped_identifier, $alias);
+            $alias = str_replace($this->identifier, $escapedIdentifier, $alias);
         }
 
         if ($column instanceof Query) {
@@ -378,14 +397,14 @@ abstract class Database
             // Convert to a string
             $column = (string) $column;
 
-            $column = str_replace($this->_identifier, $escaped_identifier, $column);
+            $column = str_replace($this->identifier, $escapedIdentifier, $column);
 
             if ($column === '*') {
                 return $column;
             } elseif (strpos($column, '.') !== false) {
                 $parts = explode('.', $column);
 
-                if ($prefix = $this->table_prefix()) {
+                if ($prefix = $this->tablePrefix()) {
                     // Get the offset of the table name, 2nd-to-last part
                     $offset = count($parts) - 2;
 
@@ -396,18 +415,18 @@ abstract class Database
                 foreach ($parts as & $part) {
                     if ($part !== '*') {
                         // Quote each of the parts
-                        $part = $this->_identifier . $part . $this->_identifier;
+                        $part = $this->identifier . $part . $this->identifier;
                     }
                 }
 
                 $column = implode('.', $parts);
             } else {
-                $column = $this->_identifier . $column . $this->_identifier;
+                $column = $this->identifier . $column . $this->identifier;
             }
         }
 
         if (isset($alias)) {
-            $column .= ' AS ' . $this->_identifier . $alias . $this->_identifier;
+            $column .= ' AS ' . $this->identifier . $alias . $this->identifier;
         }
 
         return $column;
@@ -416,26 +435,26 @@ abstract class Database
     /**
      * Quote a database table name and adds the table prefix if needed.
      *
-     *     $table = $db->quote_table($table);
+     *     $table = $db->quoteTable($table);
      *
      * Objects passed to this function will be converted to strings.
      * [Expression] objects will be compiled.
      * [Database\Query] objects will be compiled and converted to a sub-query.
      * All other objects will be converted using the `__toString` method.
      *
-     * @param   mixed   $table  Table name or array(table, alias)
+     * @param   mixed   $table  Table name or [table, alias]
      * @return  string
-     * @uses    Database::quote_identifier
-     * @uses    Database::table_prefix
+     * @uses    Database::quoteIdentifier
+     * @uses    Database::tablePrefix
      */
-    public function quote_table($table)
+    public function quoteTable($table)
     {
         // Identifiers are escaped by repeating them
-        $escaped_identifier = $this->_identifier . $this->_identifier;
+        $escapedIdentifier = $this->identifier . $this->identifier;
 
         if (is_array($table)) {
             list($table, $alias) = $table;
-            $alias = str_replace($this->_identifier, $escaped_identifier, $alias);
+            $alias = str_replace($this->identifier, $escapedIdentifier, $alias);
         }
 
         if ($table instanceof Query) {
@@ -448,12 +467,12 @@ abstract class Database
             // Convert to a string
             $table = (string) $table;
 
-            $table = str_replace($this->_identifier, $escaped_identifier, $table);
+            $table = str_replace($this->identifier, $escapedIdentifier, $table);
 
             if (strpos($table, '.') !== false) {
                 $parts = explode('.', $table);
 
-                if ($prefix = $this->table_prefix()) {
+                if ($prefix = $this->tablePrefix()) {
                     // Get the offset of the table name, last part
                     $offset = count($parts) - 1;
 
@@ -463,19 +482,19 @@ abstract class Database
 
                 foreach ($parts as & $part) {
                     // Quote each of the parts
-                    $part = $this->_identifier . $part . $this->_identifier;
+                    $part = $this->identifier . $part . $this->identifier;
                 }
 
                 $table = implode('.', $parts);
             } else {
                 // Add the table prefix
-                $table = $this->_identifier . $this->table_prefix() . $table . $this->_identifier;
+                $table = $this->identifier . $this->tablePrefix() . $table . $this->identifier;
             }
         }
 
         if (isset($alias)) {
             // Attach table prefix to alias
-            $table .= ' AS ' . $this->_identifier . $this->table_prefix() . $alias . $this->_identifier;
+            $table .= ' AS ' . $this->identifier . $this->tablePrefix() . $alias . $this->identifier;
         }
 
         return $table;
@@ -492,14 +511,14 @@ abstract class Database
      * @param   mixed   $value  Any identifier
      * @return  string
      */
-    public function quote_identifier($value)
+    public function quoteIdentifier($value)
     {
         // Identifiers are escaped by repeating them
-        $escaped_identifier = $this->_identifier . $this->_identifier;
+        $escapedIdentifier = $this->identifier . $this->identifier;
 
         if (is_array($value)) {
             list($value, $alias) = $value;
-            $alias = str_replace($this->_identifier, $escaped_identifier, $alias);
+            $alias = str_replace($this->identifier, $escapedIdentifier, $alias);
         }
 
         if ($value instanceof Database\Query) {
@@ -512,24 +531,24 @@ abstract class Database
             // Convert to a string
             $value = (string) $value;
 
-            $value = str_replace($this->_identifier, $escaped_identifier, $value);
+            $value = str_replace($this->identifier, $escapedIdentifier, $value);
 
             if (strpos($value, '.') !== false) {
                 $parts = explode('.', $value);
 
                 foreach ($parts as & $part) {
                     // Quote each of the parts
-                    $part = $this->_identifier . $part . $this->_identifier;
+                    $part = $this->identifier . $part . $this->identifier;
                 }
 
                 $value = implode('.', $parts);
             } else {
-                $value = $this->_identifier . $value . $this->_identifier;
+                $value = $this->identifier . $value . $this->identifier;
             }
         }
 
         if (isset($alias)) {
-            $value .= ' AS ' . $this->_identifier . $alias . $this->_identifier;
+            $value .= ' AS ' . $this->identifier . $alias . $this->identifier;
         }
 
         return $value;

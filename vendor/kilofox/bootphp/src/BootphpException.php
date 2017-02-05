@@ -81,7 +81,7 @@ class BootphpException extends \Exception
              * but to bail. Hard.
              */
             // Clean the output buffer if one exists
-            ob_get_level() AND ob_clean();
+            ob_get_level() and ob_clean();
 
             // Set the Status code to 500, and Content-Type to text/plain.
             header('Content-Type: text/plain; charset=UTF-8', true, 500);
@@ -156,7 +156,7 @@ class BootphpException extends \Exception
              * the variables from above.
              */
             if ($e instanceof HTTP_Exception AND $trace[0]['function'] == 'factory') {
-               // extract(array_shift($trace));
+                // extract(array_shift($trace));
             }
 
 
@@ -168,7 +168,8 @@ class BootphpException extends \Exception
             }
 
             // Instantiate the error view.
-            $view = View::factory(SYS_PATH . '/BootphpException/Views/error.php', get_defined_vars());
+            $view = new View(SYS_PATH . '/BootphpException/Views/error.php');
+            $view->set(get_defined_vars());
 
             // Prepare the response object.
             $response = Response::factory();
