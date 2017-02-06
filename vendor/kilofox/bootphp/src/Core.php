@@ -20,130 +20,132 @@ use Bootphp\BootphpException;
  */
 class Core
 {
-    // Release version
-    const VERSION = '3.3.6';
+    /**
+     * Release version
+     */
+    const VERSION = '2.0.0';
     // Common environment type constants for consistency and convenience
     const PRODUCTION = 10;
     const STAGING = 20;
     const TESTING = 30;
     const DEVELOPMENT = 40;
     // Security check that is added to all generated PHP files
-    const FILE_SECURITY = '<?php defined(\'SYS_PATH\') OR die(\'No direct script access.\');';
+    const FILE_SECURITY = '<?php defined(\'SYS_PATH\') or exit(\'Access Denied.\');';
     // Format of cache files: header, cache name, and data
     const FILE_CACHE = ":header \n\n// :name\n\n:data\n";
 
     /**
-     * @var  string  Current environment name
+     * @var string  Current environment name
      */
     public static $environment = self::DEVELOPMENT;
 
     /**
-     * @var  boolean  true if Kohana is running on windows
+     * @var boolean True if Kohana is running on windows
      */
     public static $is_windows = false;
 
     /**
-     * @var  boolean  true if [magic quotes](http://php.net/manual/en/security.magicquotes.php) is enabled.
+     * @var boolean True if [magic quotes](http://php.net/manual/en/security.magicquotes.php) is enabled.
      */
     public static $magic_quotes = false;
 
     /**
-     * @var  boolean  true if PHP safe mode is on
+     * @var boolean True if PHP safe mode is on
      */
     public static $safe_mode = false;
 
     /**
-     * @var  string
+     * @var string
      */
     public static $content_type = 'text/html';
 
     /**
-     * @var  string  character set of input and output
+     * @var string  Character set of input and output
      */
     public static $charset = 'utf-8';
 
     /**
-     * @var  string  the name of the server Kohana is hosted upon
+     * @var string  The name of the server Kohana is hosted upon
      */
     public static $server_name = '';
 
     /**
-     * @var  array   list of valid host names for this instance
+     * @var array   List of valid host names for this instance
      */
     public static $hostnames = array();
 
     /**
-     * @var  string  base URL to the application
+     * @var string  Base URL to the application
      */
     public static $baseUrl = '/';
 
     /**
-     * @var  string  Cache directory, used by [Core::cache]. Set by [Core::init]
+     * @var string  Cache directory, used by [Core::cache]. Set by [Core::init]
      */
     public static $cacheDir;
 
     /**
-     * @var  integer  Default lifetime for caching, in seconds, used by [Core::cache]. Set by [Core::init]
+     * @var integer Default lifetime for caching, in seconds, used by [Core::cache]. Set by [Core::init]
      */
     public static $cacheLife = 60;
 
     /**
-     * @var  boolean  Whether to use internal caching for [Core::find_file], does not apply to [Core::cache]. Set by [Core::init]
+     * @var boolean Whether to use internal caching for [Core::find_file], does not apply to [Core::cache]. Set by [Core::init]
      */
     public static $caching = false;
 
     /**
-     * @var  boolean  Whether to enable [profiling](kohana/profiling). Set by [Core::init]
+     * @var boolean Whether to enable [profiling](kohana/profiling). Set by [Core::init]
      */
     public static $profiling = true;
 
     /**
-     * @var  boolean  Enable Kohana catching and displaying PHP errors and exceptions. Set by [Core::init]
+     * @var boolean Enable Kohana catching and displaying PHP errors and exceptions. Set by [Core::init]
      */
     public static $errors = true;
 
     /**
-     * @var  array  Types of errors to display at shutdown
+     * @var array   Types of errors to display at shutdown
      */
     public static $shutdown_errors = array(E_PARSE, E_ERROR, E_USER_ERROR);
 
     /**
-     * @var  boolean  set the X-Powered-By header
+     * @var boolean Set the X-Powered-By header
      */
     public static $expose = false;
 
     /**
-     * @var  Log  logging object
+     * @var Log     Logging object
      */
     public static $log;
 
     /**
-     * @var  Config  config object
+     * @var  Config Config object
      */
     public static $config;
 
     /**
-     * @var  boolean  Has [Core::init] been called?
+     * @var boolean Has [Core::init] been called?
      */
     protected static $_init = false;
 
     /**
-     * @var  array   Currently active modules
+     * @var array   Currently active modules
      */
     protected static $_modules = array();
 
     /**
-     * @var  array   Include paths that are used to find files
+     * @var array   Include paths that are used to find files
      */
     protected static $_paths = array(APP_PATH, SYS_PATH);
 
     /**
-     * @var  array   File path cache, used when caching is true in [Core::init]
+     * @var array   File path cache, used when caching is true in [Core::init]
      */
     protected static $_files = array();
 
     /**
-     * @var  boolean  Has the file path cache changed during this execution?  Used internally when when caching is true in [Core::init]
+     * @var boolean Has the file path cache changed during this execution?  Used internally when when caching is true in [Core::init]
      */
     protected static $_files_changed = false;
 

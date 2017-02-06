@@ -168,7 +168,8 @@ class BootphpException extends \Exception
             }
 
             // Instantiate the error view.
-            $view = new View(SYS_PATH . '/BootphpException/Views/error.php', get_defined_vars());
+            $view = new View('error', get_defined_vars());
+            $view->path(SYS_PATH . '/BootphpException/Views/');
 
             // Prepare the response object.
             $response = Response::factory();

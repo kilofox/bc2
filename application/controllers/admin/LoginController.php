@@ -57,7 +57,7 @@ class LoginController extends \Bootphp\Controller
 
         Auth::instance()->logout();
         $this->view->layout(false);
-        $this->view->template('login');
+        $this->view->template('login2');
     }
 
 }

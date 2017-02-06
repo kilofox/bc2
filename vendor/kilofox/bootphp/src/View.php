@@ -6,8 +6,7 @@ use Bootphp\BootphpException;
 
 /**
  * Acts as an object wrapper for HTML pages with embedded PHP, called "views".
- * Variables can be assigned with the view object and referenced locally within
- * the view.
+ * Variables can be assigned with the view object.
  *
  * @package    Bootphp
  * @category   Base
@@ -17,67 +16,6 @@ use Bootphp\BootphpException;
  */
 class View
 {
-    /**
-     * Static config setup for usage.
-     *
-     * @var array
-     */
-    protected static $config = [
-        'defaultFormat' => 'html',
-        'defaultExtension' => 'php',
-        'path' => null,
-        'layoutPath' => null
-    ];
-
-    /**
-     * Config setup for main templates directory, etc.
-     */
-    public static function config($cfg = null)
-    {
-        // Getter
-        if ($cfg === null) {
-            return self::$config;
-        }
-
-        // Setter
-        self::$config = array_merge(self::$config, (array) $cfg);
-    }
-
-    /**
-     * Captures the output that is generated when a view is included.
-     * The view data will be extracted to make local variables. This method
-     * is static to prevent object scope resolution.
-     *
-     *     $output = View::capture($file, $data);
-     *
-     * @param   string  $viewFilename   Filename
-     * @param   array   $viewData       Variables
-     * @return  string
-     * @throws  Exception
-     */
-    protected static function capture($viewFilename, array $viewData)
-    {
-        // Import the view variables to local namespace
-        extract($viewData, EXTR_SKIP);
-
-        // Capture the view output
-        ob_start();
-
-        try {
-            // Load the view within the current scope
-            include $viewFilename;
-        } catch (\Exception $e) {
-            // Delete the output buffer
-            ob_end_clean();
-
-            // Re-throw the exception
-            throw $e;
-        }
-
-        // Get the captured output and close the buffer
-        return ob_get_clean();
-    }
-
     /**
      * Layout filename.
      *
@@ -90,7 +28,21 @@ class View
      *
      * @var string
      */
-    protected $template;
+    protected $file;
+
+    /**
+     * Template file format.
+     *
+     * @var string
+     */
+    protected $fileFormat = 'php';
+
+    /**
+     * Template path.
+     *
+     * @var string
+     */
+    protected $path;
 
     /**
      * Array of local variables.
@@ -100,8 +52,7 @@ class View
     protected $data = [];
 
     /**
-     * Sets the initial view filename and local data. Views should almost
-     * always only be created using [View::factory].
+     * Sets the initial view filename and local data.
      *
      *     $view = new View($file);
      *
@@ -112,7 +63,7 @@ class View
     public function __construct($file = null, array $data = null)
     {
         if ($file !== null) {
-            $this->template($file, false);
+            $this->template($file);
         }
 
         if ($data !== null) {
@@ -147,8 +98,8 @@ class View
      *
      *     $view->foo = 'something';
      *
-     * @param   string  $key    variable name
-     * @param   mixed   $value  value
+     * @param   string  $key    Variable name
+     * @param   mixed   $value  Value
      * @return  void
      */
     public function __set($key, $value)
@@ -188,7 +139,6 @@ class View
      * Magic method, returns the output of [View::render].
      *
      * @return  string
-     * @uses    View::render
      */
     public function __toString()
     {
@@ -225,38 +175,38 @@ class View
     }
 
     /**
-     * Sets the template filename.
+     * Gets/Sets path to look in for templates.
+     *
+     * @param   string  $path   Template path
+     * @return  $this
+     */
+    public function path($path = null)
+    {
+        if ($path === null) {
+            return $this->path;
+        }
+
+        $this->path = $path;
+
+        return $this;
+    }
+
+    /**
+     * Gets/Sets the template filename.
      *
      *     $view->template($file);
      *
      * @param   string  $file   Template filename
      * @return  $this
      */
-    public function template($file = null)
+    public function template($file = null, $format = null)
     {
         if ($file === null) {
-            return $this->template;
+            return $this->file;
         }
 
-        $this->template = $file;
-
-        return $this;
-    }
-
-    /**
-     * Sets the template path.
-     *
-     * @param   string  $path   Template path
-     * @return  $this
-     * @throws  BootphpException
-     */
-    public function templatePath($path = null)
-    {
-        if ($path === null) {
-            return $this->templatePath;
-        }
-
-        $this->templatePath = $path;
+        $this->file = $file;
+        $format and $this->fileFormat = $format;
 
         return $this;
     }
@@ -273,8 +223,9 @@ class View
      *     // Create the values $food and $beverage in the view
      *     $view->set(array('food' => 'bread', 'beverage' => 'water'));
      *
-     * [!!] Note: When setting with using Traversable object we're not attaching the whole object to the view,
-     * i.e. the object's standard properties will not be available in the view context.
+     * [!!] Note: When setting with using Traversable object we're not attaching
+     * the whole object to the view, i.e. the object's standard properties will
+     * not be available in the view context.
      *
      * @param   string|array|Traversable    $key    Variable name or an array of variables
      * @param   mixed                       $value  Value
@@ -302,23 +253,57 @@ class View
      * [!!] Global variables with the same key name as local variables will be
      * overwritten by the local variable.
      *
-     * @param   string  $file   View filename
      * @return  string
      * @throws  BootphpException
-     * @uses    View::capture
      */
     public function render($file = null)
     {
-        if ($file !== null) {
-            $this->template($file);
-        }
-
-        if (empty($this->template)) {
+        if (empty($this->file)) {
             throw new BootphpException('You must set the file to use within your view before rendering');
         }
 
-        // Combine local and global data and capture the output
-        return self::capture($this->template, $this->data);
+        $render = function($viewFilename, $viewData) {
+            // Import the view variables to local namespace
+            extract($viewData, EXTR_SKIP);
+
+            // Capture the view output
+            ob_start();
+
+            try {
+                // Load the view within the current scope
+                include $viewFilename;
+            } catch (\Exception $e) {
+                // Delete the output buffer
+                ob_end_clean();
+
+                // Re-throw the exception
+                throw $e;
+            }
+
+            // Get the captured output and close the buffer
+            return ob_get_clean();
+        };
+
+        $templateContent = $render($this->path . $this->file . '.' . $this->fileFormat, $this->data);
+
+        if ($this->layout) {
+            // Ensure layout doesn't get rendered recursively
+            self::$_config['auto_layout'] = false;
+
+            // New template for layout
+            $layout = new self($this->layout);
+
+            // Pass all locally set variables to layout
+            $layout->set($this->_vars);
+
+            // Set main yield content block
+            $layout->set('yield', $templateContent);
+
+            // Get content
+            $templateContent = $layout->content($parsePHP);
+        }
+
+        return $templateContent;
     }
 
 }

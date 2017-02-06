@@ -117,6 +117,7 @@ abstract class Controller
     {
         // Loads the [View] object.
         if ($this->autoRender === true) {
+            $this->baseUrl = URL::base();
             $this->view = new \Bootphp\View();
         }
     }
@@ -132,6 +133,8 @@ abstract class Controller
     {
         // Assigns the [View] as the request response.
         if ($this->autoRender === true) {
+            $this->view->path(APP_PATH . '/views/default/' . $this->request->controller() . '/')
+                    ->set('baseUrl', $this->baseUrl);
             $this->response->body($this->view->render());
         }
     }

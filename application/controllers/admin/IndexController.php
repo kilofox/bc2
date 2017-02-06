@@ -74,13 +74,13 @@ class IndexController extends AdministrationController
         $comments = 0; //Model::factory('comment')->count();
         // 查询数据库版本
         $dbVersion = 2; //DB::select([DB::expr('version()'), 'version'])->execute()->get('version');
-        $view = new View(APP_PATH . '/views/default/admin/test.php');
+        $this->view->template('test');
         // $this->assign('articles', $articles);
         // $this->assign('comments', $comments);
         // $this->assign('dbVersion', $dbVersion);
-        isset($user) and $view->set('user', $user);
-        isset($article) and $view->set('user', $article);
-        $this->response->body($view);
+        isset($user) and $this->view->set('user', $user);
+        isset($article) and $this->view->set('user', $article);
+        //$this->response->body($view);
     }
 
 }
