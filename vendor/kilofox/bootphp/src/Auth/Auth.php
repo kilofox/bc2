@@ -27,10 +27,10 @@ abstract class Auth
             // Load the configuration for this type
             $config = \Bootphp\Core::$config->load('auth');
 
-            $type = isset($config['driver']) ? $config['driver'] : 'db';
+            $type = isset($config['driver']) ? $config['driver'] : 'ORM';
 
             // Set the session class name
-            $class = 'Bootphp\\Auth\\Auth' . ucfirst($type);
+            $class = 'Bootphp\\Auth\\Driver\\' . ucfirst($type) . 'Driver';
 
             // Create a new session instance
             self::$_instance = new $class($config);

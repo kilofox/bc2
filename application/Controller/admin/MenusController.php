@@ -1,6 +1,6 @@
 <?php
 
-namespace App\controllers\admin;
+namespace App\Controller\admin;
 
 use App\controllers\adimin\AdministrationController;
 use Bootphp\Model;

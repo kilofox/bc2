@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>登录 - BootCMS</title>
-        <link rel="shortcut icon" type="image/x-icon" href="<?php echo $baseUrl; ?>/favicon.ico"/>
-        <link href="<?php echo $baseUrl; ?>/assets/system/css/metro.css" rel="stylesheet"/>
-        <link href="<?php echo $baseUrl; ?>/assets/system/css/metro-icons.css" rel="stylesheet"/>
-        <link href="<?php echo $baseUrl; ?>/assets/system/css/metro-responsive.css" rel="stylesheet"/>
+        <link rel="shortcut icon" type="image/x-icon" href="<?php echo $baseUrl; ?>/favicon.ico" />
+        <link href="<?php echo $baseUrl; ?>/assets/system/css/metro.css" rel="stylesheet" />
+        <link href="<?php echo $baseUrl; ?>/assets/system/css/metro-icons.css" rel="stylesheet" />
+        <link href="<?php echo $baseUrl; ?>/assets/system/css/metro-responsive.css" rel="stylesheet" />
         <script src="<?php echo $baseUrl; ?>/assets/system/js/jquery-2.2.1.min.js"></script>
         <script src="<?php echo $baseUrl; ?>/assets/system/js/metro.js"></script>
         <script>var baseUrl = '<?php echo $baseUrl; ?>';</script>
@@ -27,18 +27,18 @@
         <div class="login-form padding20 block-shadow bg-white">
             <form id="login">
                 <h1 class="text-light">登录BootCMS</h1>
-                <hr class="thin"/>
+                <hr class="thin" />
                 <br/>
                 <div class="input-control text full-size" data-role="input">
                     <label for="username">用户名：</label>
-                    <input type="text" name="username" id="username"/>
+                    <input type="text" name="username" id="username" />
                     <button class="button helper-button clear"><span class="mif-cross"></span></button>
                 </div>
                 <br/>
                 <br/>
                 <div class="input-control password full-size" data-role="input">
                     <label for="password">密码：</label>
-                    <input type="password" name="password" id="password"/>
+                    <input type="password" name="password" id="password" />
                     <button class="button helper-button reveal"><span class="mif-looks"></span></button>
                 </div>
                 <br/>
@@ -78,7 +78,7 @@
                     if (!pass)
                         return false;
                     $.ajax({
-                        url: baseUrl + 'system/login',
+                        url: baseUrl + 'admin/login',
                         type: 'post',
                         dataType: 'json',
                         data: $('#login').serialize(),

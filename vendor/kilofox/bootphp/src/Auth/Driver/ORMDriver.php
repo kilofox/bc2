@@ -1,5 +1,12 @@
 <?php
 
+namespace Bootphp\Auth\Driver;
+
+use Bootphp\Auth\Model\ORM\UserModel;
+use Bootphp\Auth\Model\ORM\User\TokenModel;
+use Bootphp\Auth\Model\ORM\RoleModel;
+use Bootphp\Cookie;
+
 /**
  * ORM Auth driver.
  *
@@ -8,7 +15,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class AuthORM extends Auth
+class ORMDriver extends \Bootphp\Auth\Auth
 {
     /**
      * Checks if a session is active.
@@ -24,26 +31,24 @@ class AuthORM extends Auth
         if (!$user)
             return false;
 
-        if ($user instanceof Model_User AND $user->loaded()) {
+        if ($user instanceof UserModel and $user->loaded()) {
             // If we don't have a roll no further checking is needed
             if (!$role)
                 return true;
 
             if (is_array($role)) {
+                $roleModel = new RoleModel();
                 // Get all the roles
-                $roles = ORM::factory('Role')
-                        ->where('name', 'IN', $role)
-                        ->find_all()
-                        ->as_array(null, 'id');
+                $roles = $roleModel->where('name', 'IN', $role)->find_all()->as_array(null, 'id');
 
                 // Make sure all the roles are valid ones
                 if (count($roles) !== count($role))
                     return false;
-            }
-            else {
+            } else {
                 if (!is_object($role)) {
                     // Load the role
-                    $roles = ORM::factory('Role', array('name' => $role));
+                    // $roles = ORM::factory('Role', array('name' => $role));
+                    $roleModel = new RoleModel(['name' => $role]);
 
                     if (!$roles->loaded())
                         return false;
@@ -71,7 +76,7 @@ class AuthORM extends Auth
             $username = $user;
 
             // Load the user
-            $user = ORM::factory('User');
+            $user = new UserModel();
             $user->where($user->unique_key($username), '=', $username)->find();
         }
 
@@ -80,8 +85,9 @@ class AuthORM extends Auth
             $password = $this->hash($password);
         }
 
+        $roles = new RoleModel(['name' => 'login']);
         // If the passwords match, perform a login
-        if ($user->has('roles', ORM::factory('Role', array('name' => 'login'))) AND $user->password === $password) {
+        if ($user->has('roles', $roles) AND $user->password === $password) {
             if ($remember === true) {
                 // Token data
                 $data = array(
@@ -92,8 +98,8 @@ class AuthORM extends Auth
 
                 // Create a new autologin token
                 $token = ORM::factory('User_Token')
-                        ->values($data)
-                        ->create();
+                    ->values($data)
+                    ->create();
 
                 // Set the autologin cookie
                 Cookie::set('authautologin', $token->token, $this->_config['lifetime']);

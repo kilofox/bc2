@@ -1064,7 +1064,7 @@ class Request
             return $this->_post;
         } elseif ($value === null) {
             // Act as a getter, single field
-            return Arr::path($this->_post, $key);
+            return isset($this->_post[$key]) ? $this->_post[$key] : null;
         }
 
         // Act as a setter, single field

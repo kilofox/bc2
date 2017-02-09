@@ -133,7 +133,7 @@ abstract class Controller
     {
         // Assigns the [View] as the request response.
         if ($this->autoRender === true) {
-            $this->view->path(APP_PATH . '/views/default/' . $this->request->controller() . '/')
+            $this->view->path(APP_PATH . '/View/default/' . $this->request->controller() . '/')
                     ->set('baseUrl', $this->baseUrl);
             $this->response->body($this->view->render());
         }

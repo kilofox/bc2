@@ -1,6 +1,6 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controller;
 
 use Bootphp\View;
 use Bootphp\Route;

@@ -69,7 +69,7 @@ class Internal extends \Bootphp\Request\Client
         // Is this the initial request
         $initial_request = ($request === Request::$initial);
 
-        $controller = 'App\\controllers\\' . $directory . ucfirst($controller) . 'Controller';
+        $controller = 'App\\Controller\\' . $directory . ucfirst($controller) . 'Controller';
 
         try {
             if (!class_exists($controller)) {

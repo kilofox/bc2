@@ -1,16 +1,16 @@
 <?php
 
-defined('SYSPATH') OR die('No direct access allowed.');
+namespace Bootphp\Auth\Model\ORM;
 
 /**
- * Default auth user toke
+ * Default auth user token.
  *
  * @package    Bootphp/Auth
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class Model_Auth_User_Token extends ORM
+class TokenModel extends \Bootphp\ORM\ORM
 {
     // Relationships
     protected $_belongs_to = array(
@@ -50,8 +50,8 @@ class Model_Auth_User_Token extends ORM
     {
         // Delete all expired tokens
         DB::delete($this->_table_name)
-                ->where('expires', '<', time())
-                ->execute($this->_db);
+            ->where('expires', '<', time())
+            ->execute($this->_db);
 
         return $this;
     }
@@ -73,5 +73,3 @@ class Model_Auth_User_Token extends ORM
     }
 
 }
-
-// End Auth User Token Model

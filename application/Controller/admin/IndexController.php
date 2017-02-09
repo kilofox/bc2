@@ -1,6 +1,6 @@
 <?php
 
-namespace App\controllers\admin;
+namespace App\Controller\admin;
 
 use Bootphp\ORM\ORM;
 use Bootphp\Database\DB;

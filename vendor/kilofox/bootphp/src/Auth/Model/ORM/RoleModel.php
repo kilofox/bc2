@@ -1,19 +1,30 @@
 <?php
 
-defined('SYSPATH') OR die('No direct access allowed.');
+namespace Bootphp\Auth\Model\ORM;
 
 /**
- * Default auth role
+ * Default auth role.
  *
  * @package    Bootphp/Auth
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (c) 2007-2009 Kohana Team
  * @license    http://kilofox.net/license.html
  */
-class Model_Auth_Role extends ORM
+class RoleModel extends \Bootphp\ORM\ORM
 {
-    // Relationships
-    protected $_has_many = array(
+    /**
+     * Table name.
+     *
+     * @var string  Table name
+     */
+    protected $tableName = 'roles';
+
+    /**
+     * Relationships.
+     *
+     * @var array
+     */
+    protected $hasMany = array(
         'users' => array('model' => 'User', 'through' => 'roles_users'),
     );
 
@@ -32,5 +43,3 @@ class Model_Auth_Role extends ORM
     }
 
 }
-
-// End Auth Role Model

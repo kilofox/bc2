@@ -1,6 +1,6 @@
 <?php
 
-namespace App\controllers\admin;
+namespace App\Controller\admin;
 
 use Bootphp\Auth\Auth;
 
@@ -57,7 +57,7 @@ class LoginController extends \Bootphp\Controller
 
         Auth::instance()->logout();
         $this->view->layout(false);
-        $this->view->template('login2');
+        $this->view->template('login');
     }
 
 }

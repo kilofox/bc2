@@ -50,7 +50,7 @@ class Valid
      */
     public static function min_length($value, $length)
     {
-        return UTF8::strlen($value) >= $length;
+        return mb_strlen($value) >= $length;
     }
 
     /**
@@ -62,7 +62,7 @@ class Valid
      */
     public static function max_length($value, $length)
     {
-        return UTF8::strlen($value) <= $length;
+        return mb_strlen($value) <= $length;
     }
 
     /**
@@ -76,13 +76,13 @@ class Valid
     {
         if (is_array($length)) {
             foreach ($length as $strlen) {
-                if (UTF8::strlen($value) === $strlen)
+                if (mb_strlen($value) === $strlen)
                     return true;
             }
             return false;
         }
 
-        return UTF8::strlen($value) === $length;
+        return mb_strlen($value) === $length;
     }
 
     /**
@@ -109,7 +109,7 @@ class Valid
      */
     public static function email($email, $strict = false)
     {
-        if (UTF8::strlen($email) > 254) {
+        if (mb_strlen($email) > 254) {
             return false;
         }
 
@@ -152,6 +152,7 @@ class Valid
 
 
 
+
 // Check if the email domain has a valid MX record
         return (bool) checkdnsrr(preg_replace('/^[^@]++@/', '', $email), 'MX');
     }
@@ -166,7 +167,7 @@ class Valid
     {
         // Based on http://www.apps.ietf.org/rfc/rfc1738.html#sec-5
         if (!preg_match(
-                        '~^
+                '~^
 
 			# scheme
 			[-a-z0-9+.]++://

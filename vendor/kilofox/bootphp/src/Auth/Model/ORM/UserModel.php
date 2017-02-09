@@ -1,23 +1,30 @@
 <?php
 
-defined('SYSPATH') OR die('No direct access allowed.');
+namespace Bootphp\Auth\Model\ORM;
 
 /**
- * Default auth user
+ * Default auth user.
  *
  * @package    Bootphp/Auth
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class Model_Auth_User extends ORM
+class UserModel extends \Bootphp\ORM\ORM
 {
     /**
-     * A user has many tokens and roles
+     * Table name.
      *
-     * @var array Relationhips
+     * @var string  Table name
      */
-    protected $_has_many = array(
+    protected $tableName = 'users';
+
+    /**
+     * A user has many tokens and roles.
+     *
+     * @var array   Relationhips
+     */
+    protected $hasMany = array(
         'user_tokens' => array('model' => 'User_Token'),
         'roles' => array('model' => 'Role', 'through' => 'roles_users'),
     );
@@ -112,11 +119,11 @@ class Model_Auth_User extends ORM
         }
 
         return (bool) DB::select(array(DB::expr('COUNT(*)'), 'total_count'))
-                        ->from($this->_table_name)
-                        ->where($field, '=', $value)
-                        ->where($this->_primary_key, '!=', $this->pk())
-                        ->execute($this->_db)
-                        ->get('total_count');
+                ->from($this->_table_name)
+                ->where($field, '=', $value)
+                ->where($this->_primary_key, '!=', $this->pk())
+                ->execute($this->_db)
+                ->get('total_count');
     }
 
     /**
@@ -127,7 +134,7 @@ class Model_Auth_User extends ORM
      */
     public function unique_key($value)
     {
-        return Valid::email($value) ? 'email' : 'username';
+        return \Bootphp\Valid::email($value) ? 'email' : 'username';
     }
 
     /**
@@ -139,8 +146,8 @@ class Model_Auth_User extends ORM
     public static function get_password_validation($values)
     {
         return Validation::factory($values)
-                        ->rule('password', 'min_length', array(':value', 8))
-                        ->rule('password_confirm', 'matches', array(':validation', ':field', 'password'));
+                ->rule('password', 'min_length', array(':value', 8))
+                ->rule('password_confirm', 'matches', array(':validation', ':field', 'password'));
     }
 
     /**
@@ -163,7 +170,7 @@ class Model_Auth_User extends ORM
     {
         // Validation for passwords
         $extra_validation = Model_User::get_password_validation($values)
-                ->rule('password', 'not_empty');
+            ->rule('password', 'not_empty');
 
         return $this->values($values, $expected)->create($extra_validation);
     }
@@ -202,5 +209,3 @@ class Model_Auth_User extends ORM
     }
 
 }
-
-// End Auth User Model

@@ -28,7 +28,7 @@ abstract class Model
         $directory = !is_string($directory) ? '' : $directory .= '\\';
 
         // Add the model suffix
-        $class = 'App\\models\\' . $directory . ucfirst($name) . 'Model';
+        $class = 'App\\Model\\' . $directory . ucfirst($name) . 'Model';
 
         return new $class;
     }
