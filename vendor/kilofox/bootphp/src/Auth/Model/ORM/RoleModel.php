@@ -24,22 +24,22 @@ class RoleModel extends \Bootphp\ORM\ORM
      *
      * @var array
      */
-    protected $hasMany = array(
-        'users' => array('model' => 'User', 'through' => 'roles_users'),
-    );
+    protected $hass2Many = [
+        //'users' => ['model' => 'User', 'through' => 'roles_users'],
+    ];
 
     public function rules()
     {
-        return array(
-            'name' => array(
-                array('not_empty'),
-                array('min_length', array(':value', 4)),
-                array('max_length', array(':value', 32)),
-            ),
-            'description' => array(
-                array('max_length', array(':value', 255)),
-            )
-        );
+        return [
+            'name' => [
+                ['not_empty'],
+                ['min_length', [':value', 4]],
+                ['max_length', [':value', 32]],
+            ],
+            'description' => [
+                ['max_length', [':value', 255]],
+            ]
+        ];
     }
 
 }

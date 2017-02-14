@@ -24,80 +24,80 @@ class UserModel extends \Bootphp\ORM\ORM
      *
      * @var array   Relationhips
      */
-    protected $hasMany = array(
-        'user_tokens' => array('model' => 'User_Token'),
-        'roles' => array('model' => 'Role', 'through' => 'roles_users'),
-    );
+    protected $hasMany = [
+        'user_tokens' => ['model' => 'User_Token'],
+        'roles' => ['model' => 'Role', 'foreignKey' => 'role_id'],
+    ];
 
     /**
-     * Rules for the user model. Because the password is _always_ a hash
-     * when it's set,you need to run an additional not_empty rule in your controller
-     * to make sure you didn't hash an empty string. The password rules
-     * should be enforced outside the model or with a model helper method.
+     * Rules for the user model. Because the password is _always_ a hash when
+     * it's set,you need to run an additional not_empty rule in your controller
+     * to make sure you didn't hash an empty string. The password rules should
+     * be enforced outside the model or with a model helper method.
      *
-     * @return array Rules
+     * @return  array   Rules
      */
     public function rules()
     {
-        return array(
-            'username' => array(
-                array('not_empty'),
-                array('max_length', array(':value', 32)),
-                array(array($this, 'unique'), array('username', ':value')),
-            ),
-            'password' => array(
-                array('not_empty'),
-            ),
-            'email' => array(
-                array('not_empty'),
-                array('email'),
-                array(array($this, 'unique'), array('email', ':value')),
-            ),
-        );
+        return [
+            'username' => [
+                ['not_empty'],
+                ['max_length', [':value', 32]],
+                [[$this, 'unique'], ['username', ':value']],
+            ],
+            'password' => [
+                ['not_empty'],
+            ],
+            'email' => [
+                ['not_empty'],
+                ['email'],
+                [[$this, 'unique'], ['email', ':value']],
+            ],
+        ];
     }
 
     /**
      * Filters to run when data is set in this model. The password filter
      * automatically hashes the password when it's set in the model.
      *
-     * @return array Filters
+     * @return  array   Filters
      */
     public function filters()
     {
-        return array(
-            'password' => array(
-                array(array(Auth::instance(), 'hash'))
-            )
-        );
+        return [
+            'password' => [
+                [[Auth::instance(), 'hash']]
+            ]
+        ];
     }
 
     /**
-     * Labels for fields in this model
+     * Labels for fields in this model.
      *
-     * @return array Labels
+     * @return  array   Labels
      */
     public function labels()
     {
-        return array(
+        return [
             'username' => 'username',
             'email' => 'email address',
             'password' => 'password',
-        );
+        ];
     }
 
     /**
-     * Complete the login for a user by incrementing the logins and saving login timestamp
+     * Complete the login for a user by incrementing the logins and saving login timestamp.
      *
-     * @return void
+     * @return  void
      */
-    public function complete_login()
+    public function completeLogin()
     {
-        if ($this->_loaded) {
+        if ($this->loaded) {
             // Update the number of logins
             $this->logins = new Database_Expression('logins + 1');
 
             // Set the last login date
-            $this->last_login = time();
+            $this->lastLogin = time();
 
             // Save the user
             $this->update();
@@ -107,32 +107,32 @@ class UserModel extends \Bootphp\ORM\ORM
     /**
      * Tests if a unique key value exists in the database.
      *
-     * @param   mixed    the value to test
-     * @param   string   field name
+     * @param   mixed   The value to test
+     * @param   string  Field name
      * @return  boolean
      */
-    public function unique_key_exists($value, $field = null)
+    public function uniqueKeyExists($value, $field = null)
     {
         if ($field === null) {
             // Automatically determine field by looking at the value
-            $field = $this->unique_key($value);
+            $field = $this->uniqueKey($value);
         }
 
-        return (bool) DB::select(array(DB::expr('COUNT(*)'), 'total_count'))
-                ->from($this->_table_name)
+        return (bool) DB::select([DB::expr('COUNT(*)'), 'total_count'])
+                ->from($this->tableName)
                 ->where($field, '=', $value)
-                ->where($this->_primary_key, '!=', $this->pk())
-                ->execute($this->_db)
+                ->where($this->primaryKey, '!=', $this->pk())
+                ->execute($this->db)
                 ->get('total_count');
     }
 
     /**
-     * Allows a model use both email and username as unique identifiers for login
+     * Allows a model use both email and username as unique identifiers for login.
      *
-     * @param   string  unique value
-     * @return  string  field name
+     * @param   string  Unique value
+     * @return  string  Field name
      */
-    public function unique_key($value)
+    public function uniqueKey($value)
     {
         return \Bootphp\Valid::email($value) ? 'email' : 'username';
     }
@@ -140,18 +140,18 @@ class UserModel extends \Bootphp\ORM\ORM
     /**
      * Password validation for plain passwords.
      *
-     * @param array $values
-     * @return Validation
+     * @param   array   $values
+     * @return  Validation
      */
-    public static function get_password_validation($values)
+    public static function getPasswordValidation($values)
     {
-        return Validation::factory($values)
-                ->rule('password', 'min_length', array(':value', 8))
-                ->rule('password_confirm', 'matches', array(':validation', ':field', 'password'));
+        return \Bootphp\Validation::factory($values)
+                ->rule('password', 'min_length', [':value', 8])
+                ->rule('password_confirm', 'matches', [':validation', ':field', 'password']);
     }
 
     /**
-     * Create a new user
+     * Create a new user.
      *
      * Example usage:
      * ~~~
@@ -162,11 +162,10 @@ class UserModel extends \Bootphp\ORM\ORM
      * );
      * ~~~
      *
-     * @param array $values
-     * @param array $expected
-     * @throws ORM_Validation_Exception
+     * @param   array   $values
+     * @param   array   $expected
      */
-    public function create_user($values, $expected)
+    public function createUser($values, $expected)
     {
         // Validation for passwords
         $extra_validation = Model_User::get_password_validation($values)
@@ -176,7 +175,7 @@ class UserModel extends \Bootphp\ORM\ORM
     }
 
     /**
-     * Update an existing user
+     * Update an existing user.
      *
      * [!!] We make the assumption that if a user does not supply a password, that they do not wish to update their password.
      *
@@ -192,18 +191,17 @@ class UserModel extends \Bootphp\ORM\ORM
      * 	);
      * ~~~
      *
-     * @param array $values
-     * @param array $expected
-     * @throws ORM_Validation_Exception
+     * @param   array   $values
+     * @param   array   $expected
      */
-    public function update_user($values, $expected = null)
+    public function updateUser($values, $expected = null)
     {
         if (empty($values['password'])) {
             unset($values['password'], $values['password_confirm']);
         }
 
         // Validation for passwords
-        $extra_validation = Model_User::get_password_validation($values);
+        $extra_validation = self::getPasswordValidation($values);
 
         return $this->values($values, $expected)->update($extra_validation);
     }

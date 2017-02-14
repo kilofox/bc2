@@ -13,11 +13,15 @@ namespace Bootphp\Auth;
  */
 abstract class Auth
 {
-    // Auth instances
+    /**
+     * Auth instances.
+     *
+     * @var object
+     */
     protected static $_instance;
 
     /**
-     * Singleton pattern
+     * Singleton pattern.
      *
      * @return Auth
      */
@@ -45,7 +49,7 @@ abstract class Auth
     /**
      * Loads Session and configuration options.
      *
-     * @param   array  $config  Config Options
+     * @param   array   $config Config Options
      * @return  void
      */
     public function __construct($config = array())
@@ -58,7 +62,7 @@ abstract class Auth
 
     abstract protected function _login($username, $password, $remember);
     abstract public function password($username);
-    abstract public function check_password($password);
+    abstract public function checkPassword($password);
     /**
      * Gets the currently logged in user from the session.
      * Returns null if no user is currently logged in.
@@ -66,7 +70,7 @@ abstract class Auth
      * @param   mixed  $default  Default value to return if the user is currently not logged in.
      * @return  mixed
      */
-    public function get_user($default = null)
+    public function getUser($default = null)
     {
         return $this->_session->get($this->_config['session_key'], $default);
     }
@@ -74,9 +78,9 @@ abstract class Auth
     /**
      * Attempt to log in a user by using an ORM object and plain-text password.
      *
-     * @param   string   $username  Username to log in
-     * @param   string   $password  Password to check against
-     * @param   boolean  $remember  Enable autologin
+     * @param   string  $username   Username to log in
+     * @param   string  $password   Password to check against
+     * @param   boolean $remember   Enable autologin
      * @return  boolean
      */
     public function login($username, $password, $remember = false)
@@ -90,11 +94,11 @@ abstract class Auth
     /**
      * Log out a user by removing the related session variables.
      *
-     * @param   boolean  $destroy     Completely destroy the session
-     * @param   boolean  $logout_all  Remove all tokens for user
+     * @param   boolean $destroy    Completely destroy the session
+     * @param   boolean $logoutAll  Remove all tokens for user
      * @return  boolean
      */
-    public function logout($destroy = false, $logout_all = false)
+    public function logout($destroy = false, $logoutAll = false)
     {
         if ($destroy === true) {
             // Destroy the session completely
@@ -108,48 +112,44 @@ abstract class Auth
         }
 
         // Double check
-        return !$this->logged_in();
+        return !$this->loggedIn();
     }
 
     /**
      * Check if there is an active session. Optionally allows checking for a
      * specific role.
      *
-     * @param   string  $role  role name
+     * @param   string  $role   Role name
      * @return  mixed
      */
-    public function logged_in($role = null)
+    public function loggedIn($role = null)
     {
-        return ($this->get_user() !== null);
-    }
-
-    /**
-     * Creates a hashed hmac password from a plaintext password. This
-     * method is deprecated, [Auth::hash] should be used instead.
-     *
-     * @deprecated
-     * @param  string  $password Plaintext password
-     */
-    public function hash_password($password)
-    {
-        return $this->hash($password);
+        return ($this->getUser() !== null);
     }
 
     /**
      * Perform a hmac hash, using the configured method.
      *
-     * @param   string  $str  string to hash
+     * @param   string  $str    String to hash
      * @return  string
+     * @throw   \Bootphp\BootphpException
      */
     public function hash($str)
     {
         if (!$this->_config['hash_key'])
-            throw new Kohana_Exception('A valid hash key must be set in your auth config.');
+            throw new \Bootphp\BootphpException('A valid hash key must be set in your auth config.');
 
         return hash_hmac($this->_config['hash_method'], $str, $this->_config['hash_key']);
     }
 
-    protected function complete_login($user)
+    /**
+     * Complete the login for a user by incrementing the logins and setting
+     * session data: user_id, username, roles.
+     *
+     * @param   object  $user   User ORM object
+     * @return  void
+     */
+    protected function completeLogin($user)
     {
         // Regenerate session_id
         $this->_session->regenerate();

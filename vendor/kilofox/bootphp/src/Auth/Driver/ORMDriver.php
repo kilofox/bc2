@@ -2,9 +2,7 @@
 
 namespace Bootphp\Auth\Driver;
 
-use Bootphp\Auth\Model\ORM\UserModel;
-use Bootphp\Auth\Model\ORM\User\TokenModel;
-use Bootphp\Auth\Model\ORM\RoleModel;
+use Bootphp\ORM\ORM;
 use Bootphp\Cookie;
 
 /**
@@ -20,13 +18,13 @@ class ORMDriver extends \Bootphp\Auth\Auth
     /**
      * Checks if a session is active.
      *
-     * @param   mixed    $role Role name string, role ORM object, or array with role names
+     * @param   mixed   $role   Role name string, role ORM object, or array with role names
      * @return  boolean
      */
-    public function logged_in($role = null)
+    public function loggedIn($role = null)
     {
         // Get the user from the session
-        $user = $this->get_user();
+        $user = $this->getUser();
 
         if (!$user)
             return false;
@@ -37,9 +35,8 @@ class ORMDriver extends \Bootphp\Auth\Auth
                 return true;
 
             if (is_array($role)) {
-                $roleModel = new RoleModel();
                 // Get all the roles
-                $roles = $roleModel->where('name', 'IN', $role)->find_all()->as_array(null, 'id');
+                $roles = ORM::factory('Role')->where('name', 'IN', $role)->findAll()->asArray(null, 'id');
 
                 // Make sure all the roles are valid ones
                 if (count($roles) !== count($role))
@@ -47,8 +44,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
             } else {
                 if (!is_object($role)) {
                     // Load the role
-                    // $roles = ORM::factory('Role', array('name' => $role));
-                    $roleModel = new RoleModel(['name' => $role]);
+                    $roles = ORM::factory('Role')->where('name', '=', $role)->find();
 
                     if (!$roles->loaded())
                         return false;
@@ -65,9 +61,9 @@ class ORMDriver extends \Bootphp\Auth\Auth
     /**
      * Logs a user in.
      *
-     * @param   string   $username
-     * @param   string   $password
-     * @param   boolean  $remember  enable autologin
+     * @param   string  $username
+     * @param   string  $password
+     * @param   boolean $remember   Enable autologin
      * @return  boolean
      */
     protected function _login($user, $password, $remember)
@@ -76,8 +72,8 @@ class ORMDriver extends \Bootphp\Auth\Auth
             $username = $user;
 
             // Load the user
-            $user = new UserModel();
-            $user->where($user->unique_key($username), '=', $username)->find();
+            $user = ORM::factory('User', 'Bootphp\\Auth\\Model\\ORM\\');
+            $user->where($user->uniqueKey($username), '=', $username)->find();
         }
 
         if (is_string($password)) {
@@ -85,16 +81,17 @@ class ORMDriver extends \Bootphp\Auth\Auth
             $password = $this->hash($password);
         }
 
-        $roles = new RoleModel(['name' => 'login']);
+        $roles = ORM::factory('role')->where('name', '=', 'login')->find();
+
         // If the passwords match, perform a login
-        if ($user->has('roles', $roles) AND $user->password === $password) {
+        if ($user->has('role', $roles) && $user->password === $password) {
             if ($remember === true) {
                 // Token data
-                $data = array(
+                $data = [
                     'user_id' => $user->pk(),
                     'expires' => time() + $this->_config['lifetime'],
                     'user_agent' => sha1(Request::$user_agent),
-                );
+                ];
 
                 // Create a new autologin token
                 $token = ORM::factory('User_Token')
@@ -106,7 +103,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
             }
 
             // Finish the login
-            $this->complete_login($user);
+            $this->completeLogin($user);
 
             return true;
         }
@@ -118,21 +115,21 @@ class ORMDriver extends \Bootphp\Auth\Auth
     /**
      * Forces a user to be logged in, without specifying a password.
      *
-     * @param   mixed    $user                    username string, or user ORM object
-     * @param   boolean  $mark_session_as_forced  mark the session as forced
+     * @param   mixed   $user                   Username string, or user ORM object
+     * @param   boolean $markSessionAsForced    Mark the session as forced
      * @return  boolean
      */
-    public function force_login($user, $mark_session_as_forced = false)
+    public function forceLogin($user, $markSessionAsForced = false)
     {
         if (!is_object($user)) {
             $username = $user;
 
             // Load the user
             $user = ORM::factory('User');
-            $user->where($user->unique_key($username), '=', $username)->find();
+            $user->where($user->uniqueKey($username), '=', $username)->find();
         }
 
-        if ($mark_session_as_forced === true) {
+        if ($markSessionAsForced === true) {
             // Mark the session as forced, to prevent users from changing account information
             $this->_session->set('auth_forced', true);
         }
@@ -146,13 +143,13 @@ class ORMDriver extends \Bootphp\Auth\Auth
      *
      * @return  mixed
      */
-    public function auto_login()
+    public function autoLogin()
     {
         if ($token = Cookie::get('authautologin')) {
             // Load the token and user
-            $token = ORM::factory('User_Token', array('token' => $token));
+            $token = ORM::factory('User_Token', ['token' => $token]);
 
-            if ($token->loaded() AND $token->user->loaded()) {
+            if ($token->loaded() && $token->user->loaded()) {
                 if ($token->user_agent === sha1(Request::$user_agent)) {
                     // Save the token to create a new unique token
                     $token->save();
@@ -161,7 +158,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
                     Cookie::set('authautologin', $token->token, $token->expires - time());
 
                     // Complete the login with the found data
-                    $this->complete_login($token->user);
+                    $this->completeLogin($token->user);
 
                     // Automatic login was successful
                     return $token->user;
@@ -179,16 +176,16 @@ class ORMDriver extends \Bootphp\Auth\Auth
      * Gets the currently logged in user from the session (with auto_login check).
      * Returns $default if no user is currently logged in.
      *
-     * @param   mixed    $default to return in case user isn't logged in
+     * @param   mixed   $default    To return in case user isn't logged in
      * @return  mixed
      */
-    public function get_user($default = null)
+    public function getUser($default = null)
     {
-        $user = parent::get_user($default);
+        $user = parent::getUser($default);
 
         if ($user === $default) {
             // check for "remembered" login
-            if (($user = $this->auto_login()) === false)
+            if (($user = $this->autoLogin()) === false)
                 return $default;
         }
 
@@ -198,11 +195,11 @@ class ORMDriver extends \Bootphp\Auth\Auth
     /**
      * Log a user out and remove any autologin cookies.
      *
-     * @param   boolean  $destroy     completely destroy the session
-     * @param	boolean  $logout_all  remove all tokens for user
+     * @param   boolean $destroy    Completely destroy the session
+     * @param   boolean $logoutAll  Remove all tokens for user
      * @return  boolean
      */
-    public function logout($destroy = false, $logout_all = false)
+    public function logout($destroy = false, $logoutAll = false)
     {
         // Set by force_login()
         $this->_session->delete('auth_forced');
@@ -212,11 +209,11 @@ class ORMDriver extends \Bootphp\Auth\Auth
             Cookie::delete('authautologin');
 
             // Clear the autologin token from the database
-            $token = ORM::factory('User_Token', array('token' => $token));
+            $token = ORM::factory('User_Token', ['token' => $token]);
 
-            if ($token->loaded() AND $logout_all) {
+            if ($token->loaded() && $logoutAll) {
                 // Delete all user tokens. This isn't the most elegant solution but does the job
-                $tokens = ORM::factory('User_Token')->where('user_id', '=', $token->user_id)->find_all();
+                $tokens = ORM::factory('User_Token')->where('user_id', '=', $token->user_id)->findAll();
 
                 foreach ($tokens as $_token) {
                     $_token->delete();
@@ -232,7 +229,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
     /**
      * Get the stored password for a username.
      *
-     * @param   mixed   $user  username string, or user ORM object
+     * @param   mixed   $user   Username string, or user ORM object
      * @return  string
      */
     public function password($user)
@@ -242,7 +239,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
 
             // Load the user
             $user = ORM::factory('User');
-            $user->where($user->unique_key($username), '=', $username)->find();
+            $user->where($user->uniqueKey($username), '=', $username)->find();
         }
 
         return $user->password;
@@ -252,32 +249,30 @@ class ORMDriver extends \Bootphp\Auth\Auth
      * Complete the login for a user by incrementing the logins and setting
      * session data: user_id, username, roles.
      *
-     * @param   object  $user  user ORM object
+     * @param   object  $user   User ORM object
      * @return  void
      */
-    protected function complete_login($user)
+    protected function completeLogin($user)
     {
-        $user->complete_login();
+        $user->completeLogin();
 
-        return parent::complete_login($user);
+        return parent::completeLogin($user);
     }
 
     /**
-     * Compare password with original (hashed). Works for current (logged in) user
+     * Compare password with original (hashed). Works for current (logged in) user.
      *
      * @param   string  $password
      * @return  boolean
      */
-    public function check_password($password)
+    public function checkPassword($password)
     {
-        $user = $this->get_user();
+        $user = $this->getUser();
 
         if (!$user)
             return false;
 
-        return ($this->hash($password) === $user->password);
+        return $this->hash($password) === $user->password;
     }
 
 }
-
-// End Auth ORM

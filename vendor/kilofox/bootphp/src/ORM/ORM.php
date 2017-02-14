@@ -31,21 +31,22 @@ class ORM extends \Bootphp\Model
 
     /**
      * Creates and returns a new model.
-     * Model name must be passed with its' original casing, e.g.
-     *
-     *    $model = ORM::factory('User');
      *
      * @chainable
      * @param   string  $model  Model name
-     * @param   mixed   $id     Parameter for find()
+     * @param   string  $path   Path to load from
      * @return  ORM
      */
-    public static function factory($model, $id = null)
+    public static function factory($model, $path = null)
     {
         // Set class name
-        $model = 'App\\Model\\' . ucfirst($model) . 'Model';
+        if ($directory === null) {
+            $model = 'App\\Model\\' . ucfirst($model) . 'Model';
+        } else {
+            $model = (string) $path . ucfirst($model) . 'Model';
+        }
 
-        return new $model($id);
+        return new $model();
     }
 
     /**
@@ -209,36 +210,12 @@ class ORM extends \Bootphp\Model
     protected $withApplied = [];
 
     /**
-     * Constructs a new model and loads a record if given.
+     * Constructs a new model, prepares the model database connection,
+     * determines the table name, and loads column information.
      *
-     * @param   mixed   $id   Parameter for find or object to load
+     * @return  void
      */
-    public function __construct($id = null)
-    {
-        $this->initialize();
-
-        if ($id !== null) {
-            if (is_array($id)) {
-                foreach ($id as $column => $value) {
-                    // Passing an array of column => values
-                    $this->where($column, '=', $value);
-                }
-
-                $this->find();
-            } else {
-                // Passing the primary key
-                $this->where($this->primaryKey, '=', $id)->find();
-            }
-        }
-    }
-
-    /**
-     * Prepares the model database connection, determines the table name, and
-     * loads column information.
-     *
-     * @return void
-     */
-    protected function initialize()
+    public function __construct()
     {
         // Set the object name if none predefined
         if (empty($this->objectName)) {
@@ -324,9 +301,9 @@ class ORM extends \Bootphp\Model
     {
         // Build the validation object with its rules
         $this->validation = \Bootphp\Validation::factory($this->object)
-                ->bind(':model', $this)
-                ->bind(':original_values', $this->originalValues)
-                ->bind(':changed', $this->changed);
+            ->bind(':model', $this)
+            ->bind(':original_values', $this->originalValues)
+            ->bind(':changed', $this->changed);
 
         foreach ($this->rules() as $field => $rules) {
             $this->validation->rules($field, $rules);
@@ -380,10 +357,10 @@ class ORM extends \Bootphp\Model
     public function __isset($column)
     {
         return isset($this->object[$column]) ||
-                isset($this->related[$column]) ||
-                isset($this->hasOne[$column]) ||
-                isset($this->belongsTo[$column]) ||
-                isset($this->hasMany[$column]);
+            isset($this->related[$column]) ||
+            isset($this->hasOne[$column]) ||
+            isset($this->belongsTo[$column]) ||
+            isset($this->hasMany[$column]);
     }
 
     /**
@@ -1017,9 +994,9 @@ class ORM extends \Bootphp\Model
         }
 
         $result = DB::insert($this->tableName)
-                ->columns(array_keys($data))
-                ->values(array_values($data))
-                ->execute($this->db);
+            ->columns(array_keys($data))
+            ->values(array_values($data))
+            ->execute($this->db);
 
         if (!array_key_exists($this->primaryKey, $data)) {
             // Load the insert id as the primary key if it was left out
@@ -1072,9 +1049,9 @@ class ORM extends \Bootphp\Model
 
         // Update a single record
         DB::update($this->tableName)
-                ->set($data)
-                ->where($this->primaryKey, '=', $id)
-                ->execute($this->db);
+            ->set($data)
+            ->where($this->primaryKey, '=', $id)
+            ->execute($this->db);
 
         if (isset($data[$this->primaryKey])) {
             // Primary key was changed, reflect it
@@ -1120,17 +1097,16 @@ class ORM extends \Bootphp\Model
 
         // Delete the object
         DB::delete($this->tableName)
-                ->where($this->primaryKey, '=', $id)
-                ->execute($this->db);
+            ->where($this->primaryKey, '=', $id)
+            ->execute($this->db);
 
         return $this->clear();
     }
 
     /**
-     * Tests if this object has a relationship to a different model,
-     * or an array of different models. When providing far keys, the number
-     * of relations must equal the number of keys.
-     *
+     * Tests if this object has a relationship to a different model, or an array
+     * of different models. When providing far keys, the number of relations
+     * must equal the number of keys.
      *
      *     // Check if $model has the login role
      *     $model->has('roles', ORM::factory('role', ['name' => 'login']));
@@ -1141,9 +1117,9 @@ class ORM extends \Bootphp\Model
      *     // Check if $model has any roles
      *     $model->has('roles')
      *
-     * @param  string  $alias    Alias of the has_many "through" relationship
-     * @param  mixed   $farKeys Related model, primary key, or an array of primary keys
-     * @return boolean
+     * @param   string  $alias      Alias of the has_many "through" relationship
+     * @param   mixed   $farKeys    Related model, primary key, or an array of primary keys
+     * @return  boolean
      */
     public function has($alias, $farKeys = null)
     {
@@ -1156,9 +1132,9 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Tests if this object has a relationship to a different model,
-     * or an array of different models. When providing far keys, this function
-     * only checks that at least one of the relationships is satisfied.
+     * Tests if this object has a relationship to a different model, or an array
+     * of different models. When providing far keys, this function only checks
+     * that at least one of the relationships is satisfied.
      *
      *     // Check if $model has the login role
      *     $model->has('roles', ORM::factory('role', ['name' => 'login']));
@@ -1170,10 +1146,10 @@ class ORM extends \Bootphp\Model
      *     $model->has('roles')
      *
      * @param   string  $alias      Alias of the has_many "through" relationship
-     * @param   mixed   $farKeys   Related model, primary key, or an array of primary keys
+     * @param   mixed   $farKeys    Related model, primary key, or an array of primary keys
      * @return  boolean
      */
-    public function has_any($alias, $farKeys = null)
+    public function hasAny($alias, $farKeys = null)
     {
         return (bool) $this->countRelations($alias, $farKeys);
     }
@@ -1199,9 +1175,9 @@ class ORM extends \Bootphp\Model
     {
         if ($farKeys === null) {
             return (int) DB::select([DB::expr('COUNT(*)'), 'records_found'])
-                            ->from($this->hasMany[$alias]['through'])
-                            ->where($this->hasMany[$alias]['foreignKey'], '=', $this->pk())
-                            ->execute($this->db)->get('records_found');
+                    ->from($this->hasMany[$alias]['through'])
+                    ->where($this->hasMany[$alias]['foreignKey'], '=', $this->pk())
+                    ->execute($this->db)->get('records_found');
         }
 
         $farKeys = ($farKeys instanceof ORM) ? $farKeys->pk() : $farKeys;
@@ -1214,10 +1190,10 @@ class ORM extends \Bootphp\Model
             return 0;
 
         $count = (int) DB::select([DB::expr('COUNT(*)'), 'records_found'])
-                        ->from($this->hasMany[$alias]['through'])
-                        ->where($this->hasMany[$alias]['foreignKey'], '=', $this->pk())
-                        ->where($this->hasMany[$alias]['farKey'], 'IN', $farKeys)
-                        ->execute($this->db)->get('records_found');
+                ->from($this->hasMany[$alias]['through'])
+                ->where($this->hasMany[$alias]['foreignKey'], '=', $this->pk())
+                ->where($this->hasMany[$alias]['farKey'], 'IN', $farKeys)
+                ->execute($this->db)->get('records_found');
 
         // Rows found need to match the rows searched
         return (int) $count;
@@ -1276,7 +1252,7 @@ class ORM extends \Bootphp\Model
         $farKeys = ($farKeys instanceof ORM) ? $farKeys->pk() : $farKeys;
 
         $query = DB::delete($this->hasMany[$alias]['through'])
-                ->where($this->hasMany[$alias]['foreignKey'], '=', $this->pk());
+            ->where($this->hasMany[$alias]['foreignKey'], '=', $this->pk());
 
         if ($farKeys !== null) {
             // Remove all the relationships in the array
@@ -1315,9 +1291,9 @@ class ORM extends \Bootphp\Model
         $this->build('select');
 
         $records = $this->dbBuilder->from([$this->tableName, $this->objectName])
-                ->select([DB::expr('COUNT(' . $this->db->quote_column($this->objectName . '.' . $this->primaryKey) . ')'), 'records_found'])
-                ->execute($this->db)
-                ->get('records_found');
+            ->select([DB::expr('COUNT(' . $this->db->quote_column($this->objectName . '.' . $this->primaryKey) . ')'), 'records_found'])
+            ->execute($this->db)
+            ->get('records_found');
 
         // Add back in selected columns
         $this->dbPending += $selects;
