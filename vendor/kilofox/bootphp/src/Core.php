@@ -45,11 +45,6 @@ class Core
     public static $is_windows = false;
 
     /**
-     * @var boolean True if [magic quotes](http://php.net/manual/en/security.magicquotes.php) is enabled.
-     */
-    public static $magic_quotes = false;
-
-    /**
      * @var boolean True if PHP safe mode is on
      */
     public static $safe_mode = false;
@@ -279,9 +274,6 @@ class Core
             self::$baseUrl = rtrim($settings['baseUrl'], '/') . '/';
         }
 
-        // Determine if the extremely evil magic quotes are enabled
-        self::$magic_quotes = (bool) get_magic_quotes_gpc();
-
         // Sanitize all request variables
         $_GET = self::sanitize($_GET);
         $_POST = self::sanitize($_POST);
@@ -381,25 +373,19 @@ class Core
     /**
      * Recursively sanitizes an input variable:
      *
-     * - Strips slashes if magic quotes are enabled
      * - Normalizes all newlines to LF
      *
-     * @param   mixed   $value  any variable
-     * @return  mixed   sanitized variable
+     * @param   mixed   $value  Any variable
+     * @return  mixed   Sanitized variable
      */
     public static function sanitize($value)
     {
-        if (is_array($value) OR is_object($value)) {
+        if (is_array($value) || is_object($value)) {
             foreach ($value as $key => $val) {
                 // Recursively clean each value
                 $value[$key] = self::sanitize($val);
             }
         } elseif (is_string($value)) {
-            if (self::$magic_quotes === true) {
-                // Remove slashes added by magic quotes
-                $value = stripslashes($value);
-            }
-
             if (strpos($value, "\r") !== false) {
                 // Standardize newlines
                 $value = str_replace(array("\r\n", "\r"), "\n", $value);

@@ -73,9 +73,9 @@ class Request
             }
 
             if ((!empty($_SERVER['HTTPS']) AND filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN))
-                    OR ( isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
-                    AND $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
+                OR ( isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+                AND $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+                AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // This request is secure
                 $secure = true;
             }
@@ -96,8 +96,8 @@ class Request
             }
 
             if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])
-                    AND isset($_SERVER['REMOTE_ADDR'])
-                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
+                AND isset($_SERVER['REMOTE_ADDR'])
+                AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // Use the forwarded IP address, typically set when the
                 // client is using a proxy server.
                 // Format: "X-Forwarded-For: client1, proxy1, proxy2"
@@ -107,8 +107,8 @@ class Request
 
                 unset($clientIps);
             } elseif (isset($_SERVER['HTTP_CLIENT_IP'])
-                    AND isset($_SERVER['REMOTE_ADDR'])
-                    AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
+                AND isset($_SERVER['REMOTE_ADDR'])
+                AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // Use the forwarded IP address, typically set when the
                 // client is using a proxy server.
                 $clientIps = explode(',', $_SERVER['HTTP_CLIENT_IP']);
@@ -128,7 +128,7 @@ class Request
 
             if ($uri === true) {
                 // Attempt to guess the proper URI
-                $uri = self::detect_uri();
+                $uri = self::detectUri();
             }
 
             $cookies = [];
@@ -144,8 +144,8 @@ class Request
 
             // Store global GET and POST data in the initial request only
             $request->protocol($protocol)
-                    ->query($_GET)
-                    ->post($_POST);
+                ->query($_GET)
+                ->post($_POST);
 
             if (isset($secure)) {
                 // Set the request security
@@ -176,7 +176,7 @@ class Request
                 $request->cookie($cookies);
             }
         } else {
-            $request = new Request($uri, $client_params, $allow_external, $injected_routes);
+            $request = new self($uri, $client_params, $allow_external, $injected_routes);
         }
 
         return $request;
@@ -186,14 +186,15 @@ class Request
      * Automatically detects the URI of the main request using PATH_INFO,
      * REQUEST_URI, PHP_SELF or REDIRECT_URL.
      *
-     *     $uri = Request::detect_uri();
+     *     $uri = Request::detectUri();
      *
      * @return  string  URI of the main request
      * @throws  BootphpException
      */
-    public static function detect_uri()
+    public static function detectUri()
     {
         $uri = isset($_GET['u']) ? $_GET['u'] : '';
+
         // Get the path from the base URL, including the index file
         $baseUrl = parse_url(Core::$baseUrl, PHP_URL_PATH);
 
@@ -750,9 +751,9 @@ class Request
 
         if (!$this->_route instanceof Route) {
             return HTTP_Exception::factory(404, 'Unable to find a route to match the URI: :uri', array(
-                                ':uri' => $this->_uri,
-                            ))->request($this)
-                            ->get_response();
+                        ':uri' => $this->_uri,
+                    ))->request($this)
+                    ->get_response();
         }
 
         if (!$this->_client instanceof Client) {
@@ -980,7 +981,7 @@ class Request
         } else {
             $body = http_build_query($post, null, '&');
             $this->body($body)
-                    ->headers('content-type', 'application/x-www-form-urlencoded; charset=' . Core::$charset);
+                ->headers('content-type', 'application/x-www-form-urlencoded; charset=' . Core::$charset);
         }
 
         // Set the content length
