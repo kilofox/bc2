@@ -1,5 +1,7 @@
 <?php
 
+namespace Bootphp\Request\Client;
+
 /**
  * [Request_Client_External] provides a wrapper for all external request
  * processing. This class should be extended by all drivers handling external
@@ -30,51 +32,51 @@
  * @license    http://kilofox.net/license
  * @uses       [PECL HTTP](http://php.net/manual/en/book.http.php)
  */
-abstract class Request_Client_External extends Request_Client
+abstract class External extends Bootphp\Request\Client
 {
     /**
      * Use:
-     *  - Request_Client_Curl (default)
-     *  - Request_Client_HTTP
-     *  - Request_Client_Stream
+     *  - Bootphp\Request\Client\Curl (default)
+     *  - Bootphp\Request\Client\HTTP
+     *  - Bootphp\Request\Client\Stream
      *
-     * @var     string    defines the external client to use by default
+     * @var     string  Defines the external client to use by default
      */
-    public static $client = 'Request_Client_Curl';
+    public static $client = 'Curl';
 
     /**
      * Factory method to create a new Request_Client_External object based on
      * the client name passed, or defaulting to Request_Client_External::$client
      * by default.
      *
-     * Request_Client_External::$client can be set in the application bootstrap.
+     * Bootphp\Request\Client\External::$client can be set in the application bootstrap.
      *
-     * @param   array   $params parameters to pass to the client
-     * @param   string  $client external client to use
-     * @return  Request_Client_External
-     * @throws  Request_Exception
+     * @param   array   $params Parameters to pass to the client
+     * @param   string  $client External client to use
+     * @return  Bootphp\Request\Client\External
+     * @throws  BootphpException
      */
-    public static function factory(array $params = array(), $client = null)
+    public static function factory(array $params = [], $client = null)
     {
         if ($client === null) {
-            $client = Request_Client_External::$client;
+            $client = self::$client;
         }
 
         $client = new $client($params);
 
-        if (!$client instanceof Request_Client_External) {
-            throw new Request_Exception('Selected client is not a Request_Client_External object.');
+        if (!$client instanceof External) {
+            throw new BootphpException('Selected client is not a Bootphp\Request\Client\External object.');
         }
 
         return $client;
     }
 
     /**
-     * @var     array     curl options
+     * @var     array   Curl options
      * @link    http://www.php.net/manual/function.curl-setopt
      * @link    http://www.php.net/manual/http.request.options
      */
-    protected $_options = array();
+    protected $_options = [];
 
     /**
      * Processes the request, executing the controller action that handles this
@@ -94,25 +96,10 @@ abstract class Request_Client_External extends Request_Client
      * @param   Request   $request   A request object
      * @param   Response  $response  A response object
      * @return  Response
-     * @throws  Kohana_Exception
-     * @uses    [Core::$profiling]
-     * @uses    [Profiler]
+     * @throws  BootphpException
      */
     public function execute_request(Request $request, Response $response)
     {
-        if (Core::$profiling) {
-            // Set the benchmark name
-            $benchmark = '"' . $request->uri() . '"';
-
-            if ($request !== Request::$initial AND Request::$current) {
-                // Add the parent request uri
-                $benchmark .= ' « "' . Request::$current->uri() . '"';
-            }
-
-            // Start benchmarking
-            $benchmark = Profiler::start('Requests', $benchmark);
-        }
-
         // Store the current active request and replace current with new request
         $previous = Request::$current;
         Request::$current = $request;
@@ -120,7 +107,7 @@ abstract class Request_Client_External extends Request_Client
         // Resolve the POST fields
         if ($post = $request->post()) {
             $request->body(http_build_query($post, null, '&'))
-                    ->headers('content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                ->headers('content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
         }
 
         $request->headers('content-length', (string) $request->content_length());
@@ -136,22 +123,12 @@ abstract class Request_Client_External extends Request_Client
             // Restore the previous request
             Request::$current = $previous;
 
-            if (isset($benchmark)) {
-                // Delete the benchmark, it is invalid
-                Profiler::delete($benchmark);
-            }
-
             // Re-throw the exception
             throw $e;
         }
 
         // Restore the previous request
         Request::$current = $previous;
-
-        if (isset($benchmark)) {
-            // Stop the benchmark
-            Profiler::stop($benchmark);
-        }
 
         // Return the response
         return $response;
@@ -163,7 +140,7 @@ abstract class Request_Client_External extends Request_Client
      * @param   mixed    $key    Option name, or array of options
      * @param   mixed    $value  Option value
      * @return  mixed
-     * @return  Request_Client_External
+     * @return  Bootphp\Request\Client\External
      */
     public function options($key = null, $value = null)
     {

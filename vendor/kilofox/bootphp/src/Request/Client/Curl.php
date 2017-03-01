@@ -1,5 +1,9 @@
 <?php
 
+namespace Bootphp\Request\Client;
+
+use Bootphp\BootphpException;
+
 /**
  * [Request_Client_External] Curl driver performs external requests using the
  * php-curl extention. This is the default driver for all external requests.
@@ -11,38 +15,45 @@
  * @license    http://kilofox.net/license
  * @uses       [PHP cURL](http://php.net/manual/en/book.curl.php)
  */
-class Kohana_Request_Client_Curl extends Request_Client_External
+class Curl extends External
 {
     /**
-     * Sends the HTTP message [Request] to a remote server and processes
-     * the response.
+     * Sends the HTTP message [Request] to a remote server and processes the response.
      *
-     * @param   Request   $request  request to send
-     * @param   Response  $request  response to send
+     * @param   Request     $request    Request to send
+     * @param   Response    $request    Response to send
      * @return  Response
      */
     public function _send_message(Request $request, Response $response)
     {
         // Response headers
-        $response_headers = array();
+        $response_headers = [];
 
-        $options = array();
+        $options = [];
 
         // Set the request method
-        $options = $this->_set_curl_request_method($request, $options);
+        switch ($request->method()) {
+            case 'POST':
+                $options[CURLOPT_POST] = true;
+                break;
+            default:
+                $options[CURLOPT_CUSTOMREQUEST] = $request->method();
+                break;
+        }
 
-        // Set the request body. This is perfectly legal in CURL even
-        // if using a request other than POST. PUT does support this method
-        // and DOES NOT require writing data to disk before putting it, if
-        // reading the PHP docs you may have got that impression. SdF
-        // This will also add a Content-Type: application/x-www-form-urlencoded header unless you override it
+        // Set the request body. This is perfectly legal in CURL even if using a
+        // request other than POST. PUT does support this method and DOES NOT
+        // require writing data to disk before putting it, if reading the PHP
+        // docs you may have got that impression.
+        // This will also add a Content-Type: application/x-www-form-urlencoded
+        // header unless you override it.
         if ($body = $request->body()) {
             $options[CURLOPT_POSTFIELDS] = $body;
         }
 
         // Process headers
         if ($headers = $request->headers()) {
-            $http_headers = array();
+            $http_headers = [];
 
             foreach ($headers as $key => $value) {
                 $http_headers[] = $key . ': ' . $value;
@@ -60,7 +71,7 @@ class Kohana_Request_Client_Curl extends Request_Client_External
         $response_header = $response->headers();
 
         // Implement the standard parsing parameters
-        $options[CURLOPT_HEADERFUNCTION] = array($response_header, 'parse_header_string');
+        $options[CURLOPT_HEADERFUNCTION] = [$response_header, 'parse_header_string'];
         $this->_options[CURLOPT_RETURNTRANSFER] = true;
         $this->_options[CURLOPT_HEADER] = false;
 
@@ -78,7 +89,7 @@ class Kohana_Request_Client_Curl extends Request_Client_External
 
         // Set connection options
         if (!curl_setopt_array($curl, $options)) {
-            throw new Request_Exception('Failed to set CURL options, check CURL documentation: :url', array(':url' => 'http://php.net/curl_setopt_array'));
+            throw new BootphpException('Failed to set CURL options, check CURL documentation: http://php.net/curl_setopt_array');
         }
 
         // Get the response body
@@ -95,34 +106,13 @@ class Kohana_Request_Client_Curl extends Request_Client_External
         curl_close($curl);
 
         if (isset($error)) {
-            throw new Request_Exception('Error fetching remote :url [ status :code ] :error', array(':url' => $request->url(), ':code' => $code, ':error' => $error));
+            throw new BootphpException('Error fetching remote ' . $request->url() . ' [ status ' . $code . ' ] ' . $error);
         }
 
         $response->status($code)
-                ->body($body);
+            ->body($body);
 
         return $response;
-    }
-
-    /**
-     * Sets the appropriate curl request options. Uses the responding option
-     * for POST or CURLOPT_CUSTOMREQUEST otherwise
-     *
-     * @param Request $request
-     * @param array $options
-     * @return array
-     */
-    public function _set_curl_request_method(Request $request, array $options)
-    {
-        switch ($request->method()) {
-            case Request::POST:
-                $options[CURLOPT_POST] = true;
-                break;
-            default:
-                $options[CURLOPT_CUSTOMREQUEST] = $request->method();
-                break;
-        }
-        return $options;
     }
 
 }

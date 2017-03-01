@@ -17,7 +17,7 @@
  * @license    http://kilofox.net/license
  * @uses       [PECL HTTP](http://php.net/manual/en/book.http.php)
  */
-class Kohana_Request_Client_HTTP extends Request_Client_External
+class HTTP extends External
 {
     /**
      * Creates a new `Request_Client` object,
@@ -26,7 +26,7 @@ class Kohana_Request_Client_HTTP extends Request_Client_External
      * @param   array    $params Params
      * @throws  Request_Exception
      */
-    public function __construct(array $params = array())
+    public function __construct(array $params = [])
     {
         // Check that PECL HTTP supports requests
         if (!http_support(HTTP_SUPPORT_REQUESTS)) {
@@ -41,7 +41,7 @@ class Kohana_Request_Client_HTTP extends Request_Client_External
      * @var     array     curl options
      * @link    http://www.php.net/manual/function.curl-setopt
      */
-    protected $_options = array();
+    protected $_options = [];
 
     /**
      * Sends the HTTP message [Request] to a remote server and processes

@@ -16,27 +16,27 @@ use Bootphp\Request\Client;
 class Request
 {
     /**
-     * @var string  client user agent
+     * @var string  Client user agent
      */
     public static $userAgent = '';
 
     /**
-     * @var string  client IP address
+     * @var string  Client IP address
      */
     public static $clientIp = '0.0.0.0';
 
     /**
-     * @var string  trusted proxy server IPs
+     * @var string  Trusted proxy server IPs
      */
     public static $trustedProxies = ['127.0.0.1', 'localhost', 'localhost.localdomain'];
 
     /**
-     * @var Request  main request instance
+     * @var Request Main request instance
      */
     public static $initial;
 
     /**
-     * @var Request  currently executing request instance
+     * @var Request Currently executing request instance
      */
     public static $current;
 
@@ -51,19 +51,16 @@ class Request
      *
      * @param   string  $uri              URI of the request
      * @param   array   $client_params    An array of params to pass to the request client
-     * @param   bool    $allow_external   Allow external requests? (deprecated in 3.3)
      * @param   array   $injected_routes  An array of routes to use, for testing
      * @return  void|Request
      * @throws  BootphpException
      * @uses    Route::all
      * @uses    Route::matches
      */
-    public static function factory($uri = true, $client_params = [], $allow_external = true, $injected_routes = [])
+    public static function factory($uri = true, $client_params = [], $injected_routes = [])
     {
         // If this is the initial request
         if (!self::$initial) {
-            $protocol = HTTP::$protocol;
-
             if (isset($_SERVER['REQUEST_METHOD'])) {
                 // Use the server request method
                 $method = $_SERVER['REQUEST_METHOD'];
@@ -72,10 +69,7 @@ class Request
                 $method = 'GET';
             }
 
-            if ((!empty($_SERVER['HTTPS']) AND filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN))
-                OR ( isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
-                AND $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-                AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
+            if ((!empty($_SERVER['HTTPS']) && filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN)) || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') && in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // This request is secure
                 $secure = true;
             }
@@ -95,9 +89,7 @@ class Request
                 $requestedWith = $_SERVER['HTTP_X_REQUESTED_WITH'];
             }
 
-            if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])
-                AND isset($_SERVER['REMOTE_ADDR'])
-                AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
+            if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // Use the forwarded IP address, typically set when the
                 // client is using a proxy server.
                 // Format: "X-Forwarded-For: client1, proxy1, proxy2"
@@ -106,9 +98,7 @@ class Request
                 self::$clientIp = array_shift($clientIps);
 
                 unset($clientIps);
-            } elseif (isset($_SERVER['HTTP_CLIENT_IP'])
-                AND isset($_SERVER['REMOTE_ADDR'])
-                AND in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
+            } elseif (isset($_SERVER['HTTP_CLIENT_IP']) && isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], self::$trustedProxies)) {
                 // Use the forwarded IP address, typically set when the
                 // client is using a proxy server.
                 $clientIps = explode(',', $_SERVER['HTTP_CLIENT_IP']);
@@ -140,12 +130,10 @@ class Request
             }
 
             // Create the instance singleton
-            self::$initial = $request = new self($uri, $client_params, $allow_external, $injected_routes);
+            self::$initial = $request = new self($uri, $client_params, $injected_routes);
 
             // Store global GET and POST data in the initial request only
-            $request->protocol($protocol)
-                ->query($_GET)
-                ->post($_POST);
+            $request->protocol('HTTP/1.1')->query($_GET)->post($_POST);
 
             if (isset($secure)) {
                 // Set the request security
@@ -176,7 +164,7 @@ class Request
                 $request->cookie($cookies);
             }
         } else {
-            $request = new self($uri, $client_params, $allow_external, $injected_routes);
+            $request = new self($uri, $client_params, $injected_routes);
         }
 
         return $request;
@@ -283,7 +271,7 @@ class Request
     public static function process(Request $request, $routes = null)
     {
         // Load routes
-        $routes = (empty($routes)) ? Route::all() : $routes;
+        $routes = empty($routes) ? Route::all() : $routes;
         $params = null;
 
         foreach ($routes as $name => $route) {
@@ -294,10 +282,10 @@ class Request
 
             // We found something suitable
             if ($params = $route->matches($request)) {
-                return array(
+                return [
                     'params' => $params,
                     'route' => $route,
-                );
+                ];
             }
         }
 
@@ -442,14 +430,13 @@ class Request
      *
      * @param   string  $uri                URI of the request
      * @param   array   $client_params      Array of params to pass to the request client
-     * @param   bool    $allow_external     Allow external requests? (deprecated in 3.3)
      * @param   array   $injected_routes    An array of routes to use, for testing
      * @return  void
      * @throws  BootphpException
      * @uses    Route::all
      * @uses    Route::matches
      */
-    public function __construct($uri, $client_params = [], $allow_external = true, $injected_routes = [])
+    public function __construct($uri, $client_params = [], $injected_routes = [])
     {
         $client_params = is_array($client_params) ? $client_params : [];
 
@@ -468,9 +455,7 @@ class Request
         }
 
         // Detect protocol (if present)
-        // $allow_external = false prevents the default index.php from
-        // being able to proxy external pages.
-        if (!$allow_external OR strpos($uri, '://') === false) {
+        if (strpos($uri, '://') === false) {
             // Remove leading and trailing slashes from the URI
             $this->_uri = trim($uri, '/');
 
@@ -736,10 +721,10 @@ class Request
                 }
 
                 // Store the controller
-                $this->_controller = $params['controller'];
+                $this->_controller = isset($params['controller']) ? $params['controller'] : 'index';
 
                 // Store the action
-                $this->_action = (isset($params['action'])) ? $params['action'] : Route::$default_action;
+                $this->_action = isset($params['action']) ? $params['action'] : 'index';
 
                 // These are accessible as public vars and can be overloaded
                 unset($params['controller'], $params['action'], $params['directory']);
@@ -780,7 +765,7 @@ class Request
     /**
      * Readonly access to the [Request::$_external] property.
      *
-     *     if ( ! $request->is_external())
+     *     if (!$request->is_external())
      *          // This is an internal request
      *
      * @return  boolean
@@ -884,7 +869,7 @@ class Request
             return $this;
         }
 
-        if ($this->_header->count() === 0 AND $this->is_initial()) {
+        if ($this->_header->count() === 0 && $this->is_initial()) {
             // Lazy load the request headers
             $this->_header = HTTP::request_headers();
         }

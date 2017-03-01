@@ -3,7 +3,7 @@
 namespace Bootphp;
 
 /**
- * Contains the most low-level helpers methods in Kohana:
+ * Contains the most low-level helpers methods in Bootphp:
  *
  * - Environment initialization
  * - Locating files within the cascading filesystem
@@ -13,8 +13,7 @@ namespace Bootphp;
  * @package    Bootphp
  * @category   HTTP
  * @author     Tinsh <kilofox2000@gmail.com>
- * @since      3.1.0
- * @copyright  (c) 2008-2014 Kohana Team
+ * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
 abstract class HTTP

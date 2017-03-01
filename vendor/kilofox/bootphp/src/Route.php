@@ -48,31 +48,26 @@ class Route
     const REGEX_ESCAPE = '[.\\+*?[^\\]${}=!|]';
 
     /**
-     * @var  string  default protocol for all routes
+     * @var     string  Default protocol for all routes
      *
      * @example  'http://'
      */
     public static $default_protocol = 'http://';
 
     /**
-     * @var  array   list of valid localhost entries
+     * @var     array   List of valid localhost entries
      */
-    public static $localhosts = array(false, '', 'local', 'localhost');
+    public static $localhosts = [false, '', 'local', 'localhost'];
 
     /**
-     * @var  string  default action for all routes
-     */
-    public static $default_action = 'index';
-
-    /**
-     * @var  bool Indicates whether routes are cached
+     * @var     bool    Indicates whether routes are cached
      */
     public static $cache = false;
 
     /**
-     * @var  array
+     * @var     array
      */
-    protected static $_routes = array();
+    protected static $_routes = [];
 
     /**
      * Stores a named route and returns it. The "action" will always be set to
@@ -83,9 +78,9 @@ class Route
      *             'controller' => 'welcome',
      *         ));
      *
-     * @param   string  $name           route name
-     * @param   string  $uri            URI pattern
-     * @param   array   $regex          regex patterns for route keys
+     * @param   string  $name   Route name
+     * @param   string  $uri    URI pattern
+     * @param   array   $regex  Regex patterns for route keys
      * @return  Route
      */
     public static function set($name, $uri = null, $regex = null)
@@ -98,7 +93,7 @@ class Route
      *
      *     $route = Route::get('default');
      *
-     * @param   string  $name   route name
+     * @param   string  $name   Route name
      * @return  Route
      * @throws  BootphpException
      */
@@ -116,7 +111,7 @@ class Route
      *
      *     $routes = Route::all();
      *
-     * @return  array  routes by name
+     * @return  array   Routes by name
      */
     public static function all()
     {
@@ -128,7 +123,7 @@ class Route
      *
      *     $name = Route::name($route)
      *
-     * @param   Route   $route  instance
+     * @param   Route   $route  Instance
      * @return  string
      */
     public static function name(Route $route)
@@ -147,10 +142,10 @@ class Route
      *         Route::cache(true);
      *     }
      *
-     * @param   boolean $save   cache the current routes
-     * @param   boolean $append append, rather than replace, cached routes when loading
-     * @return  void    when saving routes
-     * @return  boolean when loading routes
+     * @param   boolean $save   Cache the current routes
+     * @param   boolean $append Append, rather than replace, cached routes when loading
+     * @return  void    When saving routes
+     * @return  boolean When loading routes
      * @uses    Core::cache
      */
     public static function cache($save = false, $append = false)
@@ -187,11 +182,10 @@ class Route
      *
      *     echo URL::site(Route::get($name)->uri($params), $protocol);
      *
-     * @param   string  $name       route name
+     * @param   string  $name       Route name
      * @param   array   $params     URI parameters
-     * @param   mixed   $protocol   protocol string or boolean, adds protocol and domain
+     * @param   mixed   $protocol   Protocol string or boolean, adds protocol and domain
      * @return  string
-     * @since   3.0.7
      * @uses    URL::site
      */
     public static function url($name, array $params = null, $protocol = null)
@@ -236,7 +230,7 @@ class Route
         $expression = str_replace(array('<', '>'), array('(?P<', '>' . self::REGEX_SEGMENT . ')'), $expression);
 
         if ($regex) {
-            $search = $replace = array();
+            $search = $replace = [];
             foreach ($regex as $key => $value) {
                 $search[] = "<$key>" . self::REGEX_SEGMENT;
                 $replace[] = "<$key>$value";
@@ -250,27 +244,27 @@ class Route
     }
 
     /**
-     * @var  array  route filters
+     * @var     array   Route filters
      */
-    protected $_filters = array();
+    protected $_filters = [];
 
     /**
-     * @var  string  route URI
+     * @var     string  Route URI
      */
     protected $_uri = '';
 
     /**
-     * @var  array
+     * @var     array
      */
-    protected $_regex = array();
+    protected $_regex = [];
 
     /**
-     * @var  array
+     * @var     array
      */
     protected $_defaults = array('action' => 'index', 'host' => false);
 
     /**
-     * @var  string
+     * @var     string
      */
     protected $_route_regex;
 
@@ -284,8 +278,8 @@ class Route
      * The $uri parameter should be a string for basic regex matching.
      *
      *
-     * @param   string  $uri    route URI pattern
-     * @param   array   $regex  key patterns
+     * @param   string  $uri    Route URI pattern
+     * @param   array   $regex  Key patterns
      * @return  void
      * @uses    Route::_compile
      */
@@ -319,7 +313,7 @@ class Route
      *
      * If no parameter is passed, this method will act as a getter.
      *
-     * @param   array   $defaults   key values
+     * @param   array   $defaults   Key values
      * @return  $this or array
      */
     public function defaults(array $defaults = null)
@@ -355,7 +349,7 @@ class Route
      * [!!] Default parameters are added before filters are called!
      *
      * @throws  BootphpException
-     * @param   array   $callback   callback string, array, or closure
+     * @param   array   $callback   Callback string, array, or closure
      * @return  $this
      */
     public function filter($callback)
@@ -379,14 +373,13 @@ class Route
      *
      * This method should almost always be used within an if/else block:
      *
-     *     if ($params = $route->matches($request))
-     *     {
+     *     if ($params = $route->matches($request)) {
      *         // Parse the parameters
      *     }
      *
      * @param   Request $request  Request object to match
-     * @return  array             on success
-     * @return  false             on failure
+     * @return  array   On success
+     * @return  false   On failure
      */
     public function matches(Request $request)
     {
@@ -396,7 +389,7 @@ class Route
         if (!preg_match($this->_route_regex, $uri, $matches))
             return false;
 
-        $params = array();
+        $params = [];
         foreach ($matches as $key => $value) {
             if (is_int($key)) {
                 // Skip all unnamed keys
@@ -408,7 +401,7 @@ class Route
         }
 
         foreach ($this->_defaults as $key => $value) {
-            if (!isset($params[$key]) OR $params[$key] === '') {
+            if (!isset($params[$key]) || $params[$key] === '') {
                 // Set default values for any key that was not matched
                 $params[$key] = $value;
             }
@@ -477,11 +470,11 @@ class Route
          * @param   boolean $required   Whether or not parameters are required (initially)
          * @return  array   Tuple of the compiled portion and whether or not it contained specified parameters
          */
-        $compile = function ($portion, $required) use (&$compile, $defaults, $params) {
-            $missing = array();
+        $compile = function($portion, $required) use (&$compile, $defaults, $params) {
+            $missing = [];
 
             $pattern = '#(?:' . self::REGEX_KEY . '|' . self::REGEX_GROUP . ')#';
-            $result = preg_replace_callback($pattern, function ($matches) use (&$compile, $defaults, &$missing, $params, &$required) {
+            $result = preg_replace_callback($pattern, function($matches) use (&$compile, $defaults, &$missing, $params, &$required) {
                 if ($matches[0][0] === '<') {
                     // Parameter, unwrapped
                     $param = $matches[1];
@@ -489,7 +482,7 @@ class Route
                     if (isset($params[$param])) {
                         // This portion is required when a specified
                         // parameter does not match the default
-                        $required = ($required OR ! isset($defaults[$param]) OR $params[$param] !== $defaults[$param]);
+                        $required = $required || !isset($defaults[$param]) || $params[$param] !== $defaults[$param];
 
                         // Add specified parameter to this result
                         return $params[$param];
@@ -519,11 +512,11 @@ class Route
                 }
             }, $portion);
 
-            if ($required AND $missing) {
+            if ($required && $missing) {
                 throw new BootphpException('Required route parameter not passed: ' . reset($missing));
             }
 
-            return array($result, $required);
+            return [$result, $required];
         };
 
         list($uri) = $compile($this->_uri, true);
