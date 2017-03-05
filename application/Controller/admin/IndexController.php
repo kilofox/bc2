@@ -5,8 +5,8 @@ namespace App\Controller\admin;
 use Bootphp\ORM\ORM;
 use Bootphp\Database\DB;
 use Bootphp\View;
-use App\controllers\admin\AdministrationController;
-use App\models\UserModel;
+use App\Controller\admin\AdministrationController;
+use App\Model\UserModel;
 
 /**
  * 后台首页控制器。

@@ -40,7 +40,7 @@ class ORM extends \Bootphp\Model
     public static function factory($model, $path = null)
     {
         // Set class name
-        if ($directory === null) {
+        if ($path === null) {
             $model = 'App\\Model\\' . ucfirst($model) . 'Model';
         } else {
             $model = (string) $path . ucfirst($model) . 'Model';

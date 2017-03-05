@@ -27,7 +27,7 @@ class AdministrationController extends \Bootphp\Controller
         parent::before();
         $this->layoutPath = APP_PATH . '/modules/system/views/default/';
         $this->templatePath = APP_PATH . '/modules/system/views/default/admin/';
-        $this->user = Auth::instance()->get_user();
+        $this->user = Auth::instance()->getUser();
         if (!$this->user)
             $this->redirect('admin/login');
     }

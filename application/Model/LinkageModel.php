@@ -1,6 +1,6 @@
 <?php
 
-namespace App\models;
+namespace App\Model;
 
 /**
  * 节点模型。

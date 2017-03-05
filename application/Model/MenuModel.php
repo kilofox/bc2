@@ -1,6 +1,6 @@
 <?php
 
-namespace App\modules\system\models;
+namespace App\Model;
 
 use Bootphp\Database\DB;
 
