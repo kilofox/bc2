@@ -72,7 +72,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
             $username = $user;
 
             // Load the user
-            $user = ORM::factory('User', 'Bootphp\\Auth\\Model\\ORM\\');
+            $user = ORM::factory('User', 'Bootphp\\Auth\\Driver\\ORM\\Model\\');
             $user->where($user->uniqueKey($username), '=', $username)->find();
         }
 
@@ -81,10 +81,8 @@ class ORMDriver extends \Bootphp\Auth\Auth
             $password = $this->hash($password);
         }
 
-        $roles = ORM::factory('role')->where('name', '=', 'login')->find();
-
         // If the passwords match, perform a login
-        if ($user->has('role', $roles) && $user->password === $password) {
+        if ($user->password === $password) {
             if ($remember === true) {
                 // Token data
                 $data = [
@@ -94,9 +92,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
                 ];
 
                 // Create a new autologin token
-                $token = ORM::factory('User_Token')
-                    ->values($data)
-                    ->create();
+                $token = ORM::factory('User_Token')->values($data)->create();
 
                 // Set the autologin cookie
                 Cookie::set('authautologin', $token->token, $this->_config['lifetime']);

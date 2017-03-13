@@ -13,7 +13,7 @@ namespace App\Model;
 class UserModel extends \Bootphp\ORM\ORM
 {
     protected $_object_name = 'user';
-    protected $_table_name = 'users';
+    protected $tableName = 'users';
     protected $_has_many = array(
         'article' => array(
             //'model' => 'article',

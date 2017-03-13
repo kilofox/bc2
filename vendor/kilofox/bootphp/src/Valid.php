@@ -18,9 +18,9 @@ class Valid
      *
      * @return  boolean
      */
-    public static function not_empty($value)
+    public static function notEmpty($value)
     {
-        if (is_object($value) AND $value instanceof ArrayObject) {
+        if (is_object($value) and $value instanceof ArrayObject) {
             // Get the array from the ArrayObject
             $value = $value->getArrayCopy();
         }
@@ -60,7 +60,7 @@ class Valid
      * @param   integer $length maximum length required
      * @return  boolean
      */
-    public static function max_length($value, $length)
+    public static function maxLength($value, $length)
     {
         return mb_strlen($value) <= $length;
     }
@@ -143,17 +143,13 @@ class Valid
      * @param   string  $email  email address
      * @return  boolean
      */
-    public static function email_domain($email)
+    public static function emailDomain($email)
     {
-        if (!Valid::not_empty($email))
-            return false; // Empty fields cause issues with checkdnsrr()
+        // Empty fields cause issues with checkdnsrr()
+        if (!Valid::notEmpty($email))
+            return false;
 
-
-
-
-
-
-// Check if the email domain has a valid MX record
+        // Check if the email domain has a valid MX record
         return (bool) checkdnsrr(preg_replace('/^[^@]++@/', '', $email), 'MX');
     }
 
@@ -244,7 +240,7 @@ class Valid
      * @return  boolean
      * @uses    Valid::luhn
      */
-    public static function credit_card($number, $type = null)
+    public static function creditCard($number, $type = null)
     {
         // Remove all non-digit characters from the number
         if (($number = preg_replace('/\D+/', '', $number)) === '')
@@ -256,7 +252,7 @@ class Valid
         } elseif (is_array($type)) {
             foreach ($type as $t) {
                 // Test each type for validity
-                if (Valid::credit_card($number, $t))
+                if (self::creditCard($number, $t))
                     return true;
             }
 

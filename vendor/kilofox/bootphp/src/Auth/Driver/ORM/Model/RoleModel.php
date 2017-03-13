@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp\Auth\Model\ORM;
+namespace Bootphp\Auth\Driver\ORM\Model;
 
 /**
  * Default auth role.
@@ -24,20 +24,20 @@ class RoleModel extends \Bootphp\ORM\ORM
      *
      * @var array
      */
-    protected $hass2Many = [
-        //'users' => ['model' => 'User', 'through' => 'roles_users'],
+    protected $hasMany = [
+        'users' => ['model' => 'User', 'through' => 'roles_users'],
     ];
 
     public function rules()
     {
         return [
             'name' => [
-                ['not_empty'],
-                ['min_length', [':value', 4]],
-                ['max_length', [':value', 32]],
+                ['notEmpty'],
+                ['minLength', [':value', 4]],
+                ['maxLength', [':value', 32]],
             ],
             'description' => [
-                ['max_length', [':value', 255]],
+                ['maxLength', [':value', 255]],
             ]
         ];
     }

@@ -45,9 +45,7 @@ class SessionNative extends \Bootphp\Session
         $session_cookie_domain = empty(Cookie::$domain) ? ini_get('session.cookie_domain') : Cookie::$domain;
 
         // Sync up the session cookie with Cookie parameters
-        session_set_cookie_params(
-                $this->_lifetime, Cookie::$path, $session_cookie_domain, Cookie::$secure, Cookie::$httponly
-        );
+        session_set_cookie_params($this->_lifetime, Cookie::$path, $session_cookie_domain, Cookie::$secure, Cookie::$httponly);
 
         // Do not allow PHP to send Cache-Control headers
         session_cache_limiter(false);
@@ -100,7 +98,7 @@ class SessionNative extends \Bootphp\Session
         $status = session_start();
 
         // Use the $_SESSION global for storing data
-        $this->_data = & $_SESSION;
+        $this->_data = &$_SESSION;
 
         return $status;
     }

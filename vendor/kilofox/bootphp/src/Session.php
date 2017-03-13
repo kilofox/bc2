@@ -14,14 +14,14 @@ namespace Bootphp;
 abstract class Session
 {
     /**
-     * @var  string  default session adapter
+     * @var     string  Default session adapter
      */
     public static $default = 'native';
 
     /**
-     * @var  array  session instances
+     * @var     array   Session instances
      */
-    public static $instances = array();
+    public static $instances = [];
 
     /**
      * Creates a singleton session of the given type. Some session types
@@ -32,8 +32,8 @@ abstract class Session
      *
      * [!!] [Session::write] will automatically be called when the request ends.
      *
-     * @param   string  $type   type of session (native, cookie, etc)
-     * @param   string  $id     session identifier
+     * @param   string  $type   Type of session (native, cookie, etc)
+     * @param   string  $id     Session identifier
      * @return  Session
      * @uses    Core::$config
      */
@@ -55,34 +55,34 @@ abstract class Session
             Session::$instances[$type] = $session = new $class($config, $id);
 
             // Write the session at shutdown
-            register_shutdown_function(array($session, 'write'));
+            register_shutdown_function([$session, 'write']);
         }
 
         return Session::$instances[$type];
     }
 
     /**
-     * @var  string  cookie name
+     * @var     string  Cookie name
      */
     protected $_name = 'session';
 
     /**
-     * @var  int  cookie lifetime
+     * @var     integer Cookie lifetime
      */
     protected $_lifetime = 0;
 
     /**
-     * @var  bool  encrypt session data?
+     * @var     boolean Encrypt session data?
      */
     protected $_encrypted = false;
 
     /**
-     * @var  array  session data
+     * @var     array   Session data
      */
-    protected $_data = array();
+    protected $_data = [];
 
     /**
-     * @var  bool  session destroyed?
+     * @var     boolean Session destroyed?
      */
     protected $_destroyed = false;
 
@@ -173,7 +173,6 @@ abstract class Session
      * [!!] Not all session types have ids.
      *
      * @return  string
-     * @since   3.0.8
      */
     public function id()
     {
@@ -186,7 +185,6 @@ abstract class Session
      *     $name = $session->name();
      *
      * @return  string
-     * @since   3.0.8
      */
     public function name()
     {
@@ -198,8 +196,8 @@ abstract class Session
      *
      *     $foo = $session->get('foo');
      *
-     * @param   string  $key        variable name
-     * @param   mixed   $default    default value to return
+     * @param   string  $key        Variable name
+     * @param   mixed   $default    Default value to return
      * @return  mixed
      */
     public function get($key, $default = null)
@@ -212,11 +210,11 @@ abstract class Session
      *
      *     $bar = $session->get_once('bar');
      *
-     * @param   string  $key        variable name
-     * @param   mixed   $default    default value to return
+     * @param   string  $key        Variable name
+     * @param   mixed   $default    Default value to return
      * @return  mixed
      */
-    public function get_once($key, $default = null)
+    public function getOnce($key, $default = null)
     {
         $value = $this->get($key, $default);
 
@@ -230,8 +228,8 @@ abstract class Session
      *
      *     $session->set('foo', 'bar');
      *
-     * @param   string  $key    variable name
-     * @param   mixed   $value  value
+     * @param   string  $key    Variable name
+     * @param   mixed   $value  Value
      * @return  $this
      */
     public function set($key, $value)
@@ -246,13 +244,13 @@ abstract class Session
      *
      *     $session->bind('foo', $foo);
      *
-     * @param   string  $key    variable name
-     * @param   mixed   $value  referenced value
+     * @param   string  $key    Variable name
+     * @param   mixed   $value  Referenced value
      * @return  $this
      */
-    public function bind($key, & $value)
+    public function bind($key, &$value)
     {
-        $this->_data[$key] = & $value;
+        $this->_data[$key] = &$value;
 
         return $this;
     }
@@ -262,7 +260,7 @@ abstract class Session
      *
      *     $session->delete('foo');
      *
-     * @param   string  $key,...    variable name
+     * @param   string  $key    Variable name
      * @return  $this
      */
     public function delete($key)
@@ -281,7 +279,7 @@ abstract class Session
      *
      *     $session->read();
      *
-     * @param   string  $id session id
+     * @param   string  $id     Session id
      * @return  void
      */
     public function read($id = null)
@@ -303,7 +301,7 @@ abstract class Session
             } else {
                 // Ignore these, session is valid, likely no data though.
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Error reading the session, usually a corrupt session.
             throw new Session_Exception('Error reading session data.', null, Session_Exception::SESSION_CORRUPT);
         }
@@ -331,18 +329,16 @@ abstract class Session
      *
      *     $session->write();
      *
-     * [!!] Any errors that occur during session writing will be logged,
-     * but not displayed, because sessions are written after output has
-     * been sent.
+     * [!!] Any errors that occur during session writing will be logged, but not
+     * displayed, because sessions are written after output has been sent.
      *
      * @return  boolean
      * @uses    Core::$log
      */
     public function write()
     {
-        if (headers_sent() OR $this->_destroyed) {
-            // Session cannot be written when the headers are sent or when
-            // the session has been destroyed
+        if (headers_sent() || $this->_destroyed) {
+            // Session cannot be written when the headers are sent or when the session has been destroyed
             return false;
         }
 
@@ -351,8 +347,8 @@ abstract class Session
 
         try {
             return $this->_write();
-        } catch (Exception $e) {
-            // Log & ignore all errors when a write fails
+        } catch (\Exception $e) {
+            // Log and ignore all errors when a write fails
             Core::$log->add(Log::ERROR, BootphpException::text($e))->write();
 
             return false;
@@ -371,7 +367,7 @@ abstract class Session
         if ($this->_destroyed === false) {
             if ($this->_destroyed = $this->_destroy()) {
                 // The session has been destroyed, clear all data
-                $this->_data = array();
+                $this->_data = [];
             }
         }
 
@@ -401,7 +397,7 @@ abstract class Session
     /**
      * Serializes the session data.
      *
-     * @param   array  $data  data
+     * @param   array  $data    Data
      * @return  string
      */
     protected function _serialize($data)
@@ -412,7 +408,7 @@ abstract class Session
     /**
      * Unserializes the session data.
      *
-     * @param   string  $data  data
+     * @param   string  $data   Data
      * @return  array
      */
     protected function _unserialize($data)
@@ -423,7 +419,7 @@ abstract class Session
     /**
      * Encodes the session data using [base64_encode].
      *
-     * @param   string  $data  data
+     * @param   string  $data   Data
      * @return  string
      */
     protected function _encode($data)
@@ -434,7 +430,7 @@ abstract class Session
     /**
      * Decodes the session data using [base64_decode].
      *
-     * @param   string  $data  data
+     * @param   string  $data   Data
      * @return  string
      */
     protected function _decode($data)

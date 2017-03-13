@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp\Auth\Model\ORM;
+namespace Bootphp\Auth\Driver\ORM\Model;
 
 /**
  * Default auth user.
@@ -25,13 +25,21 @@ class UserModel extends \Bootphp\ORM\ORM
      * @var array   Relationhips
      */
     protected $hasMany = [
-        'user_tokens' => ['model' => 'User_Token'],
-        'roles' => ['model' => 'Role', 'foreignKey' => 'role_id'],
+        'user_tokens' => ['model' => 'User_Token']
+    ];
+
+    /**
+     * A user has many tokens and roles.
+     *
+     * @var array   Relationhips
+     */
+    protected $hasOne = [
+        'role' => ['model' => 'Role', 'foreignKey' => 'role_id'],
     ];
 
     /**
      * Rules for the user model. Because the password is _always_ a hash when
-     * it's set,you need to run an additional not_empty rule in your controller
+     * it's set, you need to run an additional notEmpty rule in your controller
      * to make sure you didn't hash an empty string. The password rules should
      * be enforced outside the model or with a model helper method.
      *
@@ -41,15 +49,15 @@ class UserModel extends \Bootphp\ORM\ORM
     {
         return [
             'username' => [
-                ['not_empty'],
-                ['max_length', [':value', 32]],
+                ['notEmpty'],
+                ['maxLength', [':value', 32]],
                 [[$this, 'unique'], ['username', ':value']],
             ],
             'password' => [
-                ['not_empty'],
+                ['notEmpty'],
             ],
             'email' => [
-                ['not_empty'],
+                ['notEmpty'],
                 ['email'],
                 [[$this, 'unique'], ['email', ':value']],
             ],
@@ -66,7 +74,7 @@ class UserModel extends \Bootphp\ORM\ORM
     {
         return [
             'password' => [
-                [[Auth::instance(), 'hash']]
+                [[\Bootphp\Auth\Auth::instance(), 'hash']]
             ]
         ];
     }
@@ -94,10 +102,10 @@ class UserModel extends \Bootphp\ORM\ORM
     {
         if ($this->loaded) {
             // Update the number of logins
-            $this->logins = new Database_Expression('logins + 1');
+            $this->logins = new \Bootphp\Database\Database\Expression('logins + 1');
 
             // Set the last login date
-            $this->lastLogin = time();
+            $this->last_login = time();
 
             // Save the user
             $this->update();
@@ -169,7 +177,7 @@ class UserModel extends \Bootphp\ORM\ORM
     {
         // Validation for passwords
         $extra_validation = Model_User::get_password_validation($values)
-            ->rule('password', 'not_empty');
+            ->rule('password', 'notEmpty');
 
         return $this->values($values, $expected)->create($extra_validation);
     }

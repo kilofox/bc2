@@ -222,6 +222,11 @@ class ORM extends \Bootphp\Model
             $this->objectName = strtolower(basename(get_class($this), 'Model'));
         }
 
+        // Table name is the same as the object name if none predefined
+        if (empty($this->tableName)) {
+            $this->tableName = $this->objectName;
+        }
+
         // Check if this model has already been initialized
         if (!$init = (isset(self::$initCache[$this->objectName]) ? self::$initCache[$this->objectName] : false)) {
             $init = [
@@ -233,11 +238,6 @@ class ORM extends \Bootphp\Model
             if (!is_object($this->db)) {
                 // Get database instance
                 $init['db'] = Database::instance($this->dbGroup);
-            }
-
-            if (empty($this->tableName)) {
-                // Table name is the same as the object name
-                $init['tableName'] = $this->objectName;
             }
 
             $defaults = [];
@@ -1180,7 +1180,7 @@ class ORM extends \Bootphp\Model
                     ->execute($this->db)->get('records_found');
         }
 
-        $farKeys = ($farKeys instanceof ORM) ? $farKeys->pk() : $farKeys;
+        $farKeys = $farKeys instanceof ORM ? $farKeys->pk() : $farKeys;
 
         // We need an array to simplify the logic
         $farKeys = (array) $farKeys;

@@ -7,7 +7,7 @@
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class Kohana_Validation_Exception extends Kohana_Exception
+class ValidationException extends Kohana_Exception
 {
     /**
      * @var  object  Validation instance

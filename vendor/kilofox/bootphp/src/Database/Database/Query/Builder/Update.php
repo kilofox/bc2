@@ -105,22 +105,22 @@ class Update extends Where
         // Add the columns to update
         $query .= ' SET ' . $this->compileSet($db, $this->set);
 
-        if (!empty($this->_where)) {
+        if (!empty($this->where)) {
             // Add selection conditions
-            $query .= ' WHERE ' . $this->compileConditions($db, $this->_where);
+            $query .= ' WHERE ' . $this->compileConditions($db, $this->where);
         }
 
-        if (!empty($this->_order_by)) {
+        if (!empty($this->orderBy)) {
             // Add sorting
-            $query .= ' ' . $this->compileOrderBy($db, $this->_order_by);
+            $query .= ' ' . $this->compileOrderBy($db, $this->orderBy);
         }
 
-        if ($this->_limit !== null) {
+        if ($this->limit !== null) {
             // Add limiting
-            $query .= ' LIMIT ' . $this->_limit;
+            $query .= ' LIMIT ' . $this->limit;
         }
 
-        $this->_sql = $query;
+        $this->sql = $query;
 
         return parent::compile($db);
     }
@@ -134,13 +134,13 @@ class Update extends Where
     {
         $this->table = null;
 
-        $this->set = $this->_where = [];
+        $this->set = $this->where = [];
 
-        $this->_limit = null;
+        $this->limit = null;
 
-        $this->_parameters = [];
+        $this->parameters = [];
 
-        $this->_sql = null;
+        $this->sql = null;
 
         return $this;
     }

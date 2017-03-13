@@ -3,37 +3,38 @@
 namespace Bootphp;
 
 /**
- * Response wrapper. Created as the result of any [Request] execution
- * or utility method (i.e. Redirect). Implements standard HTTP
- * response format.
+ * Response wrapper. Created as the result of any [Request] execution or utility
+ * method (i.e. Redirect). Implements standard HTTP response format.
  *
  * @package    Bootphp
  * @category   Base
  * @author     Tinsh <kilofox2000@gmail.com>
- * @copyright  (c) 2008-2014 Kohana Team
+ * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
 class Response
 {
     /**
-     * Factory method to create a new [Response]. Pass properties
-     * in using an associative array.
+     * Factory method to create a new [Response]. Pass properties in using an
+     * associative array.
      *
      *      // Create a new response
      *      $response = Response::factory();
      *
      *      // Create a new response with headers
-     *      $response = Response::factory(array('status' => 200));
+     *      $response = Response::factory(['status' => 200]);
      *
-     * @param   array    $config Setup the response object
+     * @param   array   $config Setup the response object
      * @return  Response
      */
-    public static function factory(array $config = array())
+    public static function factory(array $config = [])
     {
         return new self($config);
     }
 
-    // HTTP status codes and messages
+    /**
+     * @var     array   HTTP status codes and messages
+     */
     public static $messages = [
         // Informational 1xx
         100 => 'Continue',
@@ -85,37 +86,37 @@ class Response
     ];
 
     /**
-     * @var  integer     The response http status
+     * @var     integer The response http status
      */
     protected $_status = 200;
 
     /**
-     * @var  HTTP_Header  Headers returned in the response
+     * @var     HTTP_Header Headers returned in the response
      */
     protected $_header;
 
     /**
-     * @var  string      The response body
+     * @var     string  The response body
      */
     protected $_body = '';
 
     /**
-     * @var  array       Cookies to be returned in the response
+     * @var     array   Cookies to be returned in the response
      */
-    protected $_cookies = array();
+    protected $_cookies = [];
 
     /**
-     * @var  string      The response protocol
+     * @var     string  The response protocol
      */
     protected $_protocol;
 
     /**
-     * Sets up the response object
+     * Sets up the response object.
      *
-     * @param   array $config Setup the response object
+     * @param   array   $config Setup the response object
      * @return  void
      */
-    public function __construct(array $config = array())
+    public function __construct(array $config = [])
     {
         $this->_header = new \Bootphp\HTTP\Header;
 
@@ -131,9 +132,9 @@ class Response
     }
 
     /**
-     * Outputs the body when cast to string
+     * Outputs the body when cast to string.
      *
-     * @return string
+     * @return  string
      */
     public function __toString()
     {
@@ -141,7 +142,7 @@ class Response
     }
 
     /**
-     * Gets or sets the body of the response
+     * Gets or sets the body of the response.
      *
      * @return  mixed
      */
@@ -155,10 +156,9 @@ class Response
     }
 
     /**
-     * Gets or sets the HTTP protocol. The standard protocol to use
-     * is `HTTP/1.1`.
+     * Gets or sets the HTTP protocol. The standard protocol to use is `HTTP/1.1`.
      *
-     * @param   string   $protocol Protocol to set to the request/response
+     * @param   string  $protocol   Protocol to set to the request/response
      * @return  mixed
      */
     public function protocol($protocol = null)
@@ -201,9 +201,9 @@ class Response
     }
 
     /**
-     * Gets and sets headers to the [Response], allowing chaining
-     * of response methods. If chaining isn't required, direct
-     * access to the property should be used instead.
+     * Gets and sets headers to the [Response], allowing chaining of response
+     * methods. If chaining isn't required, direct access to the property should
+     * be used instead.
      *
      *       // Get a header
      *       $accept = $response->headers('Content-Type');
@@ -215,11 +215,11 @@ class Response
      *       $headers = $response->headers();
      *
      *       // Set multiple headers
-     *       $response->headers(array('Content-Type' => 'text/html', 'Cache-Control' => 'no-cache'));
+     *       $response->headers(['Content-Type' => 'text/html', 'Cache-Control' => 'no-cache']);
      *
-     * @param mixed $key
-     * @param string $value
-     * @return mixed
+     * @param   mixed   $key
+     * @param   string  $value
+     * @return  mixed
      */
     public function headers($key = null, $value = null)
     {
@@ -237,8 +237,7 @@ class Response
     }
 
     /**
-     * Returns the length of the body for use with
-     * content header
+     * Returns the length of the body for use with content header.
      *
      * @return  integer
      */
@@ -254,13 +253,13 @@ class Response
      *     $cookies = $response->cookie();
      *
      *     // Set a cookie to the response
-     *     $response->cookie('session', array(
+     *     $response->cookie('session', [
      *          'value' => $value,
      *          'expiration' => 12352234
-     *     ));
+     *     ]);
      *
-     * @param   mixed   $key    cookie name, or array of cookie values
-     * @param   string  $value  value to set to cookie
+     * @param   mixed   $key    Cookie name, or array of cookie values
+     * @param   string  $value  Value to set to cookie
      * @return  string
      * @return  void
      * @return  [Response]
@@ -281,10 +280,10 @@ class Response
             }
         } else {
             if (!is_array($value)) {
-                $value = array(
+                $value = [
                     'value' => $value,
                     'expiration' => Cookie::$expiration
-                );
+                ];
             } elseif (!isset($value['expiration'])) {
                 $value['expiration'] = Cookie::$expiration;
             }
@@ -308,21 +307,21 @@ class Response
     }
 
     /**
-     * Deletes all cookies from this response
+     * Deletes all cookies from this response.
      *
      * @return  Response
      */
     public function delete_cookies()
     {
-        $this->_cookies = array();
+        $this->_cookies = [];
         return $this;
     }
 
     /**
      * Sends the response status and all set headers.
      *
-     * @param   boolean     $replace    replace existing headers
-     * @param   callback    $callback   function to handle header output
+     * @param   boolean     $replace    Replace existing headers
+     * @param   callback    $callback   Function to handle header output
      * @return  mixed
      */
     public function send_headers($replace = false, $callback = null)
@@ -353,9 +352,9 @@ class Response
      *
      * [!!] No further processing can be done after this method is called!
      *
-     * @param   string  $filename   filename with path, or true for the current response
-     * @param   string  $download   downloaded file name
-     * @param   array   $options    additional options
+     * @param   string  $filename   Filename with path, or true for the current response
+     * @param   string  $download   Downloaded file name
+     * @param   array   $options    Additional options
      * @return  void
      * @throws  BootphpException
      * @uses    File::mime_by_ext
@@ -418,9 +417,7 @@ class Response
         }
 
         if (!is_resource($file)) {
-            throw new BootphpException('Could not read file to send: :file', array(
-        ':file' => $download,
-            ));
+            throw new BootphpException('Could not read file to send: ' . $download);
         }
 
         // Inline or download?
@@ -430,7 +427,7 @@ class Response
         list($start, $end) = $this->_calculate_byte_range($size);
 
         if (!empty($options['resumable'])) {
-            if ($start > 0 OR $end < ($size - 1)) {
+            if ($start > 0 || $end < $size - 1) {
                 // Partial Content
                 $this->_status = 206;
             }
@@ -550,11 +547,11 @@ class Response
         if ($this->_cookies) {
             if (extension_loaded('http')) {
                 $cookies = version_compare(phpversion('http'), '2.0.0', '>=') ?
-                        (string) new \http\Cookie($this->_cookies) :
-                        http_build_cookie($this->_cookies);
+                    (string) new \http\Cookie($this->_cookies) :
+                    http_build_cookie($this->_cookies);
                 $this->_header['set-cookie'] = $cookies;
             } else {
-                $cookies = array();
+                $cookies = [];
 
                 // Parse each
                 foreach ($this->_cookies as $key => $value) {
@@ -575,16 +572,15 @@ class Response
     }
 
     /**
-     * Generate ETag
-     * Generates an ETag from the response ready to be returned
+     * Generates an ETag from the response ready to be returned.
      *
-     * @throws Request_Exception
-     * @return String Generated ETag
+     * @throws  BootphpException
+     * @return  string  Generated ETag
      */
     public function generate_etag()
     {
         if ($this->_body === '') {
-            throw new Request_Exception('No response yet associated with request - cannot auto generate resource ETag');
+            throw new BootphpException('No response yet associated with request - cannot auto generate resource ETag');
         }
 
         // Generate a unique hash for the response
@@ -592,11 +588,10 @@ class Response
     }
 
     /**
-     * Parse the byte ranges from the HTTP_RANGE header used for
-     * resumable downloads.
+     * Parse the byte ranges from the HTTP_RANGE header used for resumable downloads.
      *
-     * @link   http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
-     * @return array|false
+     * @link    http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
+     * @return  array|false
      */
     protected function _parse_byte_range()
     {
@@ -614,8 +609,8 @@ class Response
      * Calculates the byte range to use with send_file. If HTTP_RANGE doesn't
      * exist then the complete byte range is returned
      *
-     * @param  integer $size
-     * @return array
+     * @param   integer $size
+     * @return  array
      */
     protected function _calculate_byte_range($size)
     {
@@ -648,7 +643,7 @@ class Response
         // Keep the start in bounds.
         $start = ($end < $start) ? 0 : max($start, 0);
 
-        return array($start, $end);
+        return [$start, $end];
     }
 
 }

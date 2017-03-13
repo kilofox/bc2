@@ -25,17 +25,17 @@ class Validation implements \ArrayAccess
     }
 
     // Bound values
-    protected $_bound = array();
+    protected $_bound = [];
     // Field rules
-    protected $_rules = array();
+    protected $_rules = [];
     // Field labels
-    protected $_labels = array();
+    protected $_labels = [];
     // Rules that are executed even when the value is empty
-    protected $_empty_rules = array('not_empty', 'matches');
+    protected $_empty_rules = ['notEmpty', 'matches'];
     // Error list, field => rule
-    protected $_errors = array();
+    protected $_errors = [];
     // Array to validate
-    protected $_data = array();
+    protected $_data = [];
 
     /**
      * Sets the unique "any field" key and creates an ArrayObject from the
@@ -121,18 +121,6 @@ class Validation implements \ArrayAccess
     }
 
     /**
-     * Returns the array representation of the current object.
-     * Deprecated in favor of [Validation::data]
-     *
-     * @deprecated
-     * @return  array
-     */
-    public function as_array()
-    {
-        return $this->_data;
-    }
-
-    /**
      * Returns the array of data to be validated.
      *
      * @return  array
@@ -181,22 +169,18 @@ class Validation implements \ArrayAccess
      * - :value - the value of the field
      *
      *     // The "username" must not be empty and have a minimum length of 4
-     *     $validation->rule('username', 'not_empty')
-     *                ->rule('username', 'min_length', array(':value', 4));
+     *     $validation->rule('username', 'notEmpty')
+     *                ->rule('username', 'minLength', array(':value', 4));
      *
      *     // The "password" field must match the "password_repeat" field
      *     $validation->rule('password', 'matches', array(':validation', 'password', 'password_repeat'));
      *
      *     // Using closure (anonymous function)
-     *     $validation->rule('index',
-     *         function(Validation $array, $field, $value)
-     *         {
-     *             if ($value > 6 AND $value < 10)
-     *             {
+     *     $validation->rule('index', function(Validation $array, $field, $value) {
+     *             if ($value > 6 && $value < 10) {
      *                 $array->error($field, 'custom');
      *             }
-     *         }
-     *         , array(':validation', ':field', ':value')
+     *         }, array(':validation', ':field', ':value')
      *     );
      *
      * [!!] Errors must be added manually when using closures!
@@ -213,7 +197,7 @@ class Validation implements \ArrayAccess
             $params = array(':value');
         }
 
-        if ($field !== true AND ! isset($this->_labels[$field])) {
+        if ($field !== true && !isset($this->_labels[$field])) {
             // Set the field label to the field name
             $this->_labels[$field] = $field;
         }
@@ -283,7 +267,7 @@ class Validation implements \ArrayAccess
         }
 
         // New data set
-        $data = $this->_errors = array();
+        $data = $this->_errors = [];
 
         // Store the original data because this class should not modify it post-validation
         $original = $this->_data;
@@ -301,7 +285,7 @@ class Validation implements \ArrayAccess
             if (isset($rules[true])) {
                 if (!isset($rules[$field])) {
                     // Initialize the rules for this field
-                    $rules[$field] = array();
+                    $rules[$field] = [];
                 }
 
                 // Append the rules
@@ -337,7 +321,7 @@ class Validation implements \ArrayAccess
                 list($rule, $params) = $array;
 
                 foreach ($params as $key => $param) {
-                    if (is_string($param) AND array_key_exists($param, $this->_bound)) {
+                    if (is_string($param) && array_key_exists($param, $this->_bound)) {
                         // Replace with bound value
                         $params[$key] = $this->_bound[$param];
                     }
@@ -348,7 +332,7 @@ class Validation implements \ArrayAccess
 
                 if (is_array($rule)) {
                     // Allows rule('field', array(':model', 'some_rule'));
-                    if (is_string($rule[0]) AND array_key_exists($rule[0], $this->_bound)) {
+                    if (is_string($rule[0]) && array_key_exists($rule[0], $this->_bound)) {
                         // Replace with bound value
                         $rule[0] = $this->_bound[$rule[0]];
                     }
@@ -360,15 +344,15 @@ class Validation implements \ArrayAccess
                     // This is a lambda function, there is no error name (errors must be added manually)
                     $error_name = false;
                     $passed = call_user_func_array($rule, $params);
-                } elseif (method_exists('Valid', $rule)) {
+                } elseif (method_exists('Bootphp\Valid', $rule)) {
                     // Use a method in this object
-                    $method = new ReflectionMethod('Valid', $rule);
+                    $method = new \ReflectionMethod('Bootphp\Valid', $rule);
 
                     // Call static::$rule($this[$field], $param, ...) with Reflection
                     $passed = $method->invokeArgs(null, $params);
                 } elseif (strpos($rule, '::') === false) {
                     // Use a function call
-                    $function = new ReflectionFunction($rule);
+                    $function = new \ReflectionFunction($rule);
 
                     // Call $function($this[$field], $param, ...) with Reflection
                     $passed = $function->invokeArgs($params);
@@ -377,17 +361,17 @@ class Validation implements \ArrayAccess
                     list($class, $method) = explode('::', $rule, 2);
 
                     // Use a static method call
-                    $method = new ReflectionMethod($class, $method);
+                    $method = new \ReflectionMethod($class, $method);
 
                     // Call $Class::$method($this[$field], $param, ...) with Reflection
                     $passed = $method->invokeArgs(null, $params);
                 }
 
                 // Ignore return values from rules when the field is empty
-                if (!in_array($rule, $this->_empty_rules) AND ! Valid::not_empty($value))
+                if (!in_array($rule, $this->_empty_rules) && !Valid::notEmpty($value))
                     continue;
 
-                if ($passed === false AND $error_name !== false) {
+                if ($passed === false && $error_name !== false) {
                     // Add the rule to the errors
                     $this->error($field, $error_name, $params);
 
@@ -460,7 +444,7 @@ class Validation implements \ArrayAccess
         }
 
         // Create a new message list
-        $messages = array();
+        $messages = [];
 
         foreach ($this->_errors as $field => $set) {
             list($error, $params) = $set;
@@ -520,13 +504,13 @@ class Validation implements \ArrayAccess
                 }
             }
 
-            if ($message = Core::message($file, "{$field}.{$error}") AND is_string($message)) {
+            if ($message = Core::message($file, "{$field}.{$error}") and is_string($message)) {
                 // Found a message for this field and error
-            } elseif ($message = Core::message($file, "{$field}.default") AND is_string($message)) {
+            } elseif ($message = Core::message($file, "{$field}.default") and is_string($message)) {
                 // Found a default message for this field
-            } elseif ($message = Core::message($file, $error) AND is_string($message)) {
+            } elseif ($message = Core::message($file, $error) and is_string($message)) {
                 // Found a default message for this error
-            } elseif ($message = Core::message('validation', $error) AND is_string($message)) {
+            } elseif ($message = Core::message('validation', $error) and is_string($message)) {
                 // Found a default message for this error
             } else {
                 // No message exists, display the path expected

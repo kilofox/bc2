@@ -46,13 +46,13 @@ class LoginController extends \Bootphp\Controller
 
             // 尝试登录
             Auth::instance()->login(strtolower($this->request->post('username')), $this->request->post('password'), false);
-            $this->user = Auth::instance()->get_user();
+            $this->user = Auth::instance()->getUser();
             if ($this->user) {
                 $status = 1;
                 $caption = '登录成功';
                 $content = '您已经成功登录。';
             }
-            $this->ajaxReturn($status, [$caption, $content], null);
+            exit(json_encode(['status' => $status, 'data' => [$caption, $content], 'info' => null]));
         }
 
         Auth::instance()->logout();
