@@ -13,7 +13,7 @@ use Bootphp\Cookie;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class SessionNative extends \Bootphp\Session
+class SessionNative extends Session
 {
     /**
      * @return  string
@@ -24,16 +24,16 @@ class SessionNative extends \Bootphp\Session
     }
 
     /**
-     * @param   string  $id  session id
+     * @param   string  $id     Session id
      * @return  null
      */
     protected function _read($id = null)
     {
         /**
-         * session_set_cookie_params will override php ini settings
-         * If Cookie::$domain is null or empty and is passed, PHP
-         * will override ini and sent cookies with the host name
-         * of the server which generated the cookie
+         * session_set_cookie_params will override php ini settings.
+         * If Cookie::$domain is null or empty and is passed, PHP will override
+         * ini and sent cookies with the host name of the server which generated
+         * the cookie.
          *
          * see issue #3604
          *
@@ -42,16 +42,16 @@ class SessionNative extends \Bootphp\Session
          *
          * set to Cookie::$domain if available, otherwise default to ini setting
          */
-        $session_cookie_domain = empty(Cookie::$domain) ? ini_get('session.cookie_domain') : Cookie::$domain;
+        $sessionCookieDomain = empty(Cookie::$domain) ? ini_get('session.cookie_domain') : Cookie::$domain;
 
         // Sync up the session cookie with Cookie parameters
-        session_set_cookie_params($this->_lifetime, Cookie::$path, $session_cookie_domain, Cookie::$secure, Cookie::$httponly);
+        session_set_cookie_params($this->lifetime, Cookie::$path, $sessionCookieDomain, Cookie::$secure, Cookie::$httpOnly);
 
         // Do not allow PHP to send Cache-Control headers
         session_cache_limiter(false);
 
         // Set the session cookie name
-        session_name($this->_name);
+        session_name($this->name);
 
         if ($id) {
             // Set the session id
@@ -62,7 +62,7 @@ class SessionNative extends \Bootphp\Session
         session_start();
 
         // Use the $_SESSION global for storing data
-        $this->_data = & $_SESSION;
+        $this->data = &$_SESSION;
 
         return null;
     }
@@ -98,7 +98,7 @@ class SessionNative extends \Bootphp\Session
         $status = session_start();
 
         // Use the $_SESSION global for storing data
-        $this->_data = &$_SESSION;
+        $this->data = &$_SESSION;
 
         return $status;
     }
@@ -116,7 +116,7 @@ class SessionNative extends \Bootphp\Session
 
         if ($status) {
             // Make sure the session cannot be restarted
-            Cookie::delete($this->_name);
+            Cookie::delete($this->name);
         }
 
         return $status;

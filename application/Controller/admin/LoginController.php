@@ -42,17 +42,18 @@ class LoginController extends \Bootphp\Controller
             $status = 0;
             $caption = '登录失败';
             $content = '您输入的密码或用户名有误。';
-            Auth::instance()->logout();
+            $auth = Auth::instance();
+            $auth->logout();
 
             // 尝试登录
-            Auth::instance()->login(strtolower($this->request->post('username')), $this->request->post('password'), false);
-            $this->user = Auth::instance()->getUser();
+            $auth->login(strtolower($this->request->post('username')), $this->request->post('password'), false);
+            $this->user = $auth->getUser();
             if ($this->user) {
                 $status = 1;
                 $caption = '登录成功';
                 $content = '您已经成功登录。';
             }
-            exit(json_encode(['status' => $status, 'data' => [$caption, $content], 'info' => null]));
+            exit(json_encode(['status' => $status, 'info' => [$caption, $content], 'data' => $this->baseUrl . 'admin/index']));
         }
 
         Auth::instance()->logout();

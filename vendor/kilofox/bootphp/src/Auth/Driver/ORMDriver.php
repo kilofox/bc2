@@ -88,7 +88,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
                 $data = [
                     'user_id' => $user->pk(),
                     'expires' => time() + $this->_config['lifetime'],
-                    'user_agent' => sha1(Request::$user_agent),
+                    'user_agent' => sha1(Request::$userAgent),
                 ];
 
                 // Create a new autologin token
@@ -127,11 +127,11 @@ class ORMDriver extends \Bootphp\Auth\Auth
 
         if ($markSessionAsForced === true) {
             // Mark the session as forced, to prevent users from changing account information
-            $this->_session->set('auth_forced', true);
+            $this->session->set('auth_forced', true);
         }
 
         // Run the standard completion
-        $this->complete_login($user);
+        $this->completeLogin($user);
     }
 
     /**
@@ -146,7 +146,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
             $token = ORM::factory('User_Token', ['token' => $token]);
 
             if ($token->loaded() && $token->user->loaded()) {
-                if ($token->user_agent === sha1(Request::$user_agent)) {
+                if ($token->user_agent === sha1(Request::$userAgent)) {
                     // Save the token to create a new unique token
                     $token->save();
 
@@ -198,7 +198,7 @@ class ORMDriver extends \Bootphp\Auth\Auth
     public function logout($destroy = false, $logoutAll = false)
     {
         // Set by force_login()
-        $this->_session->delete('auth_forced');
+        $this->session->delete('auth_forced');
 
         if ($token = Cookie::get('authautologin')) {
             // Delete the autologin cookie to prevent re-login

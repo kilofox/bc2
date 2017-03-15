@@ -82,12 +82,12 @@
                         type: 'post',
                         dataType: 'json',
                         data: $('#login').serialize(),
-                        success: function (r) {
-                            if (r.status === 1) {
-                                location.href = baseUrl + 'system';
+                        success: function (data) {
+                            if (data.status === 1) {
+                                location.href = data.data;
                             } else {
-                                $('#dialog > h1').text(r.info[0]);
-                                $('#dialog > p').text(r.info[1]);
+                                $('#dialog > h1').text(data.info[0]);
+                                $('#dialog > p').text(data.info[1]);
                                 var dialog = $('#dialog').data('dialog');
                                 dialog.open();
                             }

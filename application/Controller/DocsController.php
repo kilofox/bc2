@@ -39,7 +39,7 @@ class DocsController extends \Bootphp\Controller
         }
 
         // Default show_comments to config value
-        $this->template->show_comments = Core::$config->load(APP_PATH . '/configs/userguide');
+        $this->template->show_comments = Core::$config->load('userguide');
     }
 
     // List all modules that have userguides

@@ -14,34 +14,34 @@ namespace Bootphp;
 class Cookie
 {
     /**
-     * @var  string  Magic salt to add to the cookie
+     * @var     string  Magic salt to add to the cookie
      */
     public static $salt = null;
 
     /**
-     * @var  integer  Number of seconds before the cookie expires
+     * @var     integer  Number of seconds before the cookie expires
      */
     public static $expiration = 0;
 
     /**
-     * @var  string  Restrict the path that the cookie is available to
+     * @var     string  Restrict the path that the cookie is available to
      */
     public static $path = '/';
 
     /**
-     * @var  string  Restrict the domain that the cookie is available to
+     * @var     string  Restrict the domain that the cookie is available to
      */
     public static $domain = null;
 
     /**
-     * @var  boolean  Only transmit cookies over secure connections
+     * @var     boolean  Only transmit cookies over secure connections
      */
     public static $secure = false;
 
     /**
-     * @var  boolean  Only transmit cookies over HTTP, disabling Javascript access
+     * @var     boolean  Only transmit cookies over HTTP, disabling Javascript access
      */
-    public static $httponly = false;
+    public static $httpOnly = false;
 
     /**
      * Gets the value of a signed cookie. Cookies without signatures will not
@@ -51,8 +51,8 @@ class Cookie
      *     // Get the "theme" cookie, or use "blue" if the cookie does not exist
      *     $theme = Cookie::get('theme', 'blue');
      *
-     * @param   string  $key        cookie name
-     * @param   mixed   $default    default value to return
+     * @param   string  $key        Cookie name
+     * @param   mixed   $default    Default value to return
      * @return  string
      */
     public static function get($key, $default = null)
@@ -68,7 +68,7 @@ class Cookie
         // Find the position of the split between salt and contents
         $split = strlen(self::salt($key, null));
 
-        if (isset($cookie[$split]) AND $cookie[$split] === '~') {
+        if (isset($cookie[$split]) && $cookie[$split] === '~') {
             // Separate the salt and the value
             list ($hash, $value) = explode('~', $cookie, 2);
 
@@ -117,7 +117,7 @@ class Cookie
         // Add the salt to the cookie value
         $value = self::salt($name, $value) . '~' . $value;
 
-        return static::_setcookie($name, $value, $lifetime, self::$path, self::$domain, self::$secure, self::$httponly);
+        return static::_setcookie($name, $value, $lifetime, self::$path, self::$domain, self::$secure, self::$httpOnly);
     }
 
     /**
@@ -134,7 +134,7 @@ class Cookie
         unset($_COOKIE[$name]);
 
         // nullify the cookie and make it expire
-        return static::_setcookie($name, null, -86400, self::$path, self::$domain, self::$secure, self::$httponly);
+        return static::_setcookie($name, null, -86400, self::$path, self::$domain, self::$secure, self::$httpOnly);
     }
 
     /**
@@ -171,14 +171,14 @@ class Cookie
      * @param string  $path
      * @param string  $domain
      * @param boolean $secure
-     * @param boolean $httponly
+     * @param boolean $httpOnly
      *
      * @return bool
      * @see setcookie
      */
-    protected static function _setcookie($name, $value, $expire, $path, $domain, $secure, $httponly)
+    protected static function _setcookie($name, $value, $expire, $path, $domain, $secure, $httpOnly)
     {
-        return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        return setcookie($name, $value, $expire, $path, $domain, $secure, $httpOnly);
     }
 
     /**

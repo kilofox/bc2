@@ -34,7 +34,7 @@ class Config
             throw new BootphpException('Config group must be a non-empty string');
         }
 
-        $config = array();
+        $config = [];
 
         $file = ($directory === null ? APP_PATH . '/Config/' : (string) $directory) . $group . '.php';
         if (is_file($file)) {

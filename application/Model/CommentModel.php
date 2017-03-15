@@ -13,7 +13,7 @@ use Bootphp\Database\DB;
  * @author		Tinsh
  @copyright  (C) 2005-2017 Kilofox Studio
  */
-class CommentModel extends Model
+class CommentModel extends \Bootphp\ORM\ORM
 {
     private $_values = null;
     private $_loaded = false;

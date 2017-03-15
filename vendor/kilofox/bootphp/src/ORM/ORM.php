@@ -20,12 +20,12 @@ use Bootphp\BootphpException;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class ORM extends \Bootphp\Model
+class ORM extends \Bootphp\Model implements \Serializable
 {
     /**
      * Initialization storage for ORM models.
      *
-     * @var array
+     * @var     array
      */
     protected static $initCache = [];
 
@@ -52,160 +52,160 @@ class ORM extends \Bootphp\Model
     /**
      * "Has one" relationships.
      *
-     * @var array
+     * @var     array
      */
     protected $hasOne = [];
 
     /**
      * "Belongs to" relationships.
      *
-     * @var array
+     * @var     array
      */
     protected $belongsTo = [];
 
     /**
      * "Has many" relationships.
      *
-     * @var array
+     * @var     array
      */
     protected $hasMany = [];
 
     /**
      * Relationships that should always be joined.
      *
-     * @var array
+     * @var     array
      */
     protected $loadWith = [];
 
     /**
      * Validation object created before saving/updating.
      *
-     * @var Validation
+     * @var     Validation
      */
     protected $validation = null;
 
     /**
      * Current object.
      *
-     * @var array
+     * @var     array
      */
     protected $object = [];
 
     /**
-     * @var array
+     * @var     array
      */
     protected $changed = [];
 
     /**
-     * @var array
+     * @var     array
      */
     protected $originalValues = [];
 
     /**
-     * @var array
+     * @var     array
      */
     protected $related = [];
 
     /**
-     * @var bool
+     * @var     boolean
      */
     protected $valid = false;
 
     /**
-     * @var bool
+     * @var     boolean
      */
     protected $loaded = false;
 
     /**
-     * @var bool
+     * @var     boolean
      */
     protected $saved = false;
 
     /**
-     * @var array
+     * @var     array
      */
     protected $sorting;
 
     /**
      * Foreign key suffix.
      *
-     * @var string
+     * @var     string
      */
     protected $foreignKeySuffix = '_id';
 
     /**
      * Model name.
      *
-     * @var string
+     * @var     string
      */
     protected $objectName;
 
     /**
      * Table name.
      *
-     * @var string
+     * @var     string
      */
     protected $tableName;
 
     /**
      * Table columns.
      *
-     * @var array
+     * @var     array
      */
     protected $tableColumns;
 
     /**
      * Table primary key.
      *
-     * @var string
+     * @var     string
      */
     protected $primaryKey = 'id';
 
     /**
      * Primary key value.
      *
-     * @var mixed
+     * @var     mixed
      */
     protected $primaryKeyValue;
 
     /**
      * Database Object.
      *
-     * @var Database
+     * @var     Database
      */
     protected $db = null;
 
     /**
-     * Database config group
-     * @var String
+     * Database config group.
+     * @var     string
      */
     protected $dbGroup = null;
 
     /**
      * Database methods applied.
      *
-     * @var array
+     * @var     array
      */
     protected $dbApplied = [];
 
     /**
      * Database methods pending.
      *
-     * @var array
+     * @var     array
      */
     protected $dbPending = [];
 
     /**
      * Database query builder.
      *
-     * @var Database\Query\Builder\Select
+     * @var     Database\Query\Builder\Select
      */
     protected $dbBuilder;
 
     /**
      * With calls already applied.
      *
-     * @var array
+     * @var     array
      */
     protected $withApplied = [];
 
@@ -216,6 +216,17 @@ class ORM extends \Bootphp\Model
      * @return  void
      */
     public function __construct()
+    {
+        $this->initialize();
+    }
+
+    /**
+     * Prepares the model database connection, determines the table name, and
+     * loads column information.
+     *
+     * @return  void
+     */
+    protected function initialize()
     {
         // Set the object name if none predefined
         if (empty($this->objectName)) {
@@ -295,7 +306,7 @@ class ORM extends \Bootphp\Model
     /**
      * Initializes validation rules, and labels.
      *
-     * @return void
+     * @return  void
      */
     protected function _validation()
     {
@@ -739,8 +750,8 @@ class ORM extends \Bootphp\Model
      * iterator for multiple rows.
      *
      * @chainable
-     * @param  bool $multiple Return an iterator or load a single row
-     * @return ORM|Database\Result
+     * @param   boolean $multiple   Return an iterator or load a single row
+     * @return  ORM|Database\Result
      */
     protected function loadResult($multiple = false)
     {
@@ -1267,9 +1278,9 @@ class ORM extends \Bootphp\Model
     /**
      * Count the number of records in the table.
      *
-     * @return integer
+     * @return  integer
      */
-    public function countAll()
+    public function count()
     {
         $selects = [];
 
@@ -1291,7 +1302,7 @@ class ORM extends \Bootphp\Model
         $this->build('select');
 
         $records = $this->dbBuilder->from([$this->tableName, $this->objectName])
-            ->select([DB::expr('COUNT(' . $this->db->quote_column($this->objectName . '.' . $this->primaryKey) . ')'), 'records_found'])
+            ->select([DB::expr('COUNT(' . $this->db->quoteColumn($this->objectName . '.' . $this->primaryKey) . ')'), 'records_found'])
             ->execute($this->db)
             ->get('records_found');
 
@@ -1344,11 +1355,10 @@ class ORM extends \Bootphp\Model
     }
 
     /**
-     * Clears query builder. Passing false is useful to keep the existing
-     * query conditions for another query.
+     * Clears query builder. Passing false is useful to keep the existing query
+     * conditions for another query.
      *
-     * @param bool $next Pass false to avoid resetting on the next call
-     * @return ORM
+     * @return  ORM
      */
     public function reset()
     {
@@ -1829,6 +1839,48 @@ class ORM extends \Bootphp\Model
         }
 
         return !$model->loaded();
+    }
+
+    /**
+     * Allows serialization of only the object data and state, to prevent
+     * "stale" objects being unserialized, which also requires less memory.
+     *
+     * @return  string
+     */
+    public function serialize()
+    {
+        // Store only information about the object
+        foreach (array('primaryKeyValue', 'object', 'changed', 'loaded', 'saved', 'sorting', 'originalValues') as $var) {
+            $data[$var] = $this->{$var};
+        }
+
+        return serialize($data);
+    }
+
+    /**
+     * Prepares the database connection and reloads the object.
+     *
+     * @param   string  $data   String for unserialization
+     * @return  void
+     */
+    public function unserialize($data)
+    {
+        // Initialize model
+        $this->initialize();
+
+        foreach (unserialize($data) as $name => $var) {
+            $this->{$name} = $var;
+        }
+
+        // Replace the object and reset the object status
+        $this->object = $this->changed = $this->related = $this->originalValues = [];
+
+        // Only reload the object if we have one to reload
+        if ($this->loaded) {
+            return $this->clear()->where($this->objectName . '.' . $this->primaryKey, '=', $this->primaryKeyValue)->find();
+        } else {
+            return $this->clear();
+        }
     }
 
 }

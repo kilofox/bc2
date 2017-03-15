@@ -1,6 +1,10 @@
 <?php
 
-namespace Bootphp;
+namespace Bootphp\Session;
+
+use Bootphp\BootphpException;
+use Bootphp\Encrypt;
+use Bootphp\Core;
 
 /**
  * Base session class.
@@ -41,58 +45,58 @@ abstract class Session
     {
         if ($type === null) {
             // Use the default type
-            $type = Session::$default;
+            $type = self::$default;
         }
 
-        if (!isset(Session::$instances[$type])) {
+        if (!isset(self::$instances[$type])) {
             // Load the configuration for this type
-            $config = Core::$config->load(APP_PATH . '/configs/session.php');
+            $config = Core::$config->load('session');
 
             // Set the session class name
             $class = 'Bootphp\\Session\\Session' . ucfirst($type);
 
             // Create a new session instance
-            Session::$instances[$type] = $session = new $class($config, $id);
+            self::$instances[$type] = $session = new $class($config, $id);
 
             // Write the session at shutdown
             register_shutdown_function([$session, 'write']);
         }
 
-        return Session::$instances[$type];
+        return self::$instances[$type];
     }
 
     /**
      * @var     string  Cookie name
      */
-    protected $_name = 'session';
+    protected $name = 'session';
 
     /**
      * @var     integer Cookie lifetime
      */
-    protected $_lifetime = 0;
+    protected $lifetime = 0;
 
     /**
      * @var     boolean Encrypt session data?
      */
-    protected $_encrypted = false;
+    protected $encrypted = false;
 
     /**
      * @var     array   Session data
      */
-    protected $_data = [];
+    protected $data = [];
 
     /**
      * @var     boolean Session destroyed?
      */
-    protected $_destroyed = false;
+    protected $destroyed = false;
 
     /**
      * Overloads the name, lifetime, and encrypted session settings.
      *
      * [!!] Sessions can only be created using the [Session::instance] method.
      *
-     * @param   array   $config configuration
-     * @param   string  $id     session id
+     * @param   array   $config Configuration
+     * @param   string  $id     Session id
      * @return  void
      * @uses    Session::read
      */
@@ -100,12 +104,12 @@ abstract class Session
     {
         if (isset($config['name'])) {
             // Cookie name to store the session id in
-            $this->_name = (string) $config['name'];
+            $this->name = (string) $config['name'];
         }
 
         if (isset($config['lifetime'])) {
             // Cookie lifetime
-            $this->_lifetime = (int) $config['lifetime'];
+            $this->lifetime = (int) $config['lifetime'];
         }
 
         if (isset($config['encrypted'])) {
@@ -115,7 +119,7 @@ abstract class Session
             }
 
             // Enable or disable encryption of data
-            $this->_encrypted = $config['encrypted'];
+            $this->encrypted = $config['encrypted'];
         }
 
         // Load the session
@@ -135,11 +139,11 @@ abstract class Session
     public function __toString()
     {
         // Serialize the data array
-        $data = $this->_serialize($this->_data);
+        $data = $this->_serialize($this->data);
 
-        if ($this->_encrypted) {
+        if ($this->encrypted) {
             // Encrypt the data using the default key
-            $data = Encrypt::instance($this->_encrypted)->encode($data);
+            $data = Encrypt::instance($this->encrypted)->encode($data);
         } else {
             // Encode the data
             $data = $this->_encode($data);
@@ -160,9 +164,9 @@ abstract class Session
      *
      * @return  array
      */
-    public function & as_array()
+    public function &as_array()
     {
-        return $this->_data;
+        return $this->data;
     }
 
     /**
@@ -188,7 +192,7 @@ abstract class Session
      */
     public function name()
     {
-        return $this->_name;
+        return $this->name;
     }
 
     /**
@@ -202,7 +206,7 @@ abstract class Session
      */
     public function get($key, $default = null)
     {
-        return array_key_exists($key, $this->_data) ? $this->_data[$key] : $default;
+        return array_key_exists($key, $this->data) ? $this->data[$key] : $default;
     }
 
     /**
@@ -218,7 +222,7 @@ abstract class Session
     {
         $value = $this->get($key, $default);
 
-        unset($this->_data[$key]);
+        unset($this->data[$key]);
 
         return $value;
     }
@@ -234,7 +238,7 @@ abstract class Session
      */
     public function set($key, $value)
     {
-        $this->_data[$key] = $value;
+        $this->data[$key] = $value;
 
         return $this;
     }
@@ -250,7 +254,7 @@ abstract class Session
      */
     public function bind($key, &$value)
     {
-        $this->_data[$key] = &$value;
+        $this->data[$key] = &$value;
 
         return $this;
     }
@@ -268,7 +272,7 @@ abstract class Session
         $args = func_get_args();
 
         foreach ($args as $key) {
-            unset($this->_data[$key]);
+            unset($this->data[$key]);
         }
 
         return $this;
@@ -286,11 +290,11 @@ abstract class Session
     {
         $data = null;
 
-        try {
+       // try {
             if (is_string($data = $this->_read($id))) {
-                if ($this->_encrypted) {
+                if ($this->encrypted) {
                     // Decrypt the data using the default key
-                    $data = Encrypt::instance($this->_encrypted)->decode($data);
+                    $data = Encrypt::instance($this->encrypted)->decode($data);
                 } else {
                     // Decode the data
                     $data = $this->_decode($data);
@@ -301,14 +305,14 @@ abstract class Session
             } else {
                 // Ignore these, session is valid, likely no data though.
             }
-        } catch (\Exception $e) {
+       // } catch (\Exception $e) {
             // Error reading the session, usually a corrupt session.
-            throw new Session_Exception('Error reading session data.', null, Session_Exception::SESSION_CORRUPT);
-        }
+        //    throw new BootphpException('Error reading session data.', 1);
+        //}
 
         if (is_array($data)) {
             // Load the data locally
-            $this->_data = $data;
+            $this->data = $data;
         }
     }
 
@@ -337,19 +341,19 @@ abstract class Session
      */
     public function write()
     {
-        if (headers_sent() || $this->_destroyed) {
+        if (headers_sent() || $this->destroyed) {
             // Session cannot be written when the headers are sent or when the session has been destroyed
             return false;
         }
 
         // Set the last active timestamp
-        $this->_data['last_active'] = time();
+        $this->data['last_active'] = time();
 
         try {
             return $this->_write();
         } catch (\Exception $e) {
             // Log and ignore all errors when a write fails
-            Core::$log->add(Log::ERROR, BootphpException::text($e))->write();
+            Core::$log->add(\Bootphp\Log::ERROR, BootphpException::text($e))->write();
 
             return false;
         }
@@ -364,14 +368,14 @@ abstract class Session
      */
     public function destroy()
     {
-        if ($this->_destroyed === false) {
-            if ($this->_destroyed = $this->_destroy()) {
+        if ($this->destroyed === false) {
+            if ($this->destroyed = $this->_destroy()) {
                 // The session has been destroyed, clear all data
-                $this->_data = [];
+                $this->data = [];
             }
         }
 
-        return $this->_destroyed;
+        return $this->destroyed;
     }
 
     /**
@@ -383,13 +387,13 @@ abstract class Session
      */
     public function restart()
     {
-        if ($this->_destroyed === false) {
+        if ($this->destroyed === false) {
             // Wipe out the current session.
             $this->destroy();
         }
 
         // Allow the new session to be saved
-        $this->_destroyed = false;
+        $this->destroyed = false;
 
         return $this->_restart();
     }
@@ -441,7 +445,7 @@ abstract class Session
     /**
      * Loads the raw session data string and returns it.
      *
-     * @param   string  $id session id
+     * @param   string  $id     Session id
      * @return  string
      */
     abstract protected function _read($id = null);

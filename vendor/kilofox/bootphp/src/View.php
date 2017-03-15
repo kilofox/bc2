@@ -19,35 +19,35 @@ class View
     /**
      * Layout filename.
      *
-     * @var string
+     * @var     string
      */
     protected $layout;
 
     /**
      * Template filename.
      *
-     * @var string
+     * @var     string
      */
     protected $file;
 
     /**
      * Template file format.
      *
-     * @var string
+     * @var     string
      */
     protected $fileFormat = 'php';
 
     /**
      * Template path.
      *
-     * @var string
+     * @var     string
      */
     protected $path;
 
     /**
      * Array of local variables.
      *
-     * @var array
+     * @var     array
      */
     protected $data = [];
 
@@ -133,28 +133,6 @@ class View
     public function __unset($key)
     {
         unset($this->data[$key]);
-    }
-
-    /**
-     * Magic method, returns the output of [View::render].
-     *
-     * @return  string
-     */
-    public function __toString()
-    {
-        try {
-            return $this->render();
-        } catch (\Exception $e) {
-            /**
-             * Display the exception message.
-             *
-             * We use this method here because it's impossible to throw an
-             * exception from __toString().
-             */
-            $errorResponse = BootphpException::handler($e);
-
-            return $errorResponse->body();
-        }
     }
 
     /**

@@ -18,7 +18,7 @@ abstract class Auth
      *
      * @var object
      */
-    protected static $_instance;
+    protected static $instance;
 
     /**
      * Singleton pattern.
@@ -27,7 +27,7 @@ abstract class Auth
      */
     public static function instance()
     {
-        if (!isset(self::$_instance)) {
+        if (!isset(self::$instance)) {
             // Load the configuration for this type
             $config = \Bootphp\Core::$config->load('auth');
 
@@ -37,14 +37,14 @@ abstract class Auth
             $class = 'Bootphp\\Auth\\Driver\\' . ucfirst($type) . 'Driver';
 
             // Create a new session instance
-            self::$_instance = new $class($config);
+            self::$instance = new $class($config);
         }
 
-        return self::$_instance;
+        return self::$instance;
     }
 
-    protected $_session;
-    protected $_config;
+    protected $session;
+    protected $config;
 
     /**
      * Loads Session and configuration options.
@@ -55,9 +55,9 @@ abstract class Auth
     public function __construct($config = array())
     {
         // Save the config in the object
-        $this->_config = $config;
+        $this->config = $config;
 
-        $this->_session = \Bootphp\Session::instance($this->_config['session_type']);
+        $this->session = \Bootphp\Session\Session::instance($this->config['session_type']);
     }
 
     abstract protected function _login($username, $password, $remember);
@@ -72,7 +72,7 @@ abstract class Auth
      */
     public function getUser($default = null)
     {
-        return $this->_session->get($this->_config['session_key'], $default);
+        return $this->session->get($this->config['session_key'], $default);
     }
 
     /**
@@ -102,13 +102,13 @@ abstract class Auth
     {
         if ($destroy === true) {
             // Destroy the session completely
-            $this->_session->destroy();
+            $this->session->destroy();
         } else {
             // Remove the user from the session
-            $this->_session->delete($this->_config['session_key']);
+            $this->session->delete($this->config['session_key']);
 
             // Regenerate session_id
-            $this->_session->regenerate();
+            $this->session->regenerate();
         }
 
         // Double check
@@ -124,7 +124,7 @@ abstract class Auth
      */
     public function loggedIn($role = null)
     {
-        return ($this->getUser() !== null);
+        return $this->getUser() !== null;
     }
 
     /**
@@ -136,10 +136,10 @@ abstract class Auth
      */
     public function hash($str)
     {
-        if (!$this->_config['hash_key'])
+        if (!$this->config['hash_key'])
             throw new \Bootphp\BootphpException('A valid hash key must be set in your auth config.');
 
-        return hash_hmac($this->_config['hash_method'], $str, $this->_config['hash_key']);
+        return hash_hmac($this->config['hash_method'], $str, $this->config['hash_key']);
     }
 
     /**
@@ -152,10 +152,10 @@ abstract class Auth
     protected function completeLogin($user)
     {
         // Regenerate session_id
-        $this->_session->regenerate();
+        $this->session->regenerate();
 
         // Store username in session
-        $this->_session->set($this->_config['session_key'], $user);
+        $this->session->set($this->config['session_key'], $user);
 
         return true;
     }

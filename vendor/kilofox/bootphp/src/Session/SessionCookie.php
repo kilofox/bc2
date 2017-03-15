@@ -2,6 +2,8 @@
 
 namespace Bootphp\Session;
 
+use Bootphp\Cookie;
+
 /**
  * Cookie-based session class.
  *
@@ -11,15 +13,15 @@ namespace Bootphp\Session;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-class SessionCookie extends \Bootphp\Session
+class SessionCookie extends Session
 {
     /**
-     * @param   string  $id  session id
+     * @param   string  $id  Session id
      * @return  string
      */
     protected function _read($id = null)
     {
-        return Cookie::get($this->_name, null);
+        return Cookie::get($this->name, null);
     }
 
     /**
@@ -36,7 +38,7 @@ class SessionCookie extends \Bootphp\Session
      */
     protected function _write()
     {
-        return Cookie::set($this->_name, $this->__toString(), $this->_lifetime);
+        return Cookie::set($this->name, $this->__toString(), $this->lifetime);
     }
 
     /**
@@ -52,7 +54,7 @@ class SessionCookie extends \Bootphp\Session
      */
     protected function _destroy()
     {
-        return Cookie::delete($this->_name);
+        return Cookie::delete($this->name);
     }
 
 }
