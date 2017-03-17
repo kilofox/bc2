@@ -31,7 +31,7 @@ class Config
     public function load($group, $directory = null)
     {
         if (empty($group) || !is_string($group)) {
-            throw new BootphpException('Config group must be a non-empty string');
+            throw new BootphpException('Config group must be a non-empty string.');
         }
 
         $config = [];

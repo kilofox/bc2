@@ -742,7 +742,7 @@ class Request
         }
 
         if (!$this->_client instanceof Client) {
-            throw new \Bootphp\BootphpException('Unable to execute ' . $this->_uri . ' without a Kohana_Client');
+            throw new \Bootphp\BootphpException('Unable to execute ' . $this->_uri . ' without a Bootphp\Request\Client.');
         }
 
         return $this->_client->execute($this);

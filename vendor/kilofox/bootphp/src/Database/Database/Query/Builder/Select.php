@@ -299,7 +299,7 @@ class Select extends Where
             $select = DB::select()->from($select);
         }
         if (!$select instanceof Database\Query\Builder\Select)
-            throw new \Bootphp\BootphpException('first parameter must be a string or an instance of Database\Query\Builder\Select');
+            throw new \Bootphp\BootphpException('First parameter must be a string or an instance of Database\Query\Builder\Select.');
         $this->union [] = array('select' => $select, 'all' => $all);
         return $this;
     }

@@ -472,7 +472,7 @@ class ORM extends \Bootphp\Model implements \Serializable
 
             return $model->where($col, '=', $val);
         } else {
-            throw new BootphpException('The ' . $column . ' property does not exist in the ' . get_class($this) . ' class');
+            throw new BootphpException('The ' . $column . ' property does not exist in the ' . get_class($this) . ' class.');
         }
     }
 
@@ -523,7 +523,7 @@ class ORM extends \Bootphp\Model implements \Serializable
 
             $this->changed[$column] = $this->belongsTo[$column]['foreignKey'];
         } else {
-            throw new BootphpException('The ' . $column . ' property does not exist in the ' . get_class($this) . ' class');
+            throw new BootphpException('The ' . $column . ' property does not exist in the ' . get_class($this) . ' class.');
         }
 
         return $this;
@@ -708,7 +708,7 @@ class ORM extends \Bootphp\Model implements \Serializable
     public function find()
     {
         if ($this->loaded)
-            throw new BootphpException('Method find() cannot be called on loaded objects');
+            throw new BootphpException('Method find() cannot be called on loaded objects.');
 
         if (!empty($this->loadWith)) {
             foreach ($this->loadWith as $alias) {
@@ -731,7 +731,7 @@ class ORM extends \Bootphp\Model implements \Serializable
     public function findAll()
     {
         if ($this->loaded)
-            throw new BootphpException('Method findAll() cannot be called on loaded objects');
+            throw new BootphpException('Method findAll() cannot be called on loaded objects.');
 
         if (!empty($this->loadWith)) {
             foreach ($this->loadWith as $alias) {
@@ -781,12 +781,11 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         if ($multiple === true) {
-            // Return database iterator casting to this object type
-            $result = $this->dbBuilder->asObject(get_class($this))->execute($this->db);
+            $result = $this->dbBuilder->asObject(true)->execute($this->db);
 
             $this->reset();
 
-            return $result;
+            return $result->asArray();
         } else {
             // Load the result as an associative array
             $result = $this->dbBuilder->asAssoc()->execute($this->db);

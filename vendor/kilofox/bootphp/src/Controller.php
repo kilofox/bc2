@@ -28,28 +28,28 @@ abstract class Controller
     /**
      * Request that created the controller.
      *
-     * @var Request
+     * @var     Request
      */
     public $request;
 
     /**
      * The response that will be returned from controller.
      *
-     * @var Response
+     * @var     Response
      */
     public $response;
 
     /**
      * Page view.
      *
-     * @var View
+     * @var     View
      */
     public $view;
 
     /**
      * Auto render template.
      *
-     * @var boolean
+     * @var     boolean
      * */
     public $autoRender = true;
 
@@ -119,6 +119,12 @@ abstract class Controller
         if ($this->autoRender === true) {
             $this->baseUrl = URL::base();
             $this->view = new \Bootphp\View();
+            $this->view->layoutPath(APP_PATH . '/View/' . $this->request->directory() . '/layout/')
+                ->layout('default')
+                ->templatePath(APP_PATH . '/View/' . $this->request->directory() . '/' . $this->request->controller() . '/')
+                ->template($this->request->action())
+                ->set('baseUrl', $this->baseUrl)
+                ->set('controller', $this->request->controller());
         }
     }
 
@@ -133,8 +139,6 @@ abstract class Controller
     {
         // Assigns the [View] as the request response.
         if ($this->autoRender === true) {
-            $this->view->path(APP_PATH . '/View/default/' . $this->request->directory() . '/' . $this->request->controller() . '/')
-                ->set('baseUrl', $this->baseUrl);
             $this->response->body($this->view->render());
         }
     }
@@ -149,7 +153,7 @@ abstract class Controller
     public function redirect($uri = '', $code = 303)
     {
         if (!in_array($code, [300, 301, 302, 303, 307]))
-            throw new BootphpException('Invalid redirect code `' . $code . '`');
+            throw new BootphpException('Invalid redirect code `' . $code . '`.');
 
         if (strpos($uri, '://') === false) {
             // Make the URI into a URL

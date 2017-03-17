@@ -13,47 +13,60 @@ namespace Bootphp\Database\Database;
  */
 abstract class Result implements \Countable, \Iterator, \SeekableIterator, \ArrayAccess
 {
-    // Executed SQL for this result
-    protected $_query;
-    // Raw result resource
-    protected $_result;
-    // Total number of rows and current row
-    protected $_total_rows = 0;
-    protected $_current_row = 0;
-    // Return rows as an object or associative array
-    protected $_as_object;
-    // Parameters for __construct when using object results
-    protected $_object_params = null;
+    /**
+     * Executed SQL for this result.
+     *
+     * @var     string
+     */
+    protected $query;
+
+    /**
+     * Raw result resource.
+     *
+     * @var     mixed
+     */
+    protected $result;
+
+    /**
+     * Total number of rows.
+     *
+     * @var     integer
+     */
+    protected $totalRows = 0;
+
+    /**
+     * Current row.
+     *
+     * @var     integer
+     */
+    protected $currentRow = 0;
+
+    /**
+     * Return rows as an object or associative array.
+     *
+     * @var     boolean
+     */
+    protected $asObject;
 
     /**
      * Sets the total number of rows and stores the result locally.
      *
      * @param   mixed   $result     Query result
      * @param   string  $sql        SQL query
-     * @param   mixed   $as_object
+     * @param   mixed   $asObject
      * @param   array   $params
      * @return  void
      */
-    public function __construct($result, $sql, $as_object = false, array $params = null)
+    public function __construct($result, $sql, $asObject = true, array $params = null)
     {
         // Store the result locally
-        $this->_result = $result;
+        $this->result = $result;
 
         // Store the SQL locally
-        $this->_query = $sql;
-
-        if (is_object($as_object)) {
-            // Get the object class name
-            $as_object = get_class($as_object);
-        }
+        $this->query = $sql;
 
         // Results as objects or associative arrays
-        $this->_as_object = $as_object;
-
-        if ($params) {
-            // Object constructor params
-            $this->_object_params = $params;
-        }
+        $this->asObject = $asObject;
     }
 
     /**
@@ -71,39 +84,37 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     public function cached()
     {
-        return new \Bootphp\Database\Database\Result\Cached($this->as_array(), $this->_query, $this->_as_object);
+        return new \Bootphp\Database\Database\Result\Cached($this->asArray(), $this->query, $this->asObject);
     }
 
     /**
      * Return all of the rows in the result as an array.
      *
      *     // Indexed array of all rows
-     *     $rows = $result->as_array();
+     *     $rows = $result->asArray();
      *
      *     // Associative array of rows by "id"
-     *     $rows = $result->as_array('id');
+     *     $rows = $result->asArray('id');
      *
      *     // Associative array of rows, "id" => "name"
-     *     $rows = $result->as_array('id', 'name');
+     *     $rows = $result->asArray('id', 'name');
      *
-     * @param   string  $key    column for associative keys
-     * @param   string  $value  column for values
+     * @param   string  $key    Ccolumn for associative keys
+     * @param   string  $value  Column for values
      * @return  array
      */
-    public function as_array($key = null, $value = null)
+    public function asArray($key = null, $value = null)
     {
-        $results = array();
+        $results = [];
 
-        if ($key === null AND $value === null) {
+        if ($key === null && $value === null) {
             // Indexed rows
-
             foreach ($this as $row) {
                 $results[] = $row;
             }
         } elseif ($key === null) {
             // Indexed columns
-
-            if ($this->_as_object) {
+            if ($this->asObject) {
                 foreach ($this as $row) {
                     $results[] = $row->$value;
                 }
@@ -114,8 +125,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
             }
         } elseif ($value === null) {
             // Associative rows
-
-            if ($this->_as_object) {
+            if ($this->asObject) {
                 foreach ($this as $row) {
                     $results[$row->$key] = $row;
                 }
@@ -126,8 +136,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
             }
         } else {
             // Associative columns
-
-            if ($this->_as_object) {
+            if ($this->asObject) {
                 foreach ($this as $row) {
                     $results[$row->$key] = $row->$value;
                 }
@@ -149,15 +158,15 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *     // Get the "id" value
      *     $id = $result->get('id');
      *
-     * @param   string  $name     column to get
-     * @param   mixed   $default  default value if the column does not exist
+     * @param   string  $name       Column to get
+     * @param   mixed   $default    Default value if the column does not exist
      * @return  mixed
      */
     public function get($name, $default = null)
     {
         $row = $this->current();
 
-        if ($this->_as_object) {
+        if ($this->asObject) {
             if (isset($row->$name))
                 return $row->$name;
         }
@@ -178,7 +187,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     public function count()
     {
-        return $this->_total_rows;
+        return $this->totalRows;
     }
 
     /**
@@ -189,12 +198,12 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *         // Row 10 exists
      *     }
      *
-     * @param   integer     $offset
+     * @param   integer $offset
      * @return  boolean
      */
     public function offsetExists($offset)
     {
-        return ($offset >= 0 AND $offset < $this->_total_rows);
+        return $offset >= 0 && $offset < $this->totalRows;
     }
 
     /**
@@ -202,7 +211,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *
      *     $row = $result[10];
      *
-     * @param   int     $offset
+     * @param   integer $offset
      * @return  mixed
      */
     public function offsetGet($offset)
@@ -218,14 +227,14 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *
      * [!!] You cannot modify a database result.
      *
-     * @param   int     $offset
+     * @param   integer $offset
      * @param   mixed   $value
      * @return  void
      * @throws  BootphpException
      */
     final public function offsetSet($offset, $value)
     {
-        throw new BootphpException('Database results are read-only');
+        throw new BootphpException('Database results are read-only.');
     }
 
     /**
@@ -233,13 +242,13 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      *
      * [!!] You cannot modify a database result.
      *
-     * @param   int     $offset
+     * @param   integer $offset
      * @return  void
      * @throws  BootphpException
      */
     final public function offsetUnset($offset)
     {
-        throw new BootphpException('Database results are read-only');
+        throw new BootphpException('Database results are read-only.');
     }
 
     /**
@@ -251,7 +260,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     public function key()
     {
-        return $this->_current_row;
+        return $this->currentRow;
     }
 
     /**
@@ -263,7 +272,8 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     public function next()
     {
-        ++$this->_current_row;
+        ++$this->currentRow;
+
         return $this;
     }
 
@@ -276,7 +286,8 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     public function prev()
     {
-        --$this->_current_row;
+        --$this->currentRow;
+
         return $this;
     }
 
@@ -289,7 +300,8 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     public function rewind()
     {
-        $this->_current_row = 0;
+        $this->currentRow = 0;
+
         return $this;
     }
 
@@ -302,7 +314,7 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
      */
     public function valid()
     {
-        return $this->offsetExists($this->_current_row);
+        return $this->offsetExists($this->currentRow);
     }
 
 }

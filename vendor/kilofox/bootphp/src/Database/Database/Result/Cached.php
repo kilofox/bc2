@@ -3,7 +3,8 @@
 namespace Bootphp\Database\Database\Result;
 
 /**
- * Object used for caching the results of select queries.  See [Results](/database/results#select-cached) for usage and examples.
+ * Object used for caching the results of select queries. See [Results](/database/results#select-cached)
+ * for usage and examples.
  *
  * @package    Bootphp/Database
  * @category   Query/Result
@@ -13,12 +14,12 @@ namespace Bootphp\Database\Database\Result;
  */
 class Cached extends \Bootphp\Database\Database\Result
 {
-    public function __construct(array $result, $sql, $as_object = null)
+    public function __construct(array $result, $sql, $asObject = null)
     {
-        parent::__construct($result, $sql, $as_object);
+        parent::__construct($result, $sql, $asObject);
 
         // Find the number of rows in the result
-        $this->_total_rows = count($result);
+        $this->totalRows = count($result);
     }
 
     public function __destruct()
@@ -34,18 +35,18 @@ class Cached extends \Bootphp\Database\Database\Result
     public function seek($offset)
     {
         if ($this->offsetExists($offset)) {
-            $this->_current_row = $offset;
+            $this->currentRow = $offset;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function current()
     {
         // Return an array of the row
-        return $this->valid() ? $this->_result[$this->_current_row] : null;
+        return $this->valid() ? $this->result[$this->currentRow] : null;
     }
 
 }

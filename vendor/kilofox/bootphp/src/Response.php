@@ -196,7 +196,7 @@ class Response
             $this->_status = (int) $status;
             return $this;
         } else {
-            throw new BootphpException(__METHOD__ . ' unknown status value : ' . $status);
+            throw new BootphpException(__METHOD__ . ' unknown status value: ' . $status . '.');
         }
     }
 
@@ -370,7 +370,7 @@ class Response
 
         if ($filename === true) {
             if (empty($download)) {
-                throw new BootphpException('Download name must be provided for streaming files');
+                throw new BootphpException('Download name must be provided for streaming files.');
             }
 
             // Temporary files will automatically be deleted
@@ -417,7 +417,7 @@ class Response
         }
 
         if (!is_resource($file)) {
-            throw new BootphpException('Could not read file to send: ' . $download);
+            throw new BootphpException('Could not read file to send: ' . $download . '.');
         }
 
         // Inline or download?
@@ -580,7 +580,7 @@ class Response
     public function generate_etag()
     {
         if ($this->_body === '') {
-            throw new BootphpException('No response yet associated with request - cannot auto generate resource ETag');
+            throw new BootphpException('No response yet associated with request - cannot auto generate resource ETag.');
         }
 
         // Generate a unique hash for the response

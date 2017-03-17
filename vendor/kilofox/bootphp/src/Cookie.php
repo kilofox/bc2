@@ -152,7 +152,7 @@ class Cookie
     {
         // Require a valid salt
         if (!self::$salt) {
-            throw new BootphpException('A valid cookie salt is required. Please set Cookie::$salt in your bootstrap.php. For more information check the documentation');
+            throw new BootphpException('A valid cookie salt is required. Please set Cookie::$salt in your bootstrap.php. For more information check the documentation.');
         }
 
         // Determine the user agent

@@ -2,38 +2,24 @@
 
 namespace App\Model;
 
-use Bootphp\Database\DB;
-
 /**
  * 菜单模型。
  *
  * @package	BootCMS
  * @category	模型
  * @author		Tinsh <kilofox2000@gmail.com>
- * @copyright	(C) 2005-2016 Kilofox Studio
+ * @copyright	(C) 2005-2017 Kilofox Studio
  */
-class MenuModel extends \Bootphp\Model
+class MenuModel extends \Bootphp\ORM\ORM
 {
-    private $_values = null;
-    private $_loaded = false;
-    protected $_tableName = 'system_menus';
-
-    /**
-     * 创建并返回一个新的模型对象。
-     *
-     * @return	对象
-     */
-    public static function factory($name, $application = 'system')
-    {
-        return parent::factory($name, $application);
-    }
+    protected $tableName = 'system_menus';
 
     /**
      * 系统菜单
      */
     public function menu($current = '')
     {
-        $menus = $this->orderBy('sort')->findAll();
+        $menus = $this->orderBy('sort')->findAll();print_r($menus);
 
         $menu = ['tabs' => [], 'default' => 0];
         $defaultId = 0;

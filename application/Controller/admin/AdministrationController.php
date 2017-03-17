@@ -3,7 +3,7 @@
 namespace App\Controller\admin;
 
 use Bootphp\Auth\Auth;
-use Bootphp\Model;
+use Bootphp\ORM\ORM;
 
 /**
  * 后台首页控制器。
@@ -25,8 +25,7 @@ class AdministrationController extends \Bootphp\Controller
     public function before()
     {
         parent::before();
-        $this->layoutPath = APP_PATH . '/modules/system/views/default/';
-        $this->templatePath = APP_PATH . '/modules/system/views/default/admin/';
+
         $this->user = Auth::instance()->getUser();
         if (!$this->user) {
             $this->redirect('admin/login');
@@ -38,9 +37,9 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function after()
     {
-       // $this->assign('user', $this->user);
-       // $this->assign('menu', $this->menu($this->module));
-       // $this->assign('title', $this->title);
+        $this->view->set('user', $this->user);
+        $this->view->set('menu', $this->menu($this->request->controller()));
+        $this->view->set('title', $this->title);
 
         parent::after();
     }
@@ -50,7 +49,7 @@ class AdministrationController extends \Bootphp\Controller
      */
     final public function menu($default = '')
     {
-        $menu = Model::factory('menu', 'system')->menu($default);
+        $menu = ORM::factory('menu')->menu($default);
         //print_r($menu);
         return $menu;
     }

@@ -80,7 +80,7 @@ class Internal extends \Bootphp\Request\Client
             $class = new \ReflectionClass($controller);
 
             if ($class->isAbstract()) {
-                throw new BootphpException('Cannot create instances of abstract :controller', array(':controller' => $controller));
+                throw new BootphpException('Cannot create instances of abstract ' . $controller . '.');
             }
 
             // Create a new instance of the controller
@@ -91,7 +91,7 @@ class Internal extends \Bootphp\Request\Client
 
             if (!$response instanceof Response) {
                 // Controller failed to return a Response.
-                throw new BootphpException('Controller failed to return a Response');
+                throw new BootphpException('Controller failed to return a Response.');
             }
         } catch (HTTP_Exception $e) {
             // Store the request context in the Exception

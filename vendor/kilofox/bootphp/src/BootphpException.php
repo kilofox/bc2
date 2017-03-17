@@ -29,10 +29,9 @@ class BootphpException extends \Exception
     );
 
     /**
-     * Creates a new translated exception.
+     * Creates a new exception.
      *
-     *     throw new BootphpException('Something went terrible wrong, :user',
-     *         array(':user' => $user));
+     *     throw new BootphpException('Something went terrible wrong.');
      *
      * @param   string          $message    error message
      * @param   array           $variables  translation variables
@@ -169,13 +168,13 @@ class BootphpException extends \Exception
 
             // Instantiate the error view.
             $view = new View('error', get_defined_vars());
-            $view->path(SYS_PATH . '/BootphpException/Views/');
+            $view->layout(false)->templatePath(SYS_PATH . '/BootphpException/View/');
 
             // Prepare the response object.
             $response = Response::factory();
 
             // Set the response status
-            $response->status(key_exists($code, Response::$messages) ? $code : 500);
+            $response->status(array_key_exists($code, Response::$messages) ? $code : 500);
 
             // Set the response headers
             $response->headers('Content-Type', 'text/html; charset=UTF-8');

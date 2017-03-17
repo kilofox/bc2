@@ -100,7 +100,7 @@ class Route
     public static function get($name)
     {
         if (!isset(self::$_routes[$name])) {
-            throw new BootphpException('The requested route does not exist: ' . $name);
+            throw new BootphpException('The requested route does not exist: ' . $name . '.');
         }
 
         return self::$_routes[$name];
@@ -156,7 +156,7 @@ class Route
                 Core::cache('Route::cache()', self::$_routes);
             } catch (\Exception $e) {
                 // We most likely have a lambda in a route, which cannot be cached
-                throw new BootphpException('One or more routes could not be cached (' . $e->getMessage() . ')', 0);
+                throw new BootphpException('One or more routes could not be cached (' . $e->getMessage() . ').', 0);
             }
         } else {
             if ($routes = Core::cache('Route::cache()')) {
@@ -355,7 +355,7 @@ class Route
     public function filter($callback)
     {
         if (!is_callable($callback)) {
-            throw new BootphpException('Invalid Route::callback specified');
+            throw new BootphpException('Invalid Route::callback specified.');
         }
 
         $this->_filters[] = $callback;
@@ -513,7 +513,7 @@ class Route
             }, $portion);
 
             if ($required && $missing) {
-                throw new BootphpException('Required route parameter not passed: ' . reset($missing));
+                throw new BootphpException('Required route parameter not passed: ' . reset($missing) . '.');
             }
 
             return [$result, $required];

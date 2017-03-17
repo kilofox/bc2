@@ -17,32 +17,39 @@ use Bootphp\BootphpException;
 class View
 {
     /**
-     * Layout filename.
+     * Template filename.
+     *
+     * @var     string
+     */
+    protected $template;
+
+    /**
+     * The name of the subfolder containing templates for this View.
+     *
+     * @var     string
+     */
+    protected $templatePath;
+
+    /**
+     * The name of the layout file to render the template inside of.
      *
      * @var     string
      */
     protected $layout;
 
     /**
-     * Template filename.
+     * The name of the layouts subfolder containing layouts for this View.
      *
      * @var     string
      */
-    protected $file;
+    protected $layoutPath;
 
     /**
-     * Template file format.
+     * File extension.
      *
      * @var     string
      */
-    protected $fileFormat = 'php';
-
-    /**
-     * Template path.
-     *
-     * @var     string
-     */
-    protected $path;
+    protected $extension = 'html';
 
     /**
      * Array of local variables.
@@ -70,6 +77,8 @@ class View
             // Add the values to the current data
             $this->data = $data + $this->data;
         }
+
+        //if (self::$autoLayout)
     }
 
     /**
@@ -84,12 +93,12 @@ class View
      * @return  mixed
      * @throws  BootphpException
      */
-    public function & __get($key)
+    public function __get($key)
     {
         if (array_key_exists($key, $this->data)) {
             return $this->data[$key];
         } else {
-            throw new BootphpException('View variable is not set: ' . $key);
+            throw new BootphpException('View variable is not set: ' . $key . '.');
         }
     }
 
@@ -136,55 +145,71 @@ class View
     }
 
     /**
-     * Layout template getter/setter.
+     * Get/set path for template files.
      *
-     * @param   $layout
-     * @return  $this
+     * @param   string  $path   Path for template files
+     * @return  string|View
      */
-    public function layout($layout = null)
+    public function templatePath($path = null)
     {
-        if ($layout === null) {
+        if ($path === null) {
+            return $this->templatePath;
+        }
+
+        $this->templatePath = $path;
+
+        return $this;
+    }
+
+    /**
+     * Get/set path for layout files.
+     *
+     * @param   string  $path   Path for layout files
+     * @return  string|View
+     */
+    public function layoutPath($path = null)
+    {
+        if ($path === null) {
+            return $this->layoutPath;
+        }
+
+        $this->layoutPath = $path;
+
+        return $this;
+    }
+
+    /**
+     * Get/set the name of the template file to render.
+     *
+     * @param   string  $name   Template file name to set
+     * @param   string  $ext    Template file extension to set
+     * @return  string|View
+     */
+    public function template($name = null, $ext = null)
+    {
+        if ($name === null) {
+            return $this->template;
+        }
+
+        $this->template = $name;
+        $ext and $this->extension = $ext;
+
+        return $this;
+    }
+
+    /**
+     * Get/set the name of the layout file to render the template inside of.
+     *
+     * @param   string  $name   Layout file name to set
+     * @return  string|View
+     */
+    public function layout($name = null)
+    {
+        if ($name === null) {
             return $this->layout;
         }
 
-        $this->layout = $layout;
-
-        return $this;
-    }
-
-    /**
-     * Gets/Sets path to look in for templates.
-     *
-     * @param   string  $path   Template path
-     * @return  $this
-     */
-    public function path($path = null)
-    {
-        if ($path === null) {
-            return $this->path;
-        }
-
-        $this->path = $path;
-
-        return $this;
-    }
-
-    /**
-     * Gets/Sets the template filename.
-     *
-     *     $view->template($file);
-     *
-     * @param   string  $file   Template filename
-     * @return  $this
-     */
-    public function template($file = null, $format = null)
-    {
-        if ($file === null) {
-            return $this->file;
-        }
-
-        $this->file = $file;
-        $format and $this->fileFormat = $format;
+        $this->layout = $name;
 
         return $this;
     }
@@ -234,10 +259,14 @@ class View
      * @return  string
      * @throws  BootphpException
      */
-    public function render($file = null)
+    public function render()
     {
-        if (empty($this->file)) {
-            throw new BootphpException('You must set the file to use within your view before rendering');
+        if (empty($this->template)) {
+            throw new BootphpException('You must set the file to use within your view before rendering.');
+        }
+
+        if (!is_file($file = $this->templatePath . $this->template . '.' . $this->extension)) {
+            throw new BootphpException('The requested view `' . $this->template . '` could not be found.');
         }
 
         $render = function($viewFilename, $viewData) {
@@ -262,23 +291,22 @@ class View
             return ob_get_clean();
         };
 
-        $templateContent = $render($this->path . $this->file . '.' . $this->fileFormat, $this->data);
+        $templateContent = $render($file, $this->data);
 
         if ($this->layout) {
-            // Ensure layout doesn't get rendered recursively
-            self::$_config['auto_layout'] = false;
-
             // New template for layout
-            $layout = new self($this->layout);
+            $layout = new self($this->layout, $this->data);
 
-            // Pass all locally set variables to layout
-            $layout->set($this->_vars);
+            // Set layout path if specified
+            if ($this->layoutPath) {
+                $layout->templatePath($this->layoutPath);
+            }
 
             // Set main yield content block
             $layout->set('yield', $templateContent);
 
             // Get content
-            $templateContent = $layout->content($parsePHP);
+            $templateContent = $layout->render();
         }
 
         return $templateContent;

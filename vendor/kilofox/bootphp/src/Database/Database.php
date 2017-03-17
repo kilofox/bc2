@@ -64,7 +64,7 @@ abstract class Database
             }
 
             if (!isset($config['type'])) {
-                throw new \Bootphp\BootphpException('Database type not defined in ' . $name . ' configuration');
+                throw new \Bootphp\BootphpException('Database type not defined in ' . $name . ' configuration.');
             }
 
             // Set the driver class name
@@ -204,15 +204,14 @@ abstract class Database
      *     // Make a SELECT query and use "Model_User" for the results
      *     $db->query(’select', 'SELECT * FROM users LIMIT 1', 'Model_User');
      *
-     * @param   integer $type      'select', 'insert', etc
-     * @param   string  $sql       SQL query
-     * @param   mixed   $as_object Result object class string, true for stdClass, false for assoc array
-     * @param   array   $params    Object construct parameters for result class
+     * @param   integer $type       'select', 'insert', etc
+     * @param   string  $sql        SQL query
+     * @param   mixed   $asObject   Result object class string, true for stdClass, false for assoc array
      * @return  object  Database\Result for SELECT queries
      * @return  array   List (insert id, row count) for INSERT queries
      * @return  integer Number of affected rows for all other queries
      */
-    abstract public function query($type, $sql, $as_object = false, array $params = null);
+    abstract public function query($type, $sql, $asObject = true);
     /**
      * Start a SQL transaction.
      *

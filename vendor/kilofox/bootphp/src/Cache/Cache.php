@@ -123,7 +123,7 @@ abstract class Cache
         $config = \Bootphp\Core::$config->load('cache');
 
         if (!isset($config[$group])) {
-            throw new \Bootphp\BootphpException('Failed to load Bootphp Cache group: ' . $group);
+            throw new \Bootphp\BootphpException('Failed to load Bootphp Cache group: ' . $group . '.');
         }
 
         $config = $config[$group];

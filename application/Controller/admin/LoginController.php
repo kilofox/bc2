@@ -20,8 +20,6 @@ class LoginController extends \Bootphp\Controller
     public function before()
     {
         parent::before();
-        $this->layout = false;
-        $this->template = 'login';
     }
 
     /**
@@ -57,8 +55,8 @@ class LoginController extends \Bootphp\Controller
         }
 
         Auth::instance()->logout();
-        $this->view->layout(false);
-        $this->view->template('login');
+        $this->view->layout(false)
+            ->template('login');
     }
 
 }

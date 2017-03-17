@@ -84,7 +84,7 @@ class PdoMysql extends \Bootphp\Database\Database
         $this->connection->exec('SET NAMES ' . $this->quote($charset));
     }
 
-    public function query($type, $sql, $as_object = false, array $params = null)
+    public function query($type, $sql, $asObject = true)
     {
         // Make sure the database is connected
         $this->connection or $this->connect();
@@ -114,19 +114,16 @@ class PdoMysql extends \Bootphp\Database\Database
         $this->lastQuery = $sql;
 
         if ($type === 'select') {
-            // Convert the result into an array, as PDOStatement::rowCount is not reliable
-            if ($as_object === false) {
+            if ($asObject === false) {
                 $result->setFetchMode(\PDO::FETCH_ASSOC);
-            } elseif (is_string($as_object)) {
-                $result->setFetchMode(\PDO::FETCH_CLASS, $as_object, $params);
             } else {
                 $result->setFetchMode(\PDO::FETCH_CLASS, 'stdClass');
             }
 
-            $result = $result->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $result->fetchAll();
 
             // Return an iterator of results
-            return new Result\Cached($result, $sql, $as_object, $params);
+            return new Result\Cached($result, $sql, $asObject);
         } elseif ($type === 'insert') {
             // Return a list of insert id and rows created
             return array(

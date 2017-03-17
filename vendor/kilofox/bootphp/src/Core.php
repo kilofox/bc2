@@ -229,7 +229,7 @@ class Core
                     // Set permissions (must be manually set to fix umask issues)
                     chmod($settings['cacheDir'], 0755);
                 } catch (Exception $e) {
-                    throw new BootphpException('Could not create cache directory :dir', array(':dir' => Debug::path($settings['cacheDir'])));
+                    throw new BootphpException('Could not create cache directory ' . Debug::path($settings['cacheDir']) . '.');
                 }
             }
 
@@ -241,7 +241,7 @@ class Core
         }
 
         if (!is_writable(self::$cacheDir)) {
-            throw new BootphpException('Directory :dir must be writable', array(':dir' => Debug::path(self::$cacheDir)));
+            throw new BootphpException('Directory ' . Debug::path(self::$cacheDir) . ' must be writable.');
         }
 
         if (isset($settings['cacheLife'])) {

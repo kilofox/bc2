@@ -68,7 +68,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
     public function table($table)
     {
         if (!is_string($table))
-            throw new BootphpException('INSERT INTO syntax does not allow table aliasing');
+            throw new BootphpException('INSERT INTO syntax does not allow table aliasing.');
 
         $this->table = $table;
 
@@ -98,7 +98,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
     public function values(array $values)
     {
         if (!is_array($this->values)) {
-            throw new BootphpException('INSERT INTO ... SELECT statements cannot be combined with INSERT INTO ... VALUES');
+            throw new BootphpException('INSERT INTO ... SELECT statements cannot be combined with INSERT INTO ... VALUES.');
         }
 
         // Get all of the passed values
@@ -120,7 +120,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
     public function select(Query $query)
     {
         if ($query->type() !== 'select') {
-            throw new BootphpException('Only SELECT queries can be combined with INSERT queries');
+            throw new BootphpException('Only SELECT queries can be combined with INSERT queries.');
         }
 
         $this->values = $query;

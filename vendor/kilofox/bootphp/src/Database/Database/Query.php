@@ -232,26 +232,17 @@ class Query
     /**
      * Execute the current query on the given database.
      *
-     * @param   mixed    $db            Database instance or name of instance
-     * @param   string   $as_object     Result object classname, true for stdClass or false for array
-     * @param   array    $objectParams Result object constructor arguments
-     * @return  object   Database_Result for SELECT queries
-     * @return  mixed    The insert id for INSERT queries
-     * @return  integer  Number of affected rows for all other queries
+     * @param   mixed   $db             Database instance or name of instance
+     * @param   boolean $asObject       true for stdClass or false for array
+     * @return  object  Database_Result for SELECT queries
+     * @return  mixed   The insert id for INSERT queries
+     * @return  integer Number of affected rows for all other queries
      */
-    public function execute($db = null, $as_object = null, $objectParams = null)
+    public function execute($db = null, $asObject = true)
     {
         if (!is_object($db)) {
             // Get the database instance
             $db = Database::instance($db);
-        }
-
-        if ($as_object === null) {
-            $as_object = $this->asObject;
-        }
-
-        if ($objectParams === null) {
-            $objectParams = $this->objectParams;
         }
 
         // Compile the SQL query
@@ -262,18 +253,19 @@ class Query
             $cacheKey = 'Database::query("' . $db . '", "' . $sql . '")';
 
             // Read the cache first to delete a possible hit with lifetime <= 0
-            if (($result = Core::cache($cacheKey, null, $this->lifetime)) !== null && !$this->forceExecute) {
+            $result = Core::cache($cacheKey, null, $this->lifetime);
+            if ($result !== null && !$this->forceExecute) {
                 // Return a cached result
-                return new Database_Result_Cached($result, $sql, $as_object, $objectParams);
+                return new Result\Cached($result, $sql, $asObject);
             }
         }
 
         // Execute the query
-        $result = $db->query($this->type, $sql, $as_object, $objectParams);
+        $result = $db->query($this->type, $sql, $asObject);
 
         if (isset($cacheKey) && $this->lifetime > 0) {
             // Cache the result array
-            Core::cache($cacheKey, $result->as_array(), $this->lifetime);
+            Core::cache($cacheKey, $result->asArray(), $this->lifetime);
         }
 
         return $result;

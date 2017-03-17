@@ -79,7 +79,7 @@ class URL
                 // Check that host does not contain forbidden characters (see RFC 952 and RFC 2181)
                 // use preg_replace() instead of preg_match() to prevent DoS attacks with long host names
                 if ($host && '' !== preg_replace('/(?:^\[)?[a-zA-Z0-9-:\]_]+\.?/', '', $host)) {
-                    throw new BootphpException('Invalid host `' . $host . '`');
+                    throw new BootphpException('Invalid host `' . $host . '`.');
                 }
 
                 // Validate $host, see if it matches trusted hosts

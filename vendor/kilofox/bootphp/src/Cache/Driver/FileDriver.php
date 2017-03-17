@@ -351,7 +351,7 @@ class FileDriver extends \Bootphp\Cache\Cache
                 } catch (ErrorException $e) {
                     // Catch any delete directory warnings
                     if ($e->getCode() === E_WARNING) {
-                        throw new \Bootphp\BootphpException(__METHOD__ . ' failed to delete directory : '.$file->getRealPath());
+                        throw new \Bootphp\BootphpException(__METHOD__ . ' failed to delete directory: '.$file->getRealPath() . '.');
                     }
                     throw $e;
                 }

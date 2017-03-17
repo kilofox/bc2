@@ -2,9 +2,6 @@
 
 namespace App\Model;
 
-use Bootphp\Model;
-use Bootphp\Database\DB;
-
 /**
  * 节点模型。
  *
@@ -19,13 +16,13 @@ class CategoryModel extends \Bootphp\ORM\ORM
     protected $D_has_many = array(
         'articles' => array(
             'model' => 'article',
-           // 'through' => 'articles_categories',
+        // 'through' => 'articles_categories',
         ),
     );
     protected $d_belongs_to = array(
         'articles' => array(
             'model' => 'article',
-           // 'through' => 'articles_categories',
+        // 'through' => 'articles_categories',
         ),
     );
 
