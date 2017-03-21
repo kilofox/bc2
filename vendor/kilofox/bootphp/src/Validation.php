@@ -263,7 +263,7 @@ class Validation implements \ArrayAccess
     {
         if (Core::$profiling === true) {
             // Start a new benchmark
-            $benchmark = Profiler::start('Validation', __FUNCTION__);
+            $benchmark = \Bootphp\Profiler\Profiler::start('Validation', __FUNCTION__);
         }
 
         // New data set
@@ -396,7 +396,7 @@ class Validation implements \ArrayAccess
 
         if (isset($benchmark)) {
             // Stop benchmarking
-            Profiler::stop($benchmark);
+            \Bootphp\Profiler\Profiler::stop($benchmark);
         }
 
         return empty($this->_errors);

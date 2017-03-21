@@ -456,10 +456,10 @@ class ORM extends \Bootphp\Model implements \Serializable
                 $through = $this->hasMany[$column]['through'];
 
                 // Join on through model's target foreign key (farKey) and target model's primary key
-                $join_col1 = $through . '.' . $this->hasMany[$column]['farKey'];
-                $join_col2 = $model->tableName . '.' . $model->primaryKey;
+                $joinCol1 = $through . '.' . $this->hasMany[$column]['farKey'];
+                $joinCol2 = $model->tableName . '.' . $model->primaryKey;
 
-                $model->join($through)->on($join_col1, '=', $join_col2);
+                $model->join($through)->on($joinCol1, '=', $joinCol2);
 
                 // Through table's source foreign key (foreignKey) should be this model's primary key
                 $col = $through . '.' . $this->hasMany[$column]['foreignKey'];
@@ -572,7 +572,7 @@ class ORM extends \Bootphp\Model implements \Serializable
      * Returns the values of this object as an array, including any related one-one
      * models that have already been loaded using with()
      *
-     * @return array
+     * @return  array
      */
     public function asArray()
     {
@@ -596,7 +596,7 @@ class ORM extends \Bootphp\Model implements \Serializable
      * nested using 'object1:object2' syntax.
      *
      * @param   string  $targetPath    Target model to bind to
-     * @return ORM
+     * @return  ORM
      */
     public function with($targetPath)
     {
@@ -620,7 +620,7 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         // Target alias is at the end
-        $target_alias = $alias;
+        $targetAlias = $alias;
 
         // Pop-off top alias to get the parent path (user:photo:tag becomes user:photo - the parent table prefix)
         array_pop($aliases);
@@ -648,18 +648,18 @@ class ORM extends \Bootphp\Model implements \Serializable
             $this->select([$name, $alias]);
         }
 
-        if (isset($parent->belongsTo[$target_alias])) {
+        if (isset($parent->belongsTo[$targetAlias])) {
             // Parent belongs_to target, use target's primary key and parent's foreign key
-            $join_col1 = $targetPath . '.' . $target->primaryKey;
-            $join_col2 = $parentPath . '.' . $parent->belongsTo[$target_alias]['foreignKey'];
+            $joinCol1 = $targetPath . '.' . $target->primaryKey;
+            $joinCol2 = $parentPath . '.' . $parent->belongsTo[$targetAlias]['foreignKey'];
         } else {
             // Parent has_one target, use parent's primary key as target's foreign key
-            $join_col1 = $parentPath . '.' . $parent->primaryKey;
-            $join_col2 = $targetPath . '.' . $parent->hasOne[$target_alias]['foreignKey'];
+            $joinCol1 = $parentPath . '.' . $parent->primaryKey;
+            $joinCol2 = $targetPath . '.' . $parent->hasOne[$targetAlias]['foreignKey'];
         }
 
         // Join the related object into the result
-        $this->join([$target->tableName, $targetPath], 'LEFT')->on($join_col1, '=', $join_col2);
+        $this->join([$target->tableName, $targetPath], 'LEFT')->on($joinCol1, '=', $joinCol2);
 
         return $this;
     }
@@ -667,8 +667,8 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Initializes the Database Builder to given query type.
      *
-     * @param  integer $type Type of Database query
-     * @return ORM
+     * @param   integer $type   Type of Database query
+     * @return  ORM
      */
     protected function build($type)
     {
@@ -702,13 +702,14 @@ class ORM extends \Bootphp\Model implements \Serializable
      * Finds and loads a single database row into the object.
      *
      * @chainable
-     * @throws BootphpException
-     * @return ORM
+     * @throws  BootphpException
+     * @return  ORM
      */
     public function find()
     {
-        if ($this->loaded)
+        if ($this->loaded) {
             throw new BootphpException('Method find() cannot be called on loaded objects.');
+        }
 
         if (!empty($this->loadWith)) {
             foreach ($this->loadWith as $alias) {
@@ -725,8 +726,8 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Finds multiple database rows and returns an iterator of the rows found.
      *
-     * @throws BootphpException
-     * @return Database_Result
+     * @throws  Bootphp\BootphpException
+     * @return  Bootphp\Database\Database\Result
      */
     public function findAll()
     {
@@ -763,8 +764,8 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         // Select all columns by default
-        if ($this->hasMany || $this->belongsTo) {
-            $this->dbBuilder->select();
+        if (empty($this->loadWith)) {
+            $this->dbBuilder->select($this->tableName . '.*');
         } else {
             $this->dbBuilder->select($this->tableName . '.*');
         }
@@ -781,14 +782,14 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         if ($multiple === true) {
-            $result = $this->dbBuilder->asObject(true)->execute($this->db);
+            $result = $this->dbBuilder->execute($this->db);
 
             $this->reset();
 
             return $result->asArray();
         } else {
             // Load the result as an associative array
-            $result = $this->dbBuilder->asAssoc()->execute($this->db);
+            $result = $this->dbBuilder->execute($this->db, false);
 
             $this->reset();
 
@@ -805,11 +806,11 @@ class ORM extends \Bootphp\Model implements \Serializable
     }
 
     /**
-     * Loads an array of values into into the current object.
+     * Loads an array of values into the current object.
      *
      * @chainable
-     * @param  array $values Values to load
-     * @return ORM
+     * @param   array   $values Values to load
+     * @return  ORM
      */
     protected function loadValues(array $values)
     {
@@ -1876,7 +1877,7 @@ class ORM extends \Bootphp\Model implements \Serializable
 
         // Only reload the object if we have one to reload
         if ($this->loaded) {
-            return $this->clear()->where($this->objectName . '.' . $this->primaryKey, '=', $this->primaryKeyValue)->find();
+            return $this->clear()->where($this->primaryKey, '=', $this->primaryKeyValue)->find();
         } else {
             return $this->clear();
         }

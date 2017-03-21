@@ -125,39 +125,6 @@ class Query
     }
 
     /**
-     * Returns results as associative arrays
-     *
-     * @return  $this
-     */
-    public function asAssoc()
-    {
-        $this->asObject = false;
-
-        $this->objectParams = [];
-
-        return $this;
-    }
-
-    /**
-     * Returns results as objects
-     *
-     * @param   string  $class  classname or true for stdClass
-     * @param   array   $params
-     * @return  $this
-     */
-    public function asObject($class = true, array $params = null)
-    {
-        $this->asObject = $class;
-
-        if ($params) {
-            // Add object parameters
-            $this->objectParams = $params;
-        }
-
-        return $this;
-    }
-
-    /**
      * Set the value of a parameter in the query.
      *
      * @param   string   $param  parameter key to replace

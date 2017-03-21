@@ -19,7 +19,7 @@ class MenuModel extends \Bootphp\ORM\ORM
      */
     public function menu($current = '')
     {
-        $menus = $this->orderBy('sort')->findAll();print_r($menus);
+        $menus = $this->orderBy('sort')->findAll();
 
         $menu = ['tabs' => [], 'default' => 0];
         $defaultId = 0;
@@ -29,10 +29,9 @@ class MenuModel extends \Bootphp\ORM\ORM
                 $menu['tabs'][$node->id] = $node;
                 $menu['tabs'][$node->id]->apps[] = $node->application;
                 $menu['tabs'][$node->id]->subMenu = [];
-                if ($node->application == $current)
+                if ($node->controller == $current)
                     $menu['default'] = $node->id;
-            }
-            else {
+            } else {
                 $subMenu[] = $node;
             }
         }

@@ -4,6 +4,7 @@ namespace Bootphp\Request\Client;
 
 use Bootphp\Request;
 use Bootphp\Response;
+use Bootphp\Profiler\Profiler;
 
 /**
  * Request Client for internal execution
@@ -51,13 +52,13 @@ class Internal extends \Bootphp\Request\Client
             // Set the benchmark name
             $benchmark = '"' . $request->uri() . '"';
 
-            if ($request !== Request::$initial AND Request::$current) {
+            if ($request !== Request::$initial && Request::$current) {
                 // Add the parent request uri
                 $benchmark .= ' « "' . Request::$current->uri() . '"';
             }
 
             // Start benchmarking
-            $benchmark = \Bootphp\Profiler::start('Requests', $benchmark);
+            $benchmark = Profiler::start('Requests', $benchmark);
         }
 
         // Store the currently active request
@@ -111,7 +112,7 @@ class Internal extends \Bootphp\Request\Client
 
         if (isset($benchmark)) {
             // Stop the benchmark
-            \Bootphp\Profiler::stop($benchmark);
+            Profiler::stop($benchmark);
         }
 
         // Return the response

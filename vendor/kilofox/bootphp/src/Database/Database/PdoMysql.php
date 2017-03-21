@@ -3,7 +3,7 @@
 namespace Bootphp\Database\Database;
 
 use Bootphp\BootphpException;
-use Bootphp\Profiler;
+use Bootphp\Profiler\Profiler;
 
 /**
  * PDO database connection.

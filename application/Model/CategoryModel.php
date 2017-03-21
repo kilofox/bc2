@@ -13,13 +13,13 @@ namespace App\Model;
 class CategoryModel extends \Bootphp\ORM\ORM
 {
     protected $tableName = 'article_categories';
-    protected $D_has_many = array(
+    protected $hasManyd = array(
         'articles' => array(
             'model' => 'article',
         // 'through' => 'articles_categories',
         ),
     );
-    protected $d_belongs_to = array(
+    protected $belongsTod = array(
         'articles' => array(
             'model' => 'article',
         // 'through' => 'articles_categories',

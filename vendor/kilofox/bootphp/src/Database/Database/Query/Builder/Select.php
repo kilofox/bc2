@@ -187,7 +187,7 @@ class Select extends Where
     {
         $columns = func_get_args();
 
-        call_user_func_array(array($this->lastJoin, 'using'), $columns);
+        call_user_func_array([$this->lastJoin, 'using'], $columns);
 
         return $this;
     }
@@ -217,7 +217,7 @@ class Select extends Where
      */
     public function having($column, $op, $value = null)
     {
-        $this->having[] = array('AND' => [$column, $op, $value]);
+        $this->having[] = ['AND' => [$column, $op, $value]];
 
         return $this;
     }
@@ -232,7 +232,7 @@ class Select extends Where
      */
     public function orHaving($column, $op, $value = null)
     {
-        $this->having[] = array('OR' => [$column, $op, $value]);
+        $this->having[] = ['OR' => [$column, $op, $value]];
 
         return $this;
     }
@@ -244,7 +244,7 @@ class Select extends Where
      */
     public function havingOpen()
     {
-        $this->having[] = array('AND' => '(');
+        $this->having[] = ['AND' => '('];
 
         return $this;
     }
@@ -256,7 +256,7 @@ class Select extends Where
      */
     public function orHavingOpen()
     {
-        $this->having[] = array('OR' => '(');
+        $this->having[] = ['OR' => '('];
 
         return $this;
     }
@@ -268,7 +268,7 @@ class Select extends Where
      */
     public function havingClose()
     {
-        $this->having[] = array('AND' => ')');
+        $this->having[] = ['AND' => ')'];
 
         return $this;
     }
@@ -280,7 +280,7 @@ class Select extends Where
      */
     public function orHavingClose()
     {
-        $this->having[] = array('OR' => ')');
+        $this->having[] = ['OR' => ')'];
 
         return $this;
     }
@@ -298,9 +298,13 @@ class Select extends Where
         if (is_string($select)) {
             $select = DB::select()->from($select);
         }
-        if (!$select instanceof Database\Query\Builder\Select)
-            throw new \Bootphp\BootphpException('First parameter must be a string or an instance of Database\Query\Builder\Select.');
-        $this->union [] = array('select' => $select, 'all' => $all);
+
+        if (!$select instanceof Select) {
+            throw new \Bootphp\BootphpException('First parameter must be a string or an instance of Bootphp\Database\Database\Query\Builder\Select.');
+        }
+
+        $this->union [] = ['select' => $select, 'all' => $all];
+
         return $this;
     }
 
@@ -312,7 +316,7 @@ class Select extends Where
      */
     public function offset($number)
     {
-        $this->offset = ($number === null) ? null : (int) $number;
+        $this->offset = $number === null ? null : (int) $number;
 
         return $this;
     }
@@ -356,9 +360,9 @@ class Select extends Where
             $query .= ' ' . $this->compileJoin($db, $this->join);
         }
 
-        if (!empty($this->_where)) {
+        if (!empty($this->where)) {
             // Add selection conditions
-            $query .= ' WHERE ' . $this->compileConditions($db, $this->_where);
+            $query .= ' WHERE ' . $this->compileConditions($db, $this->where);
         }
 
         if (!empty($this->groupBy)) {
@@ -409,7 +413,7 @@ class Select extends Where
      */
     public function reset()
     {
-        $this->select = $this->from = $this->join = $this->_where = $this->groupBy = $this->having = $this->orderBy = $this->union = [];
+        $this->select = $this->from = $this->join = $this->where = $this->groupBy = $this->having = $this->orderBy = $this->union = [];
 
         $this->distinct = false;
 

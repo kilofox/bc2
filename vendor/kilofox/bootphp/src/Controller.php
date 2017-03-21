@@ -152,8 +152,9 @@ abstract class Controller
      */
     public function redirect($uri = '', $code = 303)
     {
-        if (!in_array($code, [300, 301, 302, 303, 307]))
+        if (!in_array($code, [300, 301, 302, 303, 307])) {
             throw new BootphpException('Invalid redirect code `' . $code . '`.');
+        }
 
         if (strpos($uri, '://') === false) {
             // Make the URI into a URL

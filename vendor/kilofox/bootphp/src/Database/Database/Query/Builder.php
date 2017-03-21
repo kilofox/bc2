@@ -43,23 +43,22 @@ abstract class Builder extends \Bootphp\Database\Database\Query
      */
     protected function compileConditions(Database $db, array $conditions)
     {
-        $last_condition = null;
+        $lastCondition = null;
 
         $sql = '';
         foreach ($conditions as $group) {
             // Process groups of conditions
             foreach ($group as $logic => $condition) {
                 if ($condition === '(') {
-                    if (!empty($sql) && $last_condition !== '(') {
+                    if (!empty($sql) && $lastCondition !== '(') {
                         // Include logic operator
                         $sql .= ' ' . $logic . ' ';
                     }
-
                     $sql .= '(';
                 } elseif ($condition === ')') {
                     $sql .= ')';
                 } else {
-                    if (!empty($sql) && $last_condition !== '(') {
+                    if (!empty($sql) && $lastCondition !== '(') {
                         // Add the logic operator
                         $sql .= ' ' . $logic . ' ';
                     }
@@ -71,7 +70,7 @@ abstract class Builder extends \Bootphp\Database\Database\Query
                         if ($op === '=') {
                             // Convert "val = null" to "val IS null"
                             $op = 'IS';
-                        } elseif ($op === '!=' OR $op === '<>') {
+                        } elseif ($op === '!=' || $op === '<>') {
                             // Convert "val != null" to "valu IS NOT null"
                             $op = 'IS NOT';
                         }
@@ -84,19 +83,19 @@ abstract class Builder extends \Bootphp\Database\Database\Query
                         // BETWEEN always has exactly two arguments
                         list($min, $max) = $value;
 
-                        if ((is_string($min) && array_key_exists($min, $this->_parameters)) === false) {
+                        if ((is_string($min) && array_key_exists($min, $this->parameters)) === false) {
                             // Quote the value, it is not a parameter
                             $min = $db->quote($min);
                         }
 
-                        if ((is_string($max) && array_key_exists($max, $this->_parameters)) === false) {
+                        if ((is_string($max) && array_key_exists($max, $this->parameters)) === false) {
                             // Quote the value, it is not a parameter
                             $max = $db->quote($max);
                         }
 
                         // Quote the min and max value
                         $value = $min . ' AND ' . $max;
-                    } elseif ((is_string($value) && array_key_exists($value, $this->_parameters)) === false) {
+                    } elseif ((is_string($value) && array_key_exists($value, $this->parameters)) === false) {
                         // Quote the value, it is not a parameter
                         $value = $db->quote($value);
                     }
@@ -115,7 +114,7 @@ abstract class Builder extends \Bootphp\Database\Database\Query
                     $sql .= trim($column . ' ' . $op . ' ' . $value);
                 }
 
-                $last_condition = $condition;
+                $lastCondition = $condition;
             }
         }
 
@@ -139,7 +138,7 @@ abstract class Builder extends \Bootphp\Database\Database\Query
             // Quote the column name
             $column = $db->quoteColumn($column);
 
-            if ((is_string($value) && array_key_exists($value, $this->_parameters)) === false) {
+            if ((is_string($value) && array_key_exists($value, $this->parameters)) === false) {
                 // Quote the value, it is not a parameter
                 $value = $db->quote($value);
             }

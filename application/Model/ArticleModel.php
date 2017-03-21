@@ -17,14 +17,25 @@ class ArticleModel extends \Bootphp\ORM\ORM
 {
     protected $objectName = 'article';
     protected $tableName = 'articles';
-    protected $hasMany = array(
-        'categories' => array(
+    protected $belongsTod = [
+        'author' => [
+            'model' => 'user',
+            'foreignKey' => 'author_id'
+        ],
+    ];
+    protected $hasOned = [
+        'author' => [
+            'model' => 'user',
+            'foreignKey' => 'id'
+        ],
+    ];
+    protected $hasMany = [
+        'categories' => [
             'model' => 'category',
-            'through' => 'articles_categories',
-            'farKey' => 'category_id',
-        //'foreign_key' => 'id'
-        ),
-    );
+            'foreignKey' => 'id',
+            'farKey' => 'id'
+        ],
+    ];
 
     /**
      * 文章列表
@@ -52,10 +63,10 @@ class ArticleModel extends \Bootphp\ORM\ORM
             $node->operation = '<a href="' . $baseUrl . '/articles/admin/' . $node->id . '/edit">编辑</a>';
         }
         $pager = \Bootphp\Pagination\Pagination::factory(array(
-                    'total_items' => count($articles),
-                    'items_per_page' => $itemsPerPage,
-                    'first_page_in_url' => true,
-                    'view' => 'metro'
+                'total_items' => count($articles),
+                'items_per_page' => $itemsPerPage,
+                'first_page_in_url' => true,
+                'view' => 'metro'
         ));
         $list['data'] = $articles;
         $list['pager'] = $pager->render();

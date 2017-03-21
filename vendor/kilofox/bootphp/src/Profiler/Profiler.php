@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp;
+namespace Bootphp\Profiler;
 
 use Bootphp\Cache;
 
@@ -19,14 +19,18 @@ use Bootphp\Cache;
 class Profiler
 {
     /**
-     * @var  integer   maximum number of application stats to keep
+     * Maximum number of application stats to keep.
+     *
+     * @var     integer
      */
     public static $rollover = 1000;
 
     /**
-     * @var  array  collected benchmarks
+     * Collected benchmarks.
+     *
+     * @var     array
      */
-    protected static $_marks = array();
+    protected static $marks = [];
 
     /**
      * Starts a new benchmark and returns a unique token. The returned token
@@ -34,8 +38,8 @@ class Profiler
      *
      *     $token = Profiler::start('test', 'profiler');
      *
-     * @param   string  $group  group name
-     * @param   string  $name   benchmark name
+     * @param   string  $group  Group name
+     * @param   string  $name   Benchmark name
      * @return  string
      */
     public static function start($group, $name)
@@ -43,10 +47,9 @@ class Profiler
         static $counter = 0;
 
         // Create a unique token based on the counter
-        $token = 'kp/' . base_convert($counter++, 10, 32);
+        $token = 'bp_' . base_convert($counter++, 10, 32);
 
-        self::$_marks[$token] = array
-            (
+        self::$marks[$token] = [
             'group' => strtolower($group),
             'name' => (string) $name,
             // Start the benchmark
@@ -55,7 +58,7 @@ class Profiler
             // Set the stop keys without values
             'stop_time' => false,
             'stop_memory' => false,
-        );
+        ];
 
         return $token;
     }
@@ -71,8 +74,8 @@ class Profiler
     public static function stop($token)
     {
         // Stop the benchmark
-        self::$_marks[$token]['stop_time'] = microtime(true);
-        self::$_marks[$token]['stop_memory'] = memory_get_usage();
+        self::$marks[$token]['stop_time'] = microtime(true);
+        self::$marks[$token]['stop_memory'] = memory_get_usage();
     }
 
     /**
@@ -88,7 +91,7 @@ class Profiler
     public static function delete($token)
     {
         // Remove the benchmark
-        unset(self::$_marks[$token]);
+        unset(self::$marks[$token]);
     }
 
     /**
@@ -100,9 +103,9 @@ class Profiler
      */
     public static function groups()
     {
-        $groups = array();
+        $groups = [];
 
-        foreach (self::$_marks as $token => $mark) {
+        foreach (self::$marks as $token => $mark) {
             // Sort the tokens by the group and name
             $groups[$mark['group']][$mark['name']][] = $token;
         }
@@ -115,32 +118,34 @@ class Profiler
      *
      *     $stats = Profiler::stats($tokens);
      *
-     * @param   array   $tokens profiler tokens
+     * @param   array   $tokens Profiler tokens
      * @return  array   min, max, average, total
      * @uses    Profiler::total
      */
     public static function stats(array $tokens)
     {
         // Min and max are unknown by default
-        $min = $max = array(
+        $min = $max = [
             'time' => null,
-            'memory' => null);
+            'memory' => null
+        ];
 
         // Total values are always integers
-        $total = array(
+        $total = [
             'time' => 0,
-            'memory' => 0);
+            'memory' => 0
+        ];
 
         foreach ($tokens as $token) {
             // Get the total time and memory for this benchmark
             list($time, $memory) = self::total($token);
 
-            if ($max['time'] === null OR $time > $max['time']) {
+            if ($max['time'] === null || $time > $max['time']) {
                 // Set the maximum time
                 $max['time'] = $time;
             }
 
-            if ($min['time'] === null OR $time < $min['time']) {
+            if ($min['time'] === null || $time < $min['time']) {
                 // Set the minimum time
                 $min['time'] = $time;
             }
@@ -148,12 +153,12 @@ class Profiler
             // Increase the total time
             $total['time'] += $time;
 
-            if ($max['memory'] === null OR $memory > $max['memory']) {
+            if ($max['memory'] === null || $memory > $max['memory']) {
                 // Set the maximum memory
                 $max['memory'] = $memory;
             }
 
-            if ($min['memory'] === null OR $memory < $min['memory']) {
+            if ($min['memory'] === null || $memory < $min['memory']) {
                 // Set the minimum memory
                 $min['memory'] = $memory;
             }
@@ -166,73 +171,83 @@ class Profiler
         $count = count($tokens);
 
         // Determine the averages
-        $average = array(
-            'time' => $total['time'] / $count,
-            'memory' => $total['memory'] / $count);
+        $average = [
+            'time' => number_format($total['time'] / $count, 4),
+            'memory' => number_format($total['memory'] / $count / 1024, 2)
+        ];
 
-        return array(
+        $min['time'] = number_format($min['time'], 4);
+        $min['memory'] = number_format($min['memory'] / 1024, 2);
+        $max['time'] = number_format($max['time'], 4);
+        $max['memory'] = number_format($max['memory'] / 1024, 2);
+        $total['time'] = number_format($total['time'], 4);
+        $total['memory'] = number_format($total['memory'] / 1024, 2);
+
+        return [
             'min' => $min,
             'max' => $max,
             'total' => $total,
-            'average' => $average);
+            'average' => $average
+        ];
     }
 
     /**
      * Gets the min, max, average and total of profiler groups as an array.
      *
-     *     $stats = Profiler::group_stats('test');
+     *     $stats = Profiler::groupStats('test');
      *
-     * @param   mixed   $groups single group name string, or array with group names; all groups by default
+     * @param   mixed   $groups Single group name string, or array with group names; all groups by default
      * @return  array   min, max, average, total
      * @uses    Profiler::groups
      * @uses    Profiler::stats
      */
-    public static function group_stats($groups = null)
+    public static function groupStats($groups = null)
     {
         // Which groups do we need to calculate stats for?
-        $groups = ($groups === null) ? self::groups() : array_intersect_key(self::groups(), array_flip((array) $groups));
+        $groups = $groups === null ? self::groups() : array_intersect_key(self::groups(), array_flip((array) $groups));
 
         // All statistics
-        $stats = array();
+        $stats = [];
 
         foreach ($groups as $group => $names) {
             foreach ($names as $name => $tokens) {
-                // Store the stats for each subgroup.
-                // We only need the values for "total".
+                // Store the stats for each subgroup. We only need the values for "total".
                 $_stats = self::stats($tokens);
                 $stats[$group][$name] = $_stats['total'];
             }
         }
 
         // Group stats
-        $groups = array();
+        $groups = [];
 
         foreach ($stats as $group => $names) {
             // Min and max are unknown by default
-            $groups[$group]['min'] = $groups[$group]['max'] = array(
+            $groups[$group]['min'] = $groups[$group]['max'] = [
                 'time' => null,
-                'memory' => null);
+                'memory' => null
+            ];
 
             // Total values are always integers
-            $groups[$group]['total'] = array(
+            $groups[$group]['total'] = [
                 'time' => 0,
-                'memory' => 0);
+                'memory' => 0
+            ];
 
             foreach ($names as $total) {
-                if (!isset($groups[$group]['min']['time']) OR $groups[$group]['min']['time'] > $total['time']) {
+                if (!isset($groups[$group]['min']['time']) || $groups[$group]['min']['time'] > $total['time']) {
                     // Set the minimum time
                     $groups[$group]['min']['time'] = $total['time'];
                 }
-                if (!isset($groups[$group]['min']['memory']) OR $groups[$group]['min']['memory'] > $total['memory']) {
+                if (!isset($groups[$group]['min']['memory']) || $groups[$group]['min']['memory'] > $total['memory']) {
                     // Set the minimum memory
                     $groups[$group]['min']['memory'] = $total['memory'];
                 }
 
-                if (!isset($groups[$group]['max']['time']) OR $groups[$group]['max']['time'] < $total['time']) {
+                if (!isset($groups[$group]['max']['time']) || $groups[$group]['max']['time'] < $total['time']) {
                     // Set the maximum time
                     $groups[$group]['max']['time'] = $total['time'];
                 }
-                if (!isset($groups[$group]['max']['memory']) OR $groups[$group]['max']['memory'] < $total['memory']) {
+                if (!isset($groups[$group]['max']['memory']) || $groups[$group]['max']['memory'] < $total['memory']) {
                     // Set the maximum memory
                     $groups[$group]['max']['memory'] = $total['memory'];
                 }
@@ -259,12 +274,12 @@ class Profiler
      *     list($time, $memory) = Profiler::total($token);
      *
      * @param   string  $token
-     * @return  array   execution time, memory
+     * @return  array   Execution time, memory
      */
     public static function total($token)
     {
         // Import the benchmark data
-        $mark = self::$_marks[$token];
+        $mark = self::$marks[$token];
 
         if ($mark['stop_time'] === false) {
             // The benchmark has not been stopped yet
@@ -272,13 +287,12 @@ class Profiler
             $mark['stop_memory'] = memory_get_usage();
         }
 
-        return array
-            (
+        return [
             // Total time in seconds
             $mark['stop_time'] - $mark['start_time'],
             // Amount of memory in bytes
             $mark['stop_memory'] - $mark['start_memory'],
-        );
+        ];
     }
 
     /**
@@ -287,7 +301,7 @@ class Profiler
      *
      *     list($time, $memory) = Profiler::application();
      *
-     * @return  array  execution time, memory
+     * @return  array   Execution time, memory
      * @uses    Core::cache
      */
     public static function application()
@@ -296,19 +310,23 @@ class Profiler
         $cache = Cache\Cache::instance();
         $stats = $cache->get('profiler_application_stats', null, 86400);
 
-        if (!is_array($stats) OR $stats['count'] > self::$rollover) {
+        if (!is_array($stats) || $stats['count'] > self::$rollover) {
             // Initialize the stats array
-            $stats = array(
-                'min' => array(
+            $stats = [
+                'min' => [
                     'time' => null,
-                    'memory' => null),
-                'max' => array(
+                    'memory' => null
+                ],
+                'max' => [
                     'time' => null,
-                    'memory' => null),
-                'total' => array(
+                    'memory' => null
+                ],
+                'total' => [
                     'time' => null,
-                    'memory' => null),
-                'count' => 0);
+                    'memory' => null
+                ],
+                'count' => 0
+            ];
         }
 
         // Get the application run time
@@ -318,12 +336,12 @@ class Profiler
         $memory = memory_get_usage() - START_MEMORY;
 
         // Calculate max time
-        if ($stats['max']['time'] === null OR $time > $stats['max']['time']) {
+        if ($stats['max']['time'] === null || $time > $stats['max']['time']) {
             $stats['max']['time'] = $time;
         }
 
         // Calculate min time
-        if ($stats['min']['time'] === null OR $time < $stats['min']['time']) {
+        if ($stats['min']['time'] === null || $time < $stats['min']['time']) {
             $stats['min']['time'] = $time;
         }
 
@@ -331,12 +349,12 @@ class Profiler
         $stats['total']['time'] += $time;
 
         // Calculate max memory
-        if ($stats['max']['memory'] === null OR $memory > $stats['max']['memory']) {
+        if ($stats['max']['memory'] === null || $memory > $stats['max']['memory']) {
             $stats['max']['memory'] = $memory;
         }
 
         // Calculate min memory
-        if ($stats['min']['memory'] === null OR $memory < $stats['min']['memory']) {
+        if ($stats['min']['memory'] === null || $memory < $stats['min']['memory']) {
             $stats['min']['memory'] = $memory;
         }
 
@@ -347,9 +365,10 @@ class Profiler
         $stats['count'] ++;
 
         // Determine the averages
-        $stats['average'] = array(
+        $stats['average'] = [
             'time' => $stats['total']['time'] / $stats['count'],
-            'memory' => $stats['total']['memory'] / $stats['count']);
+            'memory' => $stats['total']['memory'] / $stats['count']
+        ];
 
         // Cache the new stats
         $cache->set('profiler_application_stats', $stats);
@@ -361,6 +380,37 @@ class Profiler
 
         // Return the total application run time and memory usage
         return $stats;
+    }
+
+    /**
+     * Display the statistics that have been collected.
+     *
+     * @return  void
+     */
+    public static function display()
+    {
+        $groups = self::groups();
+        $groupStats = self::groupStats();
+
+        $application = self::application();
+        $application['min']['time'] = number_format($application['min']['time'], 4);
+        $application['min']['memory'] = number_format($application['min']['memory'] / 1024, 2);
+        $application['max']['time'] = number_format($application['max']['time'], 4);
+        $application['max']['memory'] = number_format($application['max']['memory'] / 1024, 2);
+        $application['average']['time'] = number_format($application['average']['time'], 4);
+        $application['average']['memory'] = number_format($application['average']['memory'] / 1024, 2);
+        $application['current']['time'] = number_format($application['current']['time'], 4);
+        $application['current']['memory'] = number_format($application['current']['memory'] / 1024, 2);
+
+        $view = new \Bootphp\View('stats');
+        $view->layout(false)
+            ->templatePath(SYS_PATH . '/Profiler/View/')
+            ->set([
+                'groups' => $groups,
+                'groupStats' => $groupStats,
+                'application' => $application]
+        );
+        echo $view->render();
     }
 
 }
