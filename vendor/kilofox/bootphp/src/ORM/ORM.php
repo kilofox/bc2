@@ -46,7 +46,7 @@ class ORM extends \Bootphp\Model implements \Serializable
             $model = (string) $path . ucfirst($model) . 'Model';
         }
 
-        return new $model();
+        return new $model;
     }
 
     /**
@@ -146,6 +146,13 @@ class ORM extends \Bootphp\Model implements \Serializable
      * @var     string
      */
     protected $tableName;
+
+    /**
+     * Table alias.
+     *
+     * @var     string
+     */
+    protected $tableAlias;
 
     /**
      * Table columns.
@@ -756,7 +763,7 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     protected function loadResult($multiple = false)
     {
-        $this->dbBuilder->from($this->tableName);
+        $this->dbBuilder->from([$this->tableName, $this->tableAlias === null ? $this->objectName : $this->tableAlias]);
 
         if ($multiple === false) {
             // Only fetch 1 record
@@ -764,10 +771,10 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         // Select all columns by default
-        if (empty($this->loadWith)) {
-            $this->dbBuilder->select($this->tableName . '.*');
+        if ($this->tableAlias === null) {
+            $this->dbBuilder->select('*');
         } else {
-            $this->dbBuilder->select($this->tableName . '.*');
+            $this->dbBuilder->select($this->tableAlias . '.*');
         }
 
         if (!isset($this->dbApplied['order_by']) && !empty($this->sorting)) {
@@ -1410,7 +1417,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function where($column, $op, $value)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'where',
             'args' => [$column, $op, $value],
@@ -1429,7 +1435,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function orWhere($column, $op, $value)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'orWhere',
             'args' => [$column, $op, $value],
@@ -1445,7 +1450,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function whereOpen()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'whereOpen',
             'args' => [],
@@ -1461,7 +1465,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function orWhereOpen()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = array(
             'name' => 'orWhereOpen',
             'args' => [],
@@ -1477,7 +1480,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function whereClose()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'whereClose',
             'args' => [],
@@ -1493,7 +1495,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function orWhereClose()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'orWhereClose',
             'args' => [],
@@ -1511,7 +1512,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function orderBy($column, $direction = null)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'orderBy',
             'args' => [$column, $direction],
@@ -1528,7 +1528,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function limit($number)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'limit',
             'args' => [$number],
@@ -1545,7 +1544,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function distinct($value)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'distinct',
             'args' => [$value],
@@ -1565,7 +1563,6 @@ class ORM extends \Bootphp\Model implements \Serializable
     {
         $columns = func_get_args();
 
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'select',
             'args' => $columns,
@@ -1577,7 +1574,7 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Choose the tables to select "FROM ..."
      *
-     * @param   mixed  $tables  Table name or [$table, $alias] or object
+     * @param   mixed  $tables  Table name or [$table, $alias]
      * @param   ...
      * @return  $this
      */
@@ -1585,7 +1582,6 @@ class ORM extends \Bootphp\Model implements \Serializable
     {
         $tables = func_get_args();
 
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'from',
             'args' => $tables,
@@ -1597,13 +1593,12 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Adds addition tables to "JOIN ...".
      *
-     * @param   mixed   $table  Column name or [$column, $alias] or object
+     * @param   mixed   $table  Column name or [$column, $alias]
      * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc)
      * @return  $this
      */
     public function join($table, $type = null)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'join',
             'args' => [$table, $type],
@@ -1615,14 +1610,13 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Adds "ON ..." conditions for the last created JOIN statement.
      *
-     * @param   mixed   $c1 Column name or [$column, $alias] or object
-     * @param   string  $op Logic operator
-     * @param   mixed   $c2 Column name or [$column, $alias] or object
+     * @param   string  $c1     Column name
+     * @param   string  $op     Logic operator
+     * @param   string  $c2     Column name
      * @return  $this
      */
     public function on($c1, $op, $c2)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'on',
             'args' => [$c1, $op, $c2],
@@ -1634,7 +1628,7 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Creates a "GROUP BY ..." filter.
      *
-     * @param   mixed   $columns  column name or [$column, $alias] or object
+     * @param   mixed   $columns    Column name or [$column, $alias] or object
      * @param   ...
      * @return  $this
      */
@@ -1642,7 +1636,6 @@ class ORM extends \Bootphp\Model implements \Serializable
     {
         $columns = func_get_args();
 
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'groupBy',
             'args' => $columns,
@@ -1654,14 +1647,13 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Creates a new "AND HAVING" condition for the query.
      *
-     * @param   mixed   $column Column name or [$column, $alias] or object
+     * @param   string  $column Column name or [$column, $alias] or object
      * @param   string  $op     Logic operator
      * @param   mixed   $value  Column value
      * @return  $this
      */
     public function having($column, $op, $value = null)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'having',
             'args' => [$column, $op, $value],
@@ -1680,7 +1672,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function orHaving($column, $op, $value = null)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'orHaving',
             'args' => [$column, $op, $value],
@@ -1696,7 +1687,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function havingOpen()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'havingOpen',
             'args' => [],
@@ -1712,7 +1702,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function orHavingOpen()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'orHavingOpen',
             'args' => [],
@@ -1728,7 +1717,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function havingClose()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'havingClose',
             'args' => [],
@@ -1744,7 +1732,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function orHavingClose()
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'orHavingClose',
             'args' => [],
@@ -1761,7 +1748,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function offset($number)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'offset',
             'args' => [$number],
@@ -1778,7 +1764,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function cached($lifetime = null)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'cached',
             'args' => [$lifetime],
@@ -1796,7 +1781,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function param($param, $value)
     {
-        // Add pending database call which is executed after query type is determined
         $this->dbPending[] = [
             'name' => 'param',
             'args' => [$param, $value],
@@ -1808,15 +1792,17 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Adds "USING ..." conditions for the last created JOIN statement.
      *
-     * @param   string  $columns    Column name
+     * @param   mixed  $columns    Column name
+     * @param   ...
      * @return  $this
      */
     public function using($columns)
     {
-        // Add pending database call which is executed after query type is determined
+        $columns = func_get_args();
+
         $this->dbPending[] = [
             'name' => 'using',
-            'args' => [$columns],
+            'args' => $columns,
         ];
 
         return $this;
@@ -1850,7 +1836,7 @@ class ORM extends \Bootphp\Model implements \Serializable
     public function serialize()
     {
         // Store only information about the object
-        foreach (array('primaryKeyValue', 'object', 'changed', 'loaded', 'saved', 'sorting', 'originalValues') as $var) {
+        foreach (['primaryKeyValue', 'object', 'changed', 'loaded', 'saved', 'sorting', 'originalValues'] as $var) {
             $data[$var] = $this->{$var};
         }
 
@@ -1881,6 +1867,23 @@ class ORM extends \Bootphp\Model implements \Serializable
         } else {
             return $this->clear();
         }
+    }
+
+    /**
+     * Get/set table alias.
+     *
+     * @param   string  $alias  Table alias
+     * @return  string|ORM
+     */
+    public function alias($alias)
+    {
+        if ($alias) {
+            $this->tableAlias = $alias;
+
+            return $this;
+        }
+
+        return $this->tableAlias;
     }
 
 }

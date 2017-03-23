@@ -48,8 +48,15 @@ class IndexController extends AdministrationController
         // 查询数据库版本
         $dbVersion = DB::select([DB::expr('version()'), 'version'])->execute()->get('version');
 
-        $article = ORM::factory('Article')->where('id', '=', 1)->join('users')->on('article.author_id', '=', 'users.id')->find();
-        print_r($article->categories->findAll());
+//        $article = ORM::factory('Article')->alias('a')
+//            ->where('a.id', '=', 1)
+//            ->join(['users', 'u'])->on('a.author_id', '=', 'u.id')
+//            ->groupBy('a.category')
+//            ->using('a.category', '>', 0)
+//            ->find();
+        $article = ORM::factory('Article')->alias('a')->join('users')->using('id')->groupBy('a.id, val')->find();
+        $cats = $article->categories->findAll();
+        // echo $cats[0]->title;
 //            ->distinct(true)
 //            ->orWhereOpen()
 //            ->orWhere('articles_categories.id', '=', 2)

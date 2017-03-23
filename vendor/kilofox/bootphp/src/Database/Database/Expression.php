@@ -9,7 +9,7 @@ namespace Bootphp\Database\Database;
  * For example, you can use an expression to generate a column alias:
  *
  *     // SELECT CONCAT(first_name, last_name) AS full_name
- *     $query = DB::select(array(DB::expr('CONCAT(first_name, last_name)'), 'full_name')));
+ *     $query = DB::select([DB::expr('CONCAT(first_name, last_name)'), 'full_name']);
  *
  * More examples are available on the [Query Builder](database/query/builder#database-expressions) page.
  *
@@ -21,10 +21,19 @@ namespace Bootphp\Database\Database;
  */
 class Expression
 {
-    // Unquoted parameters
-    protected $_parameters;
-    // Raw expression string
-    protected $_value;
+    /**
+     * Unquoted parameters.
+     *
+     * @var     array
+     */
+    protected $parameters;
+
+    /**
+     * Raw expression string.
+     *
+     * @var     string
+     */
+    protected $value;
 
     /**
      * Sets the expression string.
@@ -38,20 +47,20 @@ class Expression
     public function __construct($value, $parameters = [])
     {
         // Set the expression string
-        $this->_value = $value;
-        $this->_parameters = $parameters;
+        $this->value = $value;
+        $this->parameters = $parameters;
     }
 
     /**
      * Bind a variable to a parameter.
      *
-     * @param   string  $param  parameter key to replace
-     * @param   mixed   $var    variable to use
+     * @param   string  $param  Parameter key to replace
+     * @param   mixed   $var    Variable to use
      * @return  $this
      */
     public function bind($param, & $var)
     {
-        $this->_parameters[$param] = & $var;
+        $this->parameters[$param] = & $var;
 
         return $this;
     }
@@ -59,13 +68,13 @@ class Expression
     /**
      * Set the value of a parameter.
      *
-     * @param   string  $param  parameter key to replace
-     * @param   mixed   $value  value to use
+     * @param   string  $param  Parameter key to replace
+     * @param   mixed   $value  Value to use
      * @return  $this
      */
     public function param($param, $value)
     {
-        $this->_parameters[$param] = $value;
+        $this->parameters[$param] = $value;
 
         return $this;
     }
@@ -73,12 +82,12 @@ class Expression
     /**
      * Add multiple parameter values.
      *
-     * @param   array   $params list of parameter values
+     * @param   array   $params List of parameter values
      * @return  $this
      */
     public function parameters(array $params)
     {
-        $this->_parameters = $params + $this->_parameters;
+        $this->parameters = $params + $this->parameters;
 
         return $this;
     }
@@ -92,7 +101,7 @@ class Expression
      */
     public function value()
     {
-        return (string) $this->_value;
+        return (string) $this->value;
     }
 
     /**
@@ -112,7 +121,7 @@ class Expression
      * Compile the SQL expression and return it. Replaces any parameters with
      * their given values.
      *
-     * @param   mixed    Database instance or name of instance
+     * @param   mixed   Database instance or name of instance
      * @return  string
      */
     public function compile($db = null)
@@ -124,9 +133,9 @@ class Expression
 
         $value = $this->value();
 
-        if (!empty($this->_parameters)) {
+        if (!empty($this->parameters)) {
             // Quote all of the parameter values
-            $params = array_map(array($db, 'quote'), $this->_parameters);
+            $params = array_map([$db, 'quote'], $this->parameters);
 
             // Replace the values in the expression
             $value = strtr($value, $params);
@@ -136,5 +145,3 @@ class Expression
     }
 
 }
-
-// End Database_Expression

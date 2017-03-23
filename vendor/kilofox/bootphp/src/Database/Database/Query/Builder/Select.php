@@ -136,7 +136,7 @@ class Select extends Where
     /**
      * Choose the tables to select "FROM ...".
      *
-     * @param   mixed   $table  Table name or [$table, $alias] or object
+     * @param   mixed   $table  Table name or [$table, $alias]
      * @return  $this
      */
     public function from($tables)
@@ -151,7 +151,7 @@ class Select extends Where
     /**
      * Adds addition tables to "JOIN ...".
      *
-     * @param   mixed   $table  Column name or [$column, $alias] or object
+     * @param   mixed   $table  Column name or [$column, $alias]
      * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc)
      * @return  $this
      */
@@ -165,9 +165,9 @@ class Select extends Where
     /**
      * Adds "ON ..." conditions for the last created JOIN statement.
      *
-     * @param   mixed   $c1     Column name or [$column, $alias] or object
+     * @param   mixed   $c1     Column name or [$column, $alias]
      * @param   string  $op     Logic operator
-     * @param   mixed   $c2     Column name or [$column, $alias] or object
+     * @param   mixed   $c2     Column name or [$column, $alias]
      * @return  $this
      */
     public function on($c1, $op, $c2)
@@ -180,7 +180,7 @@ class Select extends Where
     /**
      * Adds "USING ..." conditions for the last created JOIN statement.
      *
-     * @param   string  $columns    Column name
+     * @param   mixed  $columns    Column name
      * @return  $this
      */
     public function using($columns)

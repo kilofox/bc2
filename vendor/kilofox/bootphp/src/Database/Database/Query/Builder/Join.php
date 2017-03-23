@@ -2,6 +2,8 @@
 
 namespace Bootphp\Database\Database\Query\Builder;
 
+use Bootphp\BootphpException;
+
 /**
  * Database query builder for JOIN statements. See [Query Builder](/database/query/builder) for usage and examples.
  *
@@ -45,7 +47,7 @@ class Join extends \Bootphp\Database\Database\Query\Builder
      * Creates a new JOIN statement for a table. Optionally, the type of JOIN
      * can be specified as the second parameter.
      *
-     * @param   mixed   $table  Column name or [$column, $alias] or object
+     * @param   mixed   $table  Column name or [$column, $alias]
      * @param   string  $type   Type of JOIN: INNER, RIGHT, LEFT, etc
      * @return  void
      */
@@ -63,9 +65,9 @@ class Join extends \Bootphp\Database\Database\Query\Builder
     /**
      * Adds a new condition for joining.
      *
-     * @param   mixed   $c1     Column name or [$column, $alias] or object
+     * @param   string  $c1     Column name
      * @param   string  $op     Logic operator
-     * @param   mixed   $c2     Column name or [$column, $alias] or object
+     * @param   string  $c2     Column name
      * @return  $this
      */
     public function on($c1, $op, $c2)
@@ -111,18 +113,14 @@ class Join extends \Bootphp\Database\Database\Query\Builder
             $db = Database::instance($db);
         }
 
-        if ($this->type) {
-            $sql = strtoupper($this->type) . ' JOIN';
-        } else {
-            $sql = 'JOIN';
-        }
+        $sql = $this->type ? strtoupper($this->type) . ' JOIN' : 'JOIN';
 
         // Quote the table name that is being joined
         $sql .= ' ' . $db->quoteTable($this->table);
 
         if (!empty($this->using)) {
             // Quote and concat the columns
-            $sql .= ' USING (' . implode(', ', array_map(array($db, 'quoteColumn'), $this->using)) . ')';
+            $sql .= ' USING (' . implode(', ', array_map([$db, 'quoteColumn'], $this->using)) . ')';
         } else {
             $conditions = [];
             foreach ($this->on as $condition) {

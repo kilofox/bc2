@@ -44,7 +44,7 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      */
     public function where($column, $op, $value)
     {
-        $this->where[] = array('AND' => [$column, $op, $value]);
+        $this->where[] = ['AND' => [$column, $op, $value]];
 
         return $this;
     }
@@ -59,7 +59,7 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      */
     public function orWhere($column, $op, $value)
     {
-        $this->where[] = array('OR' => [$column, $op, $value]);
+        $this->where[] = ['OR' => [$column, $op, $value]];
 
         return $this;
     }
@@ -71,7 +71,7 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      */
     public function whereOpen()
     {
-        $this->where[] = array('AND' => '(');
+        $this->where[] = ['AND' => '('];
 
         return $this;
     }
@@ -83,7 +83,7 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      */
     public function orWhereOpen()
     {
-        $this->where[] = array('OR' => '(');
+        $this->where[] = ['OR' => '('];
 
         return $this;
     }
@@ -113,7 +113,7 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      */
     public function whereClose()
     {
-        $this->where[] = array('AND' => ')');
+        $this->where[] = ['AND' => ')'];
 
         return $this;
     }
@@ -125,7 +125,7 @@ abstract class Where extends \Bootphp\Database\Database\Query\Builder
      */
     public function orWhereClose()
     {
-        $this->where[] = array('OR' => ')');
+        $this->where[] = ['OR' => ')'];
 
         return $this;
     }
