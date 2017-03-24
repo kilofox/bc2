@@ -46,15 +46,9 @@ class IndexController extends AdministrationController
         $comments = ORM::factory('comment')->count();
 
         // 查询数据库版本
-        $dbVersion = DB::select([DB::expr('version()'), 'version'])->execute()->get('version');
+        $dbVersion = DB::select([DB::expr('VERSION()'), 'version'])->execute()->get('version');
 
-//        $article = ORM::factory('Article')->alias('a')
-//            ->where('a.id', '=', 1)
-//            ->join(['users', 'u'])->on('a.author_id', '=', 'u.id')
-//            ->groupBy('a.category')
-//            ->using('a.category', '>', 0)
-//            ->find();
-        $article = ORM::factory('Article')->alias('a')->join('users')->using('id')->groupBy('a.id, val')->find();
+        $article = ORM::factory('Article')->from(['articles', 'a'])->join(['users', 'u'])->on('a.author_id', '=', 'u.id')->where('a.title','<>',null)->groupBy('a.id')->cached()->find();
         $cats = $article->categories->findAll();
         // echo $cats[0]->title;
 //            ->distinct(true)

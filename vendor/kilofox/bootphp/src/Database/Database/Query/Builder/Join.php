@@ -65,9 +65,9 @@ class Join extends \Bootphp\Database\Database\Query\Builder
     /**
      * Adds a new condition for joining.
      *
-     * @param   string  $c1     Column name
+     * @param   string  $c1     Column name or object
      * @param   string  $op     Logic operator
-     * @param   string  $c2     Column name
+     * @param   string  $c2     Column name or object
      * @return  $this
      */
     public function on($c1, $op, $c2)

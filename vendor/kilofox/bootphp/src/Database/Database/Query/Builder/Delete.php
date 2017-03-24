@@ -23,7 +23,7 @@ class Delete extends \Bootphp\Database\Query\Builder\Where
     /**
      * Set the table for a delete.
      *
-     * @param   mixed   $table  Table name or [$table, $alias] or object
+     * @param   mixed   $table  Table name or [$table, $alias]
      * @return  void
      */
     public function __construct($table = null)
@@ -40,7 +40,7 @@ class Delete extends \Bootphp\Database\Query\Builder\Where
     /**
      * Sets the table to delete from.
      *
-     * @param   mixed   $table  Table name or [$table, $alias] or object
+     * @param   mixed   $table  Table name or [$table, $alias]
      * @return  $this
      */
     public function table($table)
@@ -66,9 +66,9 @@ class Delete extends \Bootphp\Database\Query\Builder\Where
         // Start a deletion query
         $query = 'DELETE FROM ' . $db->quoteTable($this->table);
 
-        if (!empty($this->_where)) {
+        if (!empty($this->where)) {
             // Add deletion conditions
-            $query .= ' WHERE ' . $this->compileConditions($db, $this->_where);
+            $query .= ' WHERE ' . $this->compileConditions($db, $this->where);
         }
 
         if (!empty($this->_order_by)) {
@@ -81,7 +81,7 @@ class Delete extends \Bootphp\Database\Query\Builder\Where
             $query .= ' LIMIT ' . $this->_limit;
         }
 
-        $this->_sql = $query;
+        $this->sql = $query;
 
         return parent::compile($db);
     }
@@ -94,11 +94,11 @@ class Delete extends \Bootphp\Database\Query\Builder\Where
     public function reset()
     {
         $this->table = null;
-        $this->_where = [];
+        $this->where = [];
 
-        $this->_parameters = [];
+        $this->parameters = [];
 
-        $this->_sql = null;
+        $this->sql = null;
 
         return $this;
     }

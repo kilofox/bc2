@@ -71,7 +71,7 @@ abstract class Builder extends \Bootphp\Database\Database\Query
                             // Convert "val = null" to "val IS null"
                             $op = 'IS';
                         } elseif ($op === '!=' || $op === '<>') {
-                            // Convert "val != null" to "valu IS NOT null"
+                            // Convert "val != null" to "val IS NOT null"
                             $op = 'IS NOT';
                         }
                     }

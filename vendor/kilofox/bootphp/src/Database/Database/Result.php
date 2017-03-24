@@ -16,35 +16,35 @@ abstract class Result implements \Countable, \Iterator, \SeekableIterator, \Arra
     /**
      * Executed SQL for this result.
      *
-     * @var     string
+     * @var string
      */
     protected $query;
 
     /**
      * Raw result resource.
      *
-     * @var     mixed
+     * @var mixed
      */
     protected $result;
 
     /**
      * Total number of rows.
      *
-     * @var     integer
+     * @var integer
      */
     protected $totalRows = 0;
 
     /**
      * Current row.
      *
-     * @var     integer
+     * @var integer
      */
     protected $currentRow = 0;
 
     /**
      * Return rows as an object or associative array.
      *
-     * @var     boolean
+     * @var boolean
      */
     protected $asObject;
 

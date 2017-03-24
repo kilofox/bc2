@@ -78,7 +78,7 @@ class Select extends Where
     /**
      * Sets the initial columns to select from.
      *
-     * @param   array  $columns  column list
+     * @param   array   $columns    Column list
      * @return  void
      */
     public function __construct(array $columns = null)
@@ -95,7 +95,7 @@ class Select extends Where
     /**
      * Enables or disables selecting only unique columns using "SELECT DISTINCT".
      *
-     * @param   boolean $value  Enable or disable distinct columns
+     * @param   boolean $value      Enable or disable distinct columns
      * @return  $this
      */
     public function distinct($value)
@@ -136,7 +136,7 @@ class Select extends Where
     /**
      * Choose the tables to select "FROM ...".
      *
-     * @param   mixed   $table  Table name or [$table, $alias]
+     * @param   mixed   $table  Table name or [$table, $alias] or object
      * @return  $this
      */
     public function from($tables)
@@ -151,7 +151,7 @@ class Select extends Where
     /**
      * Adds addition tables to "JOIN ...".
      *
-     * @param   mixed   $table  Column name or [$column, $alias]
+     * @param   mixed   $table  Column name or [$column, $alias] or object
      * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc)
      * @return  $this
      */
@@ -165,9 +165,9 @@ class Select extends Where
     /**
      * Adds "ON ..." conditions for the last created JOIN statement.
      *
-     * @param   mixed   $c1     Column name or [$column, $alias]
+     * @param   mixed   $c1     Column name or [$column, $alias] or object
      * @param   string  $op     Logic operator
-     * @param   mixed   $c2     Column name or [$column, $alias]
+     * @param   mixed   $c2     Column name or [$column, $alias] or object
      * @return  $this
      */
     public function on($c1, $op, $c2)

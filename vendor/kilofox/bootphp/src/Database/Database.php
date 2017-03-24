@@ -81,35 +81,35 @@ abstract class Database
     }
 
     /**
-     * @var  string  the last query executed
+     * @var     string  The last query executed
      */
     public $lastquery;
 
     /**
      * Character that is used to quote identifiers.
      *
-     * @var string
+     * @var     string
      */
     protected $identifier = '"';
 
     /**
      * Instance name.
      *
-     * @var string
+     * @var     string
      */
     protected $instance;
 
     /**
      * Raw server connection.
      *
-     * @var object
+     * @var     object
      */
     protected $connection;
 
     /**
      * Configuration array.
      *
-     * @var array
+     * @var     array
      */
     protected $config;
 
@@ -258,7 +258,7 @@ abstract class Database
      *     // Get the total number of records in the "users" table
      *     $count = $db->countRecords('users');
      *
-     * @param   mixed    $table  table name string or [query, alias]
+     * @param   mixed   $table  Table name string or [query, alias]
      * @return  integer
      */
     public function countRecords($table)
@@ -319,6 +319,7 @@ abstract class Database
      *
      * Objects passed to this function will be converted to strings.
      * [Expression] objects will be compiled.
+     * [Database\Query] objects will be compiled and converted to a sub-query.
      * All other objects will be converted using the `__toString` method.
      *
      * @param   mixed   $value  Any value to quote
@@ -328,13 +329,16 @@ abstract class Database
     public function quote($value)
     {
         if ($value === null) {
-            return 'null';
+            return 'NULL';
         } elseif ($value === true) {
             return "'1'";
         } elseif ($value === false) {
             return "'0'";
         } elseif (is_object($value)) {
-            if ($value instanceof Expression) {
+            if ($value instanceof Query) {
+                // Create a sub-query
+                return '(' . $value->compile($this) . ')';
+            } elseif ($value instanceof Expression) {
                 // Compile the expression
                 return $value->compile($this);
             } else {
@@ -364,6 +368,7 @@ abstract class Database
      *
      * Objects passed to this function will be converted to strings.
      * [Expression] objects will be compiled.
+     * [Database\Query] objects will be compiled and converted to a sub-query.
      * All other objects will be converted using the `__toString` method.
      *
      * @param   mixed   $column Column name or [column, alias] or object
@@ -380,7 +385,10 @@ abstract class Database
             $alias = str_replace($this->identifier, $escapedIdentifier, $alias);
         }
 
-        if ($column instanceof Expression) {
+        if ($column instanceof Query) {
+            // Create a sub-query
+            $column = '(' . $column->compile($this) . ')';
+        } elseif ($column instanceof Expression) {
             // Compile the expression
             $column = $column->compile($this);
         } else {
@@ -428,6 +436,9 @@ abstract class Database
      *     $table = $db->quoteTable($table);
      *
      * Objects passed to this function will be converted to strings.
+     * [Expression] objects will be compiled.
+     * [Database\Query] objects will be compiled and converted to a sub-query.
+     * All other objects will be converted using the `__toString` method.
      *
      * @param   mixed   $table  Table name or [table, alias]
      * @return  string
@@ -443,31 +454,39 @@ abstract class Database
             $alias = str_replace($this->identifier, $escapedIdentifier, $alias);
         }
 
-        // Convert to a string
-        $table = (string) $table;
-
-        $table = str_replace($this->identifier, $escapedIdentifier, $table);
-
-        if (strpos($table, '.') !== false) {
-            $parts = explode('.', $table);
-
-            if ($prefix = $this->tablePrefix()) {
-                // Get the offset of the table name, last part
-                $offset = count($parts) - 1;
-
-                // Add the table prefix to the table name
-                $parts[$offset] = $prefix . $parts[$offset];
-            }
-
-            foreach ($parts as & $part) {
-                // Quote each of the parts
-                $part = $this->identifier . $part . $this->identifier;
-            }
-
-            $table = implode('.', $parts);
+        if ($table instanceof Query) {
+            // Create a sub-query
+            $table = '(' . $table->compile($this) . ')';
+        } elseif ($table instanceof Expression) {
+            // Compile the expression
+            $table = $table->compile($this);
         } else {
-            // Add the table prefix
-            $table = $this->identifier . $this->tablePrefix() . $table . $this->identifier;
+            // Convert to a string
+            $table = (string) $table;
+
+            $table = str_replace($this->identifier, $escapedIdentifier, $table);
+
+            if (strpos($table, '.') !== false) {
+                $parts = explode('.', $table);
+
+                if ($prefix = $this->tablePrefix()) {
+                    // Get the offset of the table name, last part
+                    $offset = count($parts) - 1;
+
+                    // Add the table prefix to the table name
+                    $parts[$offset] = $prefix . $parts[$offset];
+                }
+
+                foreach ($parts as & $part) {
+                    // Quote each of the parts
+                    $part = $this->identifier . $part . $this->identifier;
+                }
+
+                $table = implode('.', $parts);
+            } else {
+                // Add the table prefix
+                $table = $this->identifier . $this->tablePrefix() . $table . $this->identifier;
+            }
         }
 
         if (isset($alias)) {
@@ -483,6 +502,7 @@ abstract class Database
      *
      * Objects passed to this function will be converted to strings.
      * [Expression] objects will be compiled.
+     * [Database\Query] objects will be compiled and converted to a sub-query.
      * All other objects will be converted using the `__toString` method.
      *
      * @param   mixed   $value  Any identifier
@@ -498,7 +518,10 @@ abstract class Database
             $alias = str_replace($this->identifier, $escapedIdentifier, $alias);
         }
 
-        if ($value instanceof Expression) {
+        if ($value instanceof Database\Query) {
+            // Create a sub-query
+            $value = '(' . $value->compile($this) . ')';
+        } elseif ($value instanceof Expression) {
             // Compile the expression
             $value = $value->compile($this);
         } else {

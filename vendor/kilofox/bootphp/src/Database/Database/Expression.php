@@ -24,14 +24,14 @@ class Expression
     /**
      * Unquoted parameters.
      *
-     * @var     array
+     * @var array
      */
     protected $parameters;
 
     /**
      * Raw expression string.
      *
-     * @var     string
+     * @var string
      */
     protected $value;
 

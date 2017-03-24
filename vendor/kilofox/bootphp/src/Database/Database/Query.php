@@ -4,6 +4,7 @@ namespace Bootphp\Database\Database;
 
 use Bootphp\Database\Database;
 use Bootphp\Core;
+use Bootphp\Cache\Cache;
 
 /**
  * Database query wrapper. See [Parameterized Statements](database/query/parameterized) for usage and examples.
@@ -68,7 +69,7 @@ class Query
     /**
      * Creates a new SQL query of the specified type.
      *
-     * @param   integer  $type  Query type: 'select', 'insert', etc
+     * @param   integer  $type  Query type: 'select', 'insert', etc.
      * @param   string   $sql   Query string
      * @return  void
      */
@@ -187,7 +188,7 @@ class Query
 
         if (!empty($this->parameters)) {
             // Quote all of the values
-            $values = array_map(array($db, 'quote'), $this->parameters);
+            $values = array_map([$db, 'quote'], $this->parameters);
 
             // Replace the values in the SQL
             $sql = strtr($sql, $values);
@@ -220,7 +221,7 @@ class Query
             $cacheKey = 'Database::query("' . $db . '", "' . $sql . '")';
 
             // Read the cache first to delete a possible hit with lifetime <= 0
-            $result = Core::cache($cacheKey, null, $this->lifetime);
+            $result = Cache::instance($cacheKey, null, $this->lifetime);
             if ($result !== null && !$this->forceExecute) {
                 // Return a cached result
                 return new Result\Cached($result, $sql, $asObject);

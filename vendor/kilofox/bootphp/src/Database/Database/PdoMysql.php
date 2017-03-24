@@ -16,7 +16,11 @@ use Bootphp\Profiler\Profiler;
  */
 class PdoMysql extends \Bootphp\Database\Database
 {
-    // MySQL uses a backtick for identifiers
+    /**
+     * MySQL uses a backtick for identifiers.
+     *
+     * @var string
+     */
     protected $identifier = '`';
 
     public function __construct($name, array $config)
@@ -126,10 +130,10 @@ class PdoMysql extends \Bootphp\Database\Database
             return new Result\Cached($result, $sql, $asObject);
         } elseif ($type === 'insert') {
             // Return a list of insert id and rows created
-            return array(
+            return [
                 $this->connection->lastInsertId(),
                 $result->rowCount(),
-            );
+            ];
         } else {
             // Return the number of rows affected
             return $result->rowCount();
@@ -170,7 +174,7 @@ class PdoMysql extends \Bootphp\Database\Database
             $result = $this->query('select', 'SHOW TABLES', false);
         }
 
-        $tables = array();
+        $tables = [];
         foreach ($result as $row) {
             $tables[] = reset($row);
         }

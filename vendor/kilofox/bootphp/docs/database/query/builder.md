@@ -8,26 +8,26 @@ Each type of database query is represented by a different class, each with their
 
     $query = DB::select();
 
-Query Builder methods return a reference to itself so that method chaining may be used. Select queries ussually require a table and they are referenced using the `from()` method. The `from()` method takes one parameter which can be the table name (string), an array of two strings (table name and alias), or an object (See Subqueries in the Advanced Queries section below).
+Query Builder methods return a reference to itself so that method chaining may be used. Select queries ussually require a table and they are referenced using the `from()` method. The `from()` method takes one parameter which can be the table name (string), an array of two strings (table name and alias), or an object (See Subqueries in the Advanced Queries section below). 
 
     $query = DB::select()->from('users');
 
-Limiting the results of queries is done using the `where()` and `orWhere()` methods. These methods take three parameters: a column, an operator, and a value.
+Limiting the results of queries is done using the `where()`, `and_where()` and `or_where()` methods. These methods take three parameters: a column, an operator, and a value. 
 
     $query = DB::select()->from('users')->where('username', '=', 'john');
 
-Multiple `where()` methods may be used to string together multiple clauses connected by the boolean operator in the method's prefix. The `where()` method is a wrapper that just calls `and_where()`.
+Multiple `where()` methods may be used to string together multiple clauses connected by the boolean operator in the method's prefix. The `where()` method is a wrapper that just calls `and_where()`. 
 
     $query = DB::select()->from('users')->where('username', '=', 'john')->or_where('username', '=', 'jane');
-
-You can use any operator you want. Examples include `IN`, `BETWEEN`, `>`, `=<`, `!=`, etc. Use an array for operators that require more than one value.
+	
+You can use any operator you want.  Examples include `IN`, `BETWEEN`, `>`, `=<`, `!=`, etc.  Use an array for operators that require more than one value.
 
 	$query = DB::select()->from('users')->where('logins', '<=', 1);
-
+	
 	$query = DB::select()->from('users')->where('logins', '>', 50);
-
+	
 	$query = DB::select()->from('users')->where('username', 'IN', array('john','mark','matt'));
-
+	
 	$query = DB::select()->from('users')->where('joindate', 'BETWEEN', array($then, $now));
 
 By default, [DB::select] will select all columns (`SELECT * ...`), but you can also specify which columns you want returned by passing parameters to [DB::select]:
@@ -126,7 +126,7 @@ This query would generate the following SQL:
 
 Multiple tables can be joined using the `join()` and `on()` methods. The `join()` method takes two parameters. The first is either a table name, an array containing the table and alias, or an object (subquery or expression). The second parameter is the join type: LEFT, RIGHT, INNER, etc.
 
-The `on()` method sets the conditions for the previous `join()` method and is very similar to the `where()` method in that it takes three parameters; left column (name or object), an operator, and the right column (name or object). Multiple `on()` methods may be used to supply multiple conditions and they will be appended with an 'AND' operator.
+The `on()` method sets the conditions for the previous `join()` method and is very similar to the `where()` method in that it takes three parameters; left column (name or object), an operator, and the right column (name or object). Multiple `on()` methods may be used to supply multiple conditions and they will be appended with an 'AND' operator. 
 
     // This query will find all the posts related to "smith" with JOIN
     $query = DB::select('authors.name', 'posts.content')->from('authors')->join('posts')->on('authors.id', '=', 'posts.author_id')->where('authors.name', '=', 'smith');
@@ -162,7 +162,7 @@ This looks almost exactly the same as a standard `AS` alias, but note how the co
         ->join('posts')->on('posts.username', '=', 'users.username')
         ->where('users.active', '=', TRUE)
         ->where('posts.created', '>=', $yesterday);
-
+    
     $total = clone $query;
     $total->select(array(DB::expr('COUNT( DISTINCT `username`)'), 'unique_users'));
     $query->select('posts.username')->distinct();
@@ -178,9 +178,37 @@ This will generate the following query:
 
     SELECT `username`, COUNT(`id`) AS `total_posts` FROM `posts` GROUP BY `username` HAVING `total_posts` >= 10
 
-### Boolean Operators and Nested Clauses
+### Subqueries
 
-Multiple Where and Having clauses are added to the query with Boolean operators connecting each expression. The default operator for both methods is AND which is the same as the and_ prefixed method. The OR operator can be specified by prefixing the methods with or_. Where and Having clauses can be nested or grouped by post fixing either method with _open and then followed by a method with a _close.
+Query Builder objects can be passed as parameters to many of the methods to create subqueries. Let's take the previous example query and pass it to a new query.
+
+    $sub = DB::select('username', array(DB::expr('COUNT(`id`)'), 'total_posts')
+        ->from('posts')->group_by('username')->having('total_posts', '>=', 10);
+    
+    $query = DB::select('profiles.*', 'posts.total_posts')->from('profiles')
+        ->join(array($sub, 'posts'), 'INNER')->on('profiles.username', '=', 'posts.username');
+
+This will generate the following query:
+
+    SELECT `profiles`.*, `posts`.`total_posts` FROM `profiles` INNER JOIN
+    ( SELECT `username`, COUNT(`id`) AS `total_posts` FROM `posts` GROUP BY `username` HAVING `total_posts` >= 10 ) AS posts
+    ON `profiles`.`username` = `posts`.`username`
+
+Insert queries can also use a select query for the input values
+
+    $sub = DB::select('username', array(DB::expr('COUNT(`id`)'), 'total_posts')
+        ->from('posts')->group_by('username')->having('total_posts', '>=', 10);
+    
+    $query = DB::insert('post_totals', array('username', 'posts'))->select($sub);
+
+This will generate the following query:
+
+    INSERT INTO `post_totals` (`username`, `posts`) 
+    SELECT `username`, COUNT(`id`) AS `total_posts` FROM `posts` GROUP BY `username` HAVING `total_posts` >= 10 
+
+### Boolean Operators and Nested Clauses 
+
+Multiple Where and Having clauses are added to the query with Boolean operators connecting each expression. The default operator for both methods is AND which is the same as the and_ prefixed method. The OR operator can be specified by prefixing the methods with or_. Where and Having clauses can be nested or grouped by post fixing either method with _open and then followed by a method with a _close. 
 
     $query = DB::select()->from('users')
         ->where_open()
@@ -194,7 +222,7 @@ Multiple Where and Having clauses are added to the query with Boolean operators 
 
 This will generate the following query:
 
-    SELECT * FROM `users` WHERE ( `id` IN (1, 2, 3, 5) OR ( `last_login` <= 1276020805 OR `last_login` IS NULL ) ) AND `removed` IS NULL
+    SELECT * FROM `users` WHERE ( `id` IN (1, 2, 3, 5) OR ( `last_login` <= 1276020805 OR `last_login` IS NULL ) ) AND `removed` IS NULL 
 
 ### Database Expressions
 

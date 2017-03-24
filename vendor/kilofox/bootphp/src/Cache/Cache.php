@@ -3,9 +3,10 @@
 namespace Bootphp\Cache;
 
 /**
- * Kohana Cache provides a common interface to a variety of caching engines. Tags are
- * supported where available natively to the cache system. Kohana Cache supports multiple
- * instances of cache engines through a grouped singleton pattern.
+ * Kohana Cache provides a common interface to a variety of caching engines.
+ * Tags are supported where available natively to the cache system. Bootphp
+ * Cache supports multiple instances of cache engines through a grouped
+ * singleton pattern.
  *
  * ### Supported cache engines
  *
@@ -19,41 +20,47 @@ namespace Bootphp\Cache;
  *
  * ### Introduction to caching
  *
- * Caching should be implemented with consideration. Generally, caching the result of resources
- * is faster than reprocessing them. Choosing what, how and when to cache is vital. PHP APC is
- * presently one of the fastest caching systems available, closely followed by Memcache. SQLite
- * and File caching are two of the slowest cache methods, however usually faster than reprocessing
- * a complex set of instructions.
+ * Caching should be implemented with consideration. Generally, caching the
+ * result of resources is faster than reprocessing them. Choosing what, how and
+ * when to cache is vital. PHP APC is presently one of the fastest caching
+ * systems available, closely followed by Memcache. SQLite and File caching are
+ * two of the slowest cache methods, however usually faster than reprocessing a
+ * complex set of instructions.
  *
- * Caching engines that use memory are considerably faster than the file based alternatives. But
- * memory is limited whereas disk space is plentiful. If caching large datasets it is best to use
- * file caching.
+ * Caching engines that use memory are considerably faster than the file based
+ * alternatives. But memory is limited whereas disk space is plentiful. If
+ * caching large datasets it is best to use file caching.
  *
  * ### Configuration settings
  *
- * Kohana Cache uses configuration groups to create cache instances. A configuration group can
- * use any supported driver, with successive groups using the same driver type if required.
+ * Kohana Cache uses configuration groups to create cache instances. A
+ * configuration group can use any supported driver, with successive groups
+ * using the same driver type if required.
  *
  * #### Configuration example
  *
  * Below is an example of a _memcache_ server configuration.
  *
- *     return array(
- *          'memcache' => array(                           // Name of group
- *                  'driver'         => 'memcache',        // using Memcache driver
- *                  'servers'        => array(             // Available server definitions
- *                         array(
- *                              'host'       => 'localhost',
- *                              'port'       => 11211,
- *                              'persistent' => false
- *                         )
- *                  ),
- *                  'compression'    => false,             // Use compression?
- *           ),
- *     )
+ *     return [
+ *         // Name of group
+ *         'memcache' => [
+ *             // using Memcache driver
+ *             'driver' => 'memcache',
+ *             // Available server definitions
+ *             'servers' => [
+ *                 [
+ *                     'host' => 'localhost',
+ *                     'port' => 11211,
+ *                     'persistent' => false
+ *                 ]
+ *             ],
+ *             // Use compression?
+ *             'compression' => false,
+ *         ],
+ *     ];
  *
- * In cases where only one cache group is required, set `Cache::$default` (in your bootstrap,
- * or by extending `Kohana_Cache` class) to the name of the group, and use:
+ * In cases where only one cache group is required, set `Cache::$default` (in
+ * your bootstrap, or by extending `Kohana_Cache` class) to the name of the group, and use:
  *
  *     $cache = Cache::instance(); // instead of Cache::instance('memcache')
  *
@@ -81,14 +88,18 @@ abstract class Cache
     const DEFAULT_EXPIRE = 3600;
 
     /**
-     * @var   string     default driver to use
+     * Default driver to use.
+     *
+     * @var string
      */
     public static $default = 'file';
 
     /**
-     * @var   Kohana_Cache instances
+     * Cache instances.
+     *
+     * @var Cache
      */
-    public static $instances = array();
+    public static $instances = [];
 
     /**
      * Creates a singleton of a Kohana Cache group. If no group is supplied
@@ -103,9 +114,9 @@ abstract class Cache
      *     // Access an instantiated group directly
      *     $foo_group = Cache::$instances['default'];
      *
-     * @param   string  $group  the name of the cache group to use [Optional]
+     * @param   string  $group  The name of the cache group to use [Optional]
      * @return  Cache
-     * @throws  Cache_Exception
+     * @throws  \Bootphp\BootphpException
      */
     public static function instance($group = null)
     {
@@ -137,14 +148,14 @@ abstract class Cache
     }
 
     /**
-     * @var  Config
+     * @var Config
      */
-    protected $_config = array();
+    protected $_config = [];
 
     /**
-     * Ensures singleton pattern is observed, loads the default expiry
+     * Ensures singleton pattern is observed, loads the default expiry.
      *
-     * @param  array  $config  configuration
+     * @param   array   $config Configuration
      */
     protected function __construct(array $config)
     {
@@ -153,23 +164,23 @@ abstract class Cache
 
     /**
      * Getter and setter for the configuration. If no argument provided, the
-     * current configuration is returned. Otherwise the configuration is set
-     * to this class.
+     * current configuration is returned. Otherwise the configuration is set to
+     * this class.
      *
      *     // Overwrite all configuration
-     *     $cache->config(array('driver' => 'memcache', '...'));
+     *     $cache->config(['driver' => 'memcache', '...']);
      *
      *     // Set a new configuration setting
-     *     $cache->config('servers', array(
+     *      $cache->config('servers', [
      *          'foo' => 'bar',
      *          '...'
-     *          ));
+     *      ]);
      *
      *     // Get a configuration setting
      *     $servers = $cache->config('servers);
      *
-     * @param   mixed    key to set to array, either array or config path
-     * @param   mixed    value to associate with key
+     * @param   mixed   $key    Key to set to array, either array or config path
+     * @param   mixed   $value  Value to associate with key
      * @return  mixed
      */
     public function config($key = null, $value = null)
@@ -190,14 +201,14 @@ abstract class Cache
     }
 
     /**
-     * Overload the __clone() method to prevent cloning
+     * Overload the __clone() method to prevent cloning.
      *
      * @return  void
-     * @throws  Cache_Exception
+     * @throws  \Bootphp\BootphpException
      */
     final public function __clone()
     {
-        throw new Cache_Exception('Cloning of Kohana_Cache objects is forbidden');
+        throw new \Bootphp\BootphpException('Cloning of Boophp\Cache objects is forbidden.');
     }
 
     /**
@@ -212,14 +223,14 @@ abstract class Cache
      *     // Retrieve cache entry from memcache group
      *     $data = Cache::instance('memcache')->get('foo');
      *
-     * @param   string  $id       id of cache to entry
-     * @param   string  $default  default value to return if cache miss
+     * @param   string  $id         Id of cache to entry
+     * @param   string  $default    Default value to return if cache miss
      * @return  mixed
-     * @throws  Cache_Exception
+     * @throws  \Bootphp\BootphpException
      */
     abstract public function get($id, $default = null);
     /**
-     * Set a value to cache with id and lifetime
+     * Set a value to cache with id and lifetime.
      *
      *     $data = 'bar';
      *
@@ -230,60 +241,58 @@ abstract class Cache
      *     Cache::instance()->set('foo', $data, 30);
      *
      *     // Set 'bar' to 'foo' in memcache group for 10 minutes
-     *     if (Cache::instance('memcache')->set('foo', $data, 600))
-     *     {
+     *     if (Cache::instance('memcache')->set('foo', $data, 600)) {
      *          // Cache was set successfully
-     *          return
+     *          return;
      *     }
      *
-     * @param   string   $id        id of cache entry
-     * @param   string   $data      data to set to cache
-     * @param   integer  $lifetime  lifetime in seconds
+     * @param   string  $id         Id of cache entry
+     * @param   string  $data       Data to set to cache
+     * @param   integer $lifetime   Lifetime in seconds
      * @return  boolean
      */
     abstract public function set($id, $data, $lifetime = 3600);
     /**
-     * Delete a cache entry based on id
+     * Delete a cache entry based on id.
      *
      *     // Delete 'foo' entry from the default group
      *     Cache::instance()->delete('foo');
      *
      *     // Delete 'foo' entry from the memcache group
-     *     Cache::instance('memcache')->delete('foo')
+     *     Cache::instance('memcache')->delete('foo');
      *
-     * @param   string  $id  id to remove from cache
+     * @param   string  $id     Id to remove from cache
      * @return  boolean
      */
     abstract public function delete($id);
     /**
      * Delete all cache entries.
      *
-     * Beware of using this method when
-     * using shared memory cache systems, as it will wipe every
-     * entry within the system for all clients.
+     * Beware of using this method when using shared memory cache systems, as it
+     * will wipe every entry within the system for all clients.
      *
      *     // Delete all cache entries in the default group
-     *     Cache::instance()->delete_all();
+     *     Cache::instance()->deleteAll();
      *
      *     // Delete all cache entries in the memcache group
-     *     Cache::instance('memcache')->delete_all();
+     *     Cache::instance('memcache')->deleteAll();
      *
      * @return  boolean
      */
-    abstract public function delete_all();
+    abstract public function deleteAll();
     /**
      * Replaces troublesome characters with underscores.
      *
      *     // Sanitize a cache id
-     *     $id = $this->_sanitize_id($id);
+     *     $id = $this->sanitizeId($id);
      *
-     * @param   string  $id  id of cache to sanitize
+     * @param   string  $id     Id of cache to sanitize
      * @return  string
      */
-    protected function _sanitize_id($id)
+    protected function sanitizeId($id)
     {
         // Change slashes and spaces to underscores
-        return str_replace(array('/', '\\', ' '), '_', $id);
+        return str_replace(['/', '\\', ' '], '_', $id);
     }
 
 }

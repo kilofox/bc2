@@ -39,7 +39,7 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
     /**
      * Set the table and columns for an insert.
      *
-     * @param   mixed   $table      Table name or [$table, $alias] or object
+     * @param   string  $table      Table name
      * @param   array   $columns    Column names
      * @return  void
      */
@@ -145,11 +145,11 @@ class Insert extends \Bootphp\Database\Database\Query\Builder
         $query = 'INSERT INTO ' . $db->quoteTable($this->table);
 
         // Add the column names
-        $query .= ' (' . implode(', ', array_map(array($db, 'quoteColumn'), $this->columns)) . ') ';
+        $query .= ' (' . implode(', ', array_map([$db, 'quoteColumn'], $this->columns)) . ') ';
 
         if (is_array($this->values)) {
             // Callback for quoting values
-            $quote = array($db, 'quote');
+            $quote = [$db, 'quote'];
 
             $groups = [];
             foreach ($this->values as $group) {

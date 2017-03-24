@@ -152,7 +152,7 @@ class ORM extends \Bootphp\Model implements \Serializable
      *
      * @var     string
      */
-    protected $tableAlias;
+    protected $alias;
 
     /**
      * Table columns.
@@ -605,7 +605,7 @@ class ORM extends \Bootphp\Model implements \Serializable
      * @param   string  $targetPath    Target model to bind to
      * @return  ORM
      */
-    public function with($targetPath)
+    public function with2($targetPath)
     {
         if (isset($this->withApplied[$targetPath])) {
             // Don't join anything already joined
@@ -763,7 +763,7 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     protected function loadResult($multiple = false)
     {
-        $this->dbBuilder->from([$this->tableName, $this->tableAlias === null ? $this->objectName : $this->tableAlias]);
+        $this->dbBuilder->from([$this->tableName, $this->alias === null ? $this->objectName : $this->alias]);
 
         if ($multiple === false) {
             // Only fetch 1 record
@@ -771,10 +771,10 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         // Select all columns by default
-        if ($this->tableAlias === null) {
+        if ($this->alias === null) {
             $this->dbBuilder->select('*');
         } else {
-            $this->dbBuilder->select($this->tableAlias . '.*');
+            $this->dbBuilder->select($this->alias . '.*');
         }
 
         if (!isset($this->dbApplied['order_by']) && !empty($this->sorting)) {
@@ -1572,14 +1572,18 @@ class ORM extends \Bootphp\Model implements \Serializable
     }
 
     /**
-     * Choose the tables to select "FROM ..."
+     * Choose the tables to select "FROM ...".
      *
-     * @param   mixed  $tables  Table name or [$table, $alias]
+     * @param   mixed  $tables  Table name or [$table, $alias] or object
      * @param   ...
      * @return  $this
      */
     public function from($tables)
     {
+        if (is_array($tables)) {
+            list($tables, $this->alias) = $tables;
+        }
+
         $tables = func_get_args();
 
         $this->dbPending[] = [
@@ -1593,8 +1597,8 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Adds addition tables to "JOIN ...".
      *
-     * @param   mixed   $table  Column name or [$column, $alias]
-     * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc)
+     * @param   mixed   $table  Column name or [$column, $alias] or object
+     * @param   string  $type   Join type (LEFT, RIGHT, INNER, etc.)
      * @return  $this
      */
     public function join($table, $type = null)
@@ -1610,9 +1614,9 @@ class ORM extends \Bootphp\Model implements \Serializable
     /**
      * Adds "ON ..." conditions for the last created JOIN statement.
      *
-     * @param   string  $c1     Column name
+     * @param   string  $c1     Column name or object
      * @param   string  $op     Logic operator
-     * @param   string  $c2     Column name
+     * @param   string  $c2     Column name or object
      * @return  $this
      */
     public function on($c1, $op, $c2)
@@ -1867,23 +1871,6 @@ class ORM extends \Bootphp\Model implements \Serializable
         } else {
             return $this->clear();
         }
-    }
-
-    /**
-     * Get/set table alias.
-     *
-     * @param   string  $alias  Table alias
-     * @return  string|ORM
-     */
-    public function alias($alias)
-    {
-        if ($alias) {
-            $this->tableAlias = $alias;
-
-            return $this;
-        }
-
-        return $this->tableAlias;
     }
 
 }
