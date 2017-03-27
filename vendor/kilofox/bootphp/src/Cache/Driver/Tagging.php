@@ -3,7 +3,7 @@
 namespace Bootphp\Cache\Cache;
 
 /**
- * Kohana Cache Tagging Interface
+ * Cache Tagging Interface.
  *
  * @package    Bootphp/Cache
  * @category   Base

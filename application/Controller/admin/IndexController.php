@@ -40,17 +40,18 @@ class IndexController extends AdministrationController
     public function indexAction()
     {
         // 统计文章数
-        $articles = ORM::factory('article')->count();
+        $articles = ORM::factory('article')->cached()->count();
 
         // 统计评论数
-        $comments = ORM::factory('comment')->count();
+        $comments = ORM::factory('comment')->cached()->count();
 
         // 查询数据库版本
         $dbVersion = DB::select([DB::expr('VERSION()'), 'version'])->execute()->get('version');
 
-        $article = ORM::factory('Article')->from(['articles', 'a'])->join(['users', 'u'])->on('a.author_id', '=', 'u.id')->where('a.title','<>',null)->groupBy('a.id')->cached()->find();
-        $cats = $article->categories->findAll();
-        // echo $cats[0]->title;
+        $article = ORM::factory('Article')->from(['articles', 'a'])->where('a.id', '=', 2)->groupBy('a.id')->cached(0)->find();
+       // print_r($article);
+        $cats = $article->author;
+       // print_r($cats);
 //            ->distinct(true)
 //            ->orWhereOpen()
 //            ->orWhere('articles_categories.id', '=', 2)

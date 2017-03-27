@@ -97,7 +97,7 @@ class ApcuDriver extends Cache implements Arithmetic
     public function set($id, $data, $lifetime = null)
     {
         if ($lifetime === null) {
-            $lifetime = Arr::get($this->_config, 'default_expire', Cache::DEFAULT_EXPIRE);
+            $lifetime = Arr::get($this->config, 'default_expire', Cache::DEFAULT_EXPIRE);
         }
 
         return apcu_store($this->_sanitize_id($id), $data, $lifetime);

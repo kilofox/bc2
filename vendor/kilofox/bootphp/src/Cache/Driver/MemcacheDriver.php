@@ -107,7 +107,7 @@ class MemcacheDriver extends Cache implements CacheArithmetic
      *
      * @var array
      */
-    protected $_default_config = array();
+    protected $defaultConfig = array();
 
     /**
      * Constructs the memcache Kohana_Cache object
@@ -128,7 +128,7 @@ class MemcacheDriver extends Cache implements CacheArithmetic
         $this->_memcache = new Memcache;
 
         // Load servers from configuration
-        $servers = Arr::get($this->_config, 'servers', null);
+        $servers = Arr::get($this->config, 'servers', null);
 
         if (!$servers) {
             // Throw an exception if no server found
@@ -136,7 +136,7 @@ class MemcacheDriver extends Cache implements CacheArithmetic
         }
 
         // Setup default server configuration
-        $this->_default_config = array(
+        $this->defaultConfig = array(
             'host' => 'localhost',
             'port' => 11211,
             'persistent' => false,
@@ -151,7 +151,7 @@ class MemcacheDriver extends Cache implements CacheArithmetic
         // Add the memcache servers to the pool
         foreach ($servers as $server) {
             // Merge the defined config with defaults
-            $server += $this->_default_config;
+            $server += $this->defaultConfig;
 
             if (!$this->_memcache->addServer($server['host'], $server['port'], $server['persistent'], $server['weight'], $server['timeout'], $server['retry_interval'], $server['status'], $server['failure_callback'])) {
                 throw new Cache_Exception('Memcache could not connect to host \':host\' using port \':port\'', array(':host' => $server['host'], ':port' => $server['port']));
@@ -159,7 +159,7 @@ class MemcacheDriver extends Cache implements CacheArithmetic
         }
 
         // Setup the flags
-        $this->_flags = Arr::get($this->_config, 'compression', false) ? MEMCACHE_COMPRESSED : false;
+        $this->_flags = Arr::get($this->config, 'compression', false) ? MEMCACHE_COMPRESSED : false;
     }
 
     /**
@@ -282,16 +282,16 @@ class MemcacheDriver extends Cache implements CacheArithmetic
      */
     public function _failed_request($hostname, $port)
     {
-        if (!$this->_config['instant_death'])
+        if (!$this->config['instant_death'])
             return;
 
         // Setup non-existent host
         $host = false;
 
         // Get host settings from configuration
-        foreach ($this->_config['servers'] as $server) {
+        foreach ($this->config['servers'] as $server) {
             // Merge the defaults, since they won't always be set
-            $server += $this->_default_config;
+            $server += $this->defaultConfig;
             // We're looking at the failed server
             if ($hostname == $server['host'] and $port == $server['port']) {
                 // Server to disable, since it failed

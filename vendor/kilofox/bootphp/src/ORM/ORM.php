@@ -71,13 +71,6 @@ class ORM extends \Bootphp\Model implements \Serializable
     protected $hasMany = [];
 
     /**
-     * Relationships that should always be joined.
-     *
-     * @var     array
-     */
-    protected $loadWith = [];
-
-    /**
      * Validation object created before saving/updating.
      *
      * @var     Validation
@@ -304,7 +297,13 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         // Load column information
-        $this->tableColumns = $this->db->listColumns($this->tableName);
+        $cacheKey = 'Database::listColumns("' . $this->db . '", "' . $this->tableName . '")';
+        $cache = \Bootphp\Cache\Cache::instance();
+        $this->tableColumns = $cache->get($cacheKey);
+        if ($this->tableColumns === null) {
+            $this->tableColumns = $this->db->listColumns($this->tableName);
+            $cache->set($cacheKey, $this->tableColumns);
+        }
 
         // Clear initial model state
         $this->clear();
@@ -508,9 +507,6 @@ class ORM extends \Bootphp\Model implements \Serializable
     public function set($column, $value)
     {
         if (array_key_exists($column, $this->object)) {
-            // Filter the data
-            $value = $this->runFilter($column, $value);
-
             // See if the data really changed
             if ($value !== $this->object[$column]) {
                 $this->object[$column] = $value;
@@ -576,8 +572,7 @@ class ORM extends \Bootphp\Model implements \Serializable
     }
 
     /**
-     * Returns the values of this object as an array, including any related one-one
-     * models that have already been loaded using with()
+     * Returns the values of this object as an array.
      *
      * @return  array
      */
@@ -596,79 +591,6 @@ class ORM extends \Bootphp\Model implements \Serializable
         }
 
         return $object;
-    }
-
-    /**
-     * Binds another one-to-one object to this model. One-to-one objects can be
-     * nested using 'object1:object2' syntax.
-     *
-     * @param   string  $targetPath    Target model to bind to
-     * @return  ORM
-     */
-    public function with2($targetPath)
-    {
-        if (isset($this->withApplied[$targetPath])) {
-            // Don't join anything already joined
-            return $this;
-        }
-
-        // Split object parts
-        $aliases = explode(':', $targetPath);
-        $target = $this;
-        foreach ($aliases as $alias) {
-            // Go down the line of objects to find the given target
-            $parent = $target;
-            $target = $parent->related($alias);
-
-            if (!$target) {
-                // Can't find related object
-                return $this;
-            }
-        }
-
-        // Target alias is at the end
-        $targetAlias = $alias;
-
-        // Pop-off top alias to get the parent path (user:photo:tag becomes user:photo - the parent table prefix)
-        array_pop($aliases);
-        $parentPath = implode(':', $aliases);
-
-        if (empty($parentPath)) {
-            // Use this table name itself for the parent path
-            $parentPath = $this->objectName;
-        } else {
-            if (!isset($this->withApplied[$parentPath])) {
-                // If the parent path hasn't been joined yet, do it first (otherwise LEFT JOINs fail)
-                $this->with($parentPath);
-            }
-        }
-
-        // Add to with_applied to prevent duplicate joins
-        $this->withApplied[$targetPath] = true;
-
-        // Use the keys of the empty object to determine the columns
-        foreach (array_keys($target->object) as $column) {
-            $name = $targetPath . '.' . $column;
-            $alias = $targetPath . ':' . $column;
-
-            // Add the prefix so that load_result can determine the relationship
-            $this->select([$name, $alias]);
-        }
-
-        if (isset($parent->belongsTo[$targetAlias])) {
-            // Parent belongs_to target, use target's primary key and parent's foreign key
-            $joinCol1 = $targetPath . '.' . $target->primaryKey;
-            $joinCol2 = $parentPath . '.' . $parent->belongsTo[$targetAlias]['foreignKey'];
-        } else {
-            // Parent has_one target, use parent's primary key as target's foreign key
-            $joinCol1 = $parentPath . '.' . $parent->primaryKey;
-            $joinCol2 = $targetPath . '.' . $parent->hasOne[$targetAlias]['foreignKey'];
-        }
-
-        // Join the related object into the result
-        $this->join([$target->tableName, $targetPath], 'LEFT')->on($joinCol1, '=', $joinCol2);
-
-        return $this;
     }
 
     /**
@@ -718,13 +640,6 @@ class ORM extends \Bootphp\Model implements \Serializable
             throw new BootphpException('Method find() cannot be called on loaded objects.');
         }
 
-        if (!empty($this->loadWith)) {
-            foreach ($this->loadWith as $alias) {
-                // Bind auto relationships
-                $this->with($alias);
-            }
-        }
-
         $this->build('select');
 
         return $this->loadResult(false);
@@ -740,13 +655,6 @@ class ORM extends \Bootphp\Model implements \Serializable
     {
         if ($this->loaded)
             throw new BootphpException('Method findAll() cannot be called on loaded objects.');
-
-        if (!empty($this->loadWith)) {
-            foreach ($this->loadWith as $alias) {
-                // Bind auto relationships
-                $this->with($alias);
-            }
-        }
 
         $this->build('select');
 
@@ -870,80 +778,6 @@ class ORM extends \Bootphp\Model implements \Serializable
      * @return array
      */
     public function rules()
-    {
-        return [];
-    }
-
-    /**
-     * Filters a value for a specific column
-     *
-     * @param  string $field  The column name
-     * @param  string $value  The value to filter
-     * @return string
-     */
-    protected function runFilter($field, $value)
-    {
-        $filters = $this->filters();
-
-        // Get the filters for this column
-        $wildcards = empty($filters[true]) ? [] : $filters[true];
-
-        // Merge in the wildcards
-        $filters = empty($filters[$field]) ? $wildcards : array_merge($wildcards, $filters[$field]);
-
-        // Bind the field name and model so they can be used in the filter method
-        $_bound = array
-            (
-            ':field' => $field,
-            ':model' => $this,
-        );
-
-        foreach ($filters as $array) {
-            // Value needs to be bound inside the loop so we are always using the
-            // version that was modified by the filters that already ran
-            $_bound[':value'] = $value;
-
-            // Filters are defined as [$filter, $params]
-            $filter = $array[0];
-            $params = Arr::get($array, 1, [':value']);
-
-            foreach ($params as $key => $param) {
-                if (is_string($param) && array_key_exists($param, $_bound)) {
-                    // Replace with bound value
-                    $params[$key] = $_bound[$param];
-                }
-            }
-
-            if (is_array($filter) || !is_string($filter)) {
-                // This is either a callback as an array or a lambda
-                $value = call_user_func_array($filter, $params);
-            } elseif (strpos($filter, '::') === false) {
-                // Use a function call
-                $function = new \ReflectionFunction($filter);
-
-                // Call $function($this[$field], $param, ...) with Reflection
-                $value = $function->invokeArgs($params);
-            } else {
-                // Split the class and method of the rule
-                list($class, $method) = explode('::', $filter, 2);
-
-                // Use a static method call
-                $method = new ReflectionMethod($class, $method);
-
-                // Call $Class::$method($this[$field], $param, ...) with Reflection
-                $value = $method->invokeArgs(null, $params);
-            }
-        }
-
-        return $value;
-    }
-
-    /**
-     * Filter definitions for validation
-     *
-     * @return array
-     */
-    public function filters()
     {
         return [];
     }
@@ -1107,16 +941,15 @@ class ORM extends \Bootphp\Model implements \Serializable
      */
     public function delete()
     {
-        if (!$this->loaded)
+        if (!$this->loaded) {
             throw new BootphpException('Cannot delete ' . $this->objectName . ' model because it is not loaded.');
+        }
 
         // Use primary key value
         $id = $this->pk();
 
         // Delete the object
-        DB::delete($this->tableName)
-            ->where($this->primaryKey, '=', $id)
-            ->execute($this->db);
+        DB::delete($this->tableName)->where($this->primaryKey, '=', $id)->execute($this->db);
 
         return $this->clear();
     }
@@ -1296,13 +1129,6 @@ class ORM extends \Bootphp\Model implements \Serializable
                 // Ignore any selected columns for now
                 $selects[$key] = $method;
                 unset($this->dbPending[$key]);
-            }
-        }
-
-        if (!empty($this->loadWith)) {
-            foreach ($this->loadWith as $alias) {
-                // Bind relationship
-                $this->with($alias);
             }
         }
 

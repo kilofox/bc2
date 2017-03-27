@@ -3,8 +3,8 @@
 namespace Bootphp\Cache;
 
 /**
- * [Kohana Cache](api/Kohana_Cache) APC driver. Provides an opcode based
- * driver for the Kohana Cache library.
+ * [Cache](api/Cache) APC driver. Provides an opcode based driver for the Cache
+ * library.
  *
  * ### Configuration example
  *
@@ -97,7 +97,7 @@ class ApcDriver extends Cache implements Arithmetic
     public function set($id, $data, $lifetime = null)
     {
         if ($lifetime === null) {
-            $lifetime = Arr::get($this->_config, 'default_expire', Cache::DEFAULT_EXPIRE);
+            $lifetime = Arr::get($this->config, 'default_expire', Cache::DEFAULT_EXPIRE);
         }
 
         return apc_store($this->_sanitize_id($id), $data, $lifetime);

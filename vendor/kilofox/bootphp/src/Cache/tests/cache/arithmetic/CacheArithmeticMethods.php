@@ -87,9 +87,9 @@ abstract class Kohana_CacheArithmeticMethodsTest extends Kohana_CacheBasicMethod
         }
 
         $this->assertSame(
-                $expected, $cache->increment(
-                        $inc_args['id'], $inc_args['step']
-                )
+            $expected, $cache->increment(
+                $inc_args['id'], $inc_args['step']
+            )
         );
     }
 
@@ -155,12 +155,10 @@ abstract class Kohana_CacheArithmeticMethodsTest extends Kohana_CacheBasicMethod
         }
 
         $this->assertSame(
-                $expected, $cache->decrement(
-                        $dec_args['id'], $dec_args['step']
-                )
+            $expected, $cache->decrement(
+                $dec_args['id'], $dec_args['step']
+            )
         );
     }
 
 }
-
-// End Kohana_CacheArithmeticMethodsTest

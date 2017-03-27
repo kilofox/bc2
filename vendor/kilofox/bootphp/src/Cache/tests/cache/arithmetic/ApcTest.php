@@ -35,16 +35,16 @@ class Kohana_ApcTest extends Kohana_CacheArithmeticMethodsTest
 
         if (ini_get('apc.enable_cli') != '1') {
             $this->markTestSkipped('Unable to test APC in CLI mode. To fix ' .
-                    'place "apc.enable_cli=1" in your php.ini file');
+                'place "apc.enable_cli=1" in your php.ini file');
         }
 
         if (!Core::$config->load('cache.apc')) {
             Core::$config->load('cache')
-                    ->set(
-                            'apc', array(
-                        'driver' => 'apc',
-                        'default_expire' => 3600,
-                            )
+                ->set(
+                    'apc', array(
+                    'driver' => 'apc',
+                    'default_expire' => 3600,
+                    )
             );
         }
 
@@ -74,12 +74,10 @@ class Kohana_ApcTest extends Kohana_CacheArithmeticMethodsTest
     {
         if ($data['wait'] !== false) {
             $this->markTestSkipped('Unable to perform TTL test in CLI, see: ' .
-                    'http://pecl.php.net/bugs/bug.php?id=16814 for more info!');
+                'http://pecl.php.net/bugs/bug.php?id=16814 for more info!');
         }
 
         parent::test_set_get($data, $expected);
     }
 
 }
-
-// End Kohana_ApcTest

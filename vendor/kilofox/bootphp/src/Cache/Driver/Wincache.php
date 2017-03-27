@@ -3,8 +3,8 @@
 namespace Bootphp\Cache\Cache;
 
 /**
- * [Kohana Cache](api/Kohana_Cache) Wincache driver. Provides an opcode based
- * driver for the Kohana Cache library.
+ * [Cache](api/Cache) Wincache driver. Provides an opcode based driver for the
+ * Cache library.
  *
  * ### Configuration example
  *
@@ -102,7 +102,7 @@ class WincacheDriver extends Cache
     public function set($id, $data, $lifetime = null)
     {
         if ($lifetime === null) {
-            $lifetime = Arr::get($this->_config, 'default_expire', Cache::DEFAULT_EXPIRE);
+            $lifetime = Arr::get($this->config, 'default_expire', Cache::DEFAULT_EXPIRE);
         }
 
         return wincache_ucache_set($this->_sanitize_id($id), $data, $lifetime);

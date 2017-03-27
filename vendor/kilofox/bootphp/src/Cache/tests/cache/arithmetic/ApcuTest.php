@@ -35,16 +35,16 @@ class Kohana_ApcuTest extends Kohana_CacheArithmeticMethodsTest
 
         if (!(ini_get('apc.enabled') AND ini_get('apc.enable_cli'))) {
             $this->markTestSkipped('APCu is not enabled. To fix ' .
-                    'set "apc.enabled=1" and "apc.enable_cli=1" in your php.ini file');
+                'set "apc.enabled=1" and "apc.enable_cli=1" in your php.ini file');
         }
 
         if (!Core::$config->load('cache.apcu')) {
             Core::$config->load('cache')
-                    ->set(
-                            'apcu', array(
-                        'driver' => 'apcu',
-                        'default_expire' => 3600,
-                            )
+                ->set(
+                    'apcu', array(
+                    'driver' => 'apcu',
+                    'default_expire' => 3600,
+                    )
             );
         }
 
@@ -74,12 +74,10 @@ class Kohana_ApcuTest extends Kohana_CacheArithmeticMethodsTest
     {
         if ($data['wait'] !== false) {
             $this->markTestSkipped('Unable to perform TTL test in CLI, see: ' .
-                    'http://pecl.php.net/bugs/bug.php?id=16814 for more info!');
+                'http://pecl.php.net/bugs/bug.php?id=16814 for more info!');
         }
 
         parent::test_set_get($data, $expected);
     }
 
 }
-
-// End Kohana_ApcuTest

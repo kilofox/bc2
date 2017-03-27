@@ -107,8 +107,8 @@ class Query
     /**
      * Enables the query to be cached for a specified amount of time.
      *
-     * @param   integer  $lifetime  number of seconds to cache, 0 deletes it from the cache
-     * @param   boolean  whether or not to execute the query during a cache hit
+     * @param   integer $lifetime   Number of seconds to cache, 0 deletes it from the cache
+     * @param   boolean $force      Whether or not to execute the query during a cache hit
      * @return  $this
      * @uses    Core::$cacheLife
      */
@@ -128,8 +128,8 @@ class Query
     /**
      * Set the value of a parameter in the query.
      *
-     * @param   string   $param  parameter key to replace
-     * @param   mixed    $value  value to use
+     * @param   string  $param  Parameter key to replace
+     * @param   mixed   $value  Value to use
      * @return  $this
      */
     public function param($param, $value)
@@ -143,14 +143,14 @@ class Query
     /**
      * Bind a variable to a parameter in the query.
      *
-     * @param   string  $param  parameter key to replace
-     * @param   mixed   $var    variable to use
+     * @param   string  $param  Parameter key to replace
+     * @param   mixed   $var    Variable to use
      * @return  $this
      */
-    public function bind($param, & $var)
+    public function bind($param, &$var)
     {
         // Bind a value to a variable
-        $this->parameters[$param] = & $var;
+        $this->parameters[$param] = &$var;
 
         return $this;
     }
@@ -158,7 +158,7 @@ class Query
     /**
      * Add multiple parameters to the query.
      *
-     * @param   array  $params  list of parameters
+     * @param   array   $params List of parameters
      * @return  $this
      */
     public function parameters(array $params)
@@ -173,7 +173,7 @@ class Query
      * Compile the SQL query and return it. Replaces any parameters with their
      * given values.
      *
-     * @param   mixed  $db  Database instance or name of instance
+     * @param   mixed   $db Database instance or name of instance
      * @return  string
      */
     public function compile($db = null)
@@ -220,8 +220,8 @@ class Query
             // Set the cache key based on the database instance name and SQL
             $cacheKey = 'Database::query("' . $db . '", "' . $sql . '")';
 
-            // Read the cache first to delete a possible hit with lifetime <= 0
-            $result = Cache::instance($cacheKey, null, $this->lifetime);
+            // Read the cache
+            $result = Cache::instance()->get($cacheKey);
             if ($result !== null && !$this->forceExecute) {
                 // Return a cached result
                 return new Result\Cached($result, $sql, $asObject);
@@ -233,7 +233,7 @@ class Query
 
         if (isset($cacheKey) && $this->lifetime > 0) {
             // Cache the result array
-            Core::cache($cacheKey, $result->asArray(), $this->lifetime);
+            Cache::instance()->set($cacheKey, $result->asArray(), $this->lifetime);
         }
 
         return $result;

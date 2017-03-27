@@ -2,7 +2,6 @@
 
 namespace App\Model;
 
-use Bootphp\Model;
 use Bootphp\Database\DB;
 
 /**
@@ -23,13 +22,13 @@ class ArticleModel extends \Bootphp\ORM\ORM
             'foreignKey' => 'author_id'
         ],
     ];
-    protected $hasOned = [
+    protected $hasOne = [
         'author' => [
             'model' => 'user',
             'foreignKey' => 'id'
         ],
     ];
-    protected $hasMany = [
+    protected $hasMany2 = [
         'categories' => [
             'model' => 'category',
             'foreignKey' => 'id',

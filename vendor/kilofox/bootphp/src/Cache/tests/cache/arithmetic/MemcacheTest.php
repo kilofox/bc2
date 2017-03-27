@@ -34,24 +34,24 @@ class Kohana_CacheArithmeticMemcacheTest extends Kohana_CacheArithmeticMethodsTe
         }
         if (!$config = Core::$config->load('cache.memcache')) {
             Core::$config->load('cache')
-                    ->set(
-                            'memcache', array(
-                        'driver' => 'memcache',
-                        'default_expire' => 3600,
-                        'compression' => false, // Use Zlib compression (can cause issues with integers)
-                        'servers' => array(
-                            'local' => array(
-                                'host' => 'localhost', // Memcache Server
-                                'port' => 11211, // Memcache port number
-                                'persistent' => false, // Persistent connection
-                                'weight' => 1,
-                                'timeout' => 1,
-                                'retry_interval' => 15,
-                                'status' => true,
-                            ),
+                ->set(
+                    'memcache', array(
+                    'driver' => 'memcache',
+                    'default_expire' => 3600,
+                    'compression' => false, // Use Zlib compression (can cause issues with integers)
+                    'servers' => array(
+                        'local' => array(
+                            'host' => 'localhost', // Memcache Server
+                            'port' => 11211, // Memcache port number
+                            'persistent' => false, // Persistent connection
+                            'weight' => 1,
+                            'timeout' => 1,
+                            'retry_interval' => 15,
+                            'status' => true,
                         ),
-                        'instant_death' => true,
-                            )
+                    ),
+                    'instant_death' => true,
+                    )
             );
             $config = Core::$config->load('cache.memcache');
         }
@@ -59,15 +59,15 @@ class Kohana_CacheArithmeticMemcacheTest extends Kohana_CacheArithmeticMethodsTe
         $memcache = new Memcache;
         if (!$memcache->connect($config['servers']['local']['host'], $config['servers']['local']['port'])) {
             $this->markTestSkipped('Unable to connect to memcache server @ ' .
-                    $config['servers']['local']['host'] . ':' .
-                    $config['servers']['local']['port']);
+                $config['servers']['local']['host'] . ':' .
+                $config['servers']['local']['port']);
         }
 
         if ($memcache->getVersion() === false) {
             $this->markTestSkipped('Memcache server @ ' .
-                    $config['servers']['local']['host'] . ':' .
-                    $config['servers']['local']['port'] .
-                    ' not responding!');
+                $config['servers']['local']['host'] . ':' .
+                $config['servers']['local']['port'] .
+                ' not responding!');
         }
 
         unset($memcache);
@@ -114,5 +114,3 @@ class Kohana_CacheArithmeticMemcacheTest extends Kohana_CacheArithmeticMethodsTe
     }
 
 }
-
-// End Kohana_CacheArithmeticMemcacheTest

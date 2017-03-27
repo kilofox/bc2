@@ -3,7 +3,7 @@
 namespace Bootphp\Cache;
 
 /**
- * Kohana Cache provides a common interface to a variety of caching engines.
+ * Bootphp Cache provides a common interface to a variety of caching engines.
  * Tags are supported where available natively to the cache system. Bootphp
  * Cache supports multiple instances of cache engines through a grouped
  * singleton pattern.
@@ -33,7 +33,7 @@ namespace Bootphp\Cache;
  *
  * ### Configuration settings
  *
- * Kohana Cache uses configuration groups to create cache instances. A
+ * Bootphp Cache uses configuration groups to create cache instances. A
  * configuration group can use any supported driver, with successive groups
  * using the same driver type if required.
  *
@@ -60,7 +60,8 @@ namespace Bootphp\Cache;
  *     ];
  *
  * In cases where only one cache group is required, set `Cache::$default` (in
- * your bootstrap, or by extending `Kohana_Cache` class) to the name of the group, and use:
+ * your bootstrap, or by extending `Bootphp\Cache\Cache` class) to the name of
+ * the group, and use:
  *
  *     $cache = Cache::instance(); // instead of Cache::instance('memcache')
  *
@@ -74,7 +75,8 @@ namespace Bootphp\Cache;
  * -------------- | -------- | ---------------------------------------------------------------
  * driver         | __YES__  | (_string_) The driver type to use
  *
- * Details of the settings specific to each driver are available within the drivers documentation.
+ * Details of the settings specific to each driver are available within the
+ * drivers documentation.
  *
  * @package    Bootphp/Cache
  * @category   Base
@@ -102,17 +104,17 @@ abstract class Cache
     public static $instances = [];
 
     /**
-     * Creates a singleton of a Kohana Cache group. If no group is supplied
-     * the __default__ cache group is used.
+     * Creates a singleton of a Bootphp Cache group. If no group is supplied the
+     * __default__ cache group is used.
      *
      *     // Create an instance of the default group
-     *     $default_group = Cache::instance();
+     *     $defaultGroup = Cache::instance();
      *
      *     // Create an instance of a group
-     *     $foo_group = Cache::instance('foo');
+     *     $fooGroup = Cache::instance('foo');
      *
      *     // Access an instantiated group directly
-     *     $foo_group = Cache::$instances['default'];
+     *     $fooGroup = Cache::$instances['default'];
      *
      * @param   string  $group  The name of the cache group to use [Optional]
      * @return  Cache
@@ -150,7 +152,7 @@ abstract class Cache
     /**
      * @var Config
      */
-    protected $_config = [];
+    protected $config = [];
 
     /**
      * Ensures singleton pattern is observed, loads the default expiry.
@@ -186,15 +188,15 @@ abstract class Cache
     public function config($key = null, $value = null)
     {
         if ($key === null)
-            return $this->_config;
+            return $this->config;
 
         if (is_array($key)) {
-            $this->_config = $key;
+            $this->config = $key;
         } else {
             if ($value === null)
-                return isset($this->_config[$key]) ? $this->_config[$key] : null;
+                return isset($this->config[$key]) ? $this->config[$key] : null;
 
-            $this->_config[$key] = $value;
+            $this->config[$key] = $value;
         }
 
         return $this;

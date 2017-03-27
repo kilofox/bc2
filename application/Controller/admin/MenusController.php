@@ -2,8 +2,8 @@
 
 namespace App\Controller\admin;
 
-use App\controllers\adimin\AdministrationController;
-use Bootphp\Model;
+use App\Controller\admin\AdministrationController;
+use Bootphp\ORM\ORM;
 
 /**
  * 后台菜单控制器。
@@ -20,11 +20,9 @@ class MenusController extends AdministrationController
      */
     public function before()
     {
-        $this->routes['<id>/edit'] = 'edit';
-        $this->routes['<id>/submenus'] = 'submenus';
         parent::before();
-        $this->templatePath = APP_PATH . '/modules/system/views/default/menus/';
-        $this->model = Model::factory('menu', 'system');
+
+        $this->model = ORM::factory('menu');
     }
 
     /**
@@ -40,12 +38,12 @@ class MenusController extends AdministrationController
      */
     public function indexAction()
     {
-        if ($this->request->method() == 'POST') {
+        if ($this->request->method() === 'POST') {
             $this->creationAction();
         }
-        $menus = Model::factory('menu', 'system')->where('parent_id', '=', 0)->orderBy('sort')->findAll();
-        $this->assign('nodes', $menus);
-        $this->template = 'menus';
+        $menus = $this->model->where('parent_id', '=', 0)->orderBy('sort')->findAll();
+        $this->view->set('nodes', $menus);
+        $this->commonList($menus);
     }
 
     /*

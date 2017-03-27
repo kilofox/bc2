@@ -35,13 +35,13 @@ class Kohana_SqliteTest extends Kohana_CacheBasicMethodsTest
 
         if (!Core::$config->load('cache.sqlite')) {
             Core::$config->load('cache')
-                    ->set(
-                            'sqlite', array(
-                        'driver' => 'sqlite',
-                        'default_expire' => 3600,
-                        'database' => 'memory',
-                        'schema' => 'CREATE TABLE caches(id VARCHAR(127) PRIMARY KEY, tags VARCHAR(255), expiration INTEGER, cache TEXT)',
-                            )
+                ->set(
+                    'sqlite', array(
+                    'driver' => 'sqlite',
+                    'default_expire' => 3600,
+                    'database' => 'memory',
+                    'schema' => 'CREATE TABLE caches(id VARCHAR(127) PRIMARY KEY, tags VARCHAR(255), expiration INTEGER, cache TEXT)',
+                    )
             );
         }
 
@@ -49,5 +49,3 @@ class Kohana_SqliteTest extends Kohana_CacheBasicMethodsTest
     }
 
 }
-
-// End Kohana_SqliteTest

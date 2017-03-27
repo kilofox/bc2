@@ -44,8 +44,8 @@ class Kohana_CacheTest extends PHPUnit_Framework_TestCase
         return array(
             // Test bad group definition
             $base + array(
-        Kohana_CacheTest::BAD_GROUP_DEFINITION,
-        'Failed to load Kohana Cache group: 1010'
+            Kohana_CacheTest::BAD_GROUP_DEFINITION,
+            'Failed to load Kohana Cache group: 1010'
             ),
         );
     }
@@ -60,9 +60,9 @@ class Kohana_CacheTest extends PHPUnit_Framework_TestCase
     public function test_instance($group, $expected)
     {
         if (in_array($group, array(
-                    Kohana_CacheTest::BAD_GROUP_DEFINITION,
-                        )
-                )) {
+                Kohana_CacheTest::BAD_GROUP_DEFINITION,
+                )
+            )) {
             $this->setExpectedException('Cache_Exception');
         }
 
@@ -86,8 +86,8 @@ class Kohana_CacheTest extends PHPUnit_Framework_TestCase
     public function test_cloning_fails()
     {
         $cache = $this->getMockBuilder('Cache')
-                ->disableOriginalConstructor()
-                ->getMockForAbstractClass();
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
 
         try {
             clone($cache);
@@ -218,7 +218,7 @@ class Kohana_CacheTest extends PHPUnit_Framework_TestCase
             'set',
             'delete',
             'delete_all'
-                ), array(array()), '', false
+            ), array(array()), '', false
         );
 
         $cache_reflection = new ReflectionClass($cache);
@@ -229,5 +229,3 @@ class Kohana_CacheTest extends PHPUnit_Framework_TestCase
     }
 
 }
-
-// End Kohana_CacheTest

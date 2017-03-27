@@ -2,38 +2,35 @@
 
 namespace Bootphp\Cache\Driver;
 
+use Bootphp\BootphpException;
+
 /**
- * [Kohana Cache](api/Kohana_Cache) File driver. Provides a file based
- * driver for the Kohana Cache library. This is one of the slowest
- * caching methods.
+ * [Cache](api/Cache) File driver. Provides a file based driver for the Bootphp
+ * Cache library. This is one of the slowest caching methods.
  *
  * ### Configuration example
  *
  * Below is an example of a _file_ server configuration.
  *
- *     return array(
- *          'file'   => array(                          // File driver group
- *                  'driver'         => 'file',         // using File driver
- *                  'cache_dir'     => APPPATH.'cache/.kohana_cache', // Cache location
- *           ),
- *     )
+ *     return [
+ *         'file' => [ // File driver group
+ *             'driver' => 'file', // Using File driver
+ *             'cacheDir' => APP_PATH . '/Cache', // Cache location
+ *         ]
+ *     ];
  *
- * In cases where only one cache group is required, if the group is named `default` there is
- * no need to pass the group name when instantiating a cache instance.
+ * In cases where only one cache group is required, if the group is named
+ * `default` there is no need to pass the group name when instantiating a cache
+ * instance.
  *
  * #### General cache group configuration settings
  *
  * Below are the settings available to all types of cache driver.
  *
- * Name           | Required | Description
- * -------------- | -------- | ---------------------------------------------------------------
- * driver         | __YES__  | (_string_) The driver type to use
- * cache_dir      | __NO__   | (_string_) The cache directory to use for this cache instance
- *
- * ### System requirements
- *
- * *  Kohana 3.0.x
- * *  PHP 5.2.4 or greater
+ * Name     | Required | Description
+ * -------- | -------- | -------------------------------------------------------------
+ * driver   | __YES__  | (_string_) The driver type to use
+ * cacheDir | __NO__   | (_string_) The cache directory to use for this cache instance
  *
  * @package    Bootphp/Cache
  * @category   Base
@@ -44,13 +41,13 @@ namespace Bootphp\Cache\Driver;
 class FileDriver extends \Bootphp\Cache\Cache
 {
     /**
-     * Creates a hashed filename based on the string. This is used
-     * to create shorter unique IDs for each cache filename.
+     * Creates a hashed filename based on the string. This is used to create
+     * shorter unique IDs for each cache filename.
      *
      *     // Create the cache filename
-     *     $filename = FileDriver::filename($this->_sanitize_id($id));
+     *     $filename = FileDriver::filename($this->sanitizeId($id));
      *
-     * @param   string  $string  string to hash into filename
+     * @param   string  $string String to hash into filename
      * @return  string
      */
     protected static function filename($string)
@@ -59,16 +56,19 @@ class FileDriver extends \Bootphp\Cache\Cache
     }
 
     /**
-     * @var  string   the caching directory
+     * The caching directory.
+     *
+     * @var string
      */
-    protected $_cache_dir;
+    protected $cacheDir;
 
     /**
-     * Constructs the file cache driver. This method cannot be invoked externally. The file cache driver must
-     * be instantiated using the `Cache::instance()` method.
+     * Constructs the file cache driver. This method cannot be invoked
+     * externally. The file cache driver must be instantiated using the
+     * `Cache::instance()` method.
      *
-     * @param   array  $config  config
-     * @throws  Cache_Exception
+     * @param   array   $config Config
+     * @throws  BootphpException
      */
     protected function __construct(array $config)
     {
@@ -76,31 +76,25 @@ class FileDriver extends \Bootphp\Cache\Cache
         parent::__construct($config);
 
         try {
-            $directory = isset($this->_config['cacheDir']) ? $this->_config['cacheDir'] : \Bootphp\Core::$cacheDir;
-            $this->_cache_dir = new \SplFileInfo($directory);
-        }
-        // PHP < 5.3 exception handle
-        catch (ErrorException $e) {
-            $this->_cache_dir = $this->_make_directory($directory, 0777, true);
-        }
-        // PHP >= 5.3 exception handle
-        catch (UnexpectedValueException $e) {
-            $this->_cache_dir = $this->_make_directory($directory, 0777, true);
+            $directory = isset($this->config['cacheDir']) ? $this->config['cacheDir'] : \Bootphp\Core::$cacheDir;
+            $this->cacheDir = new \SplFileInfo($directory);
+        } catch (\UnexpectedValueException $e) {
+            $this->cacheDir = $this->makeDirectory($directory, 0777, true);
         }
 
         // If the defined directory is a file, get outta here
-        if ($this->_cache_dir->isFile()) {
-            throw new Cache_Exception('Unable to create cache directory as a file already exists : :resource', array(':resource' => $this->_cache_dir->getRealPath()));
+        if ($this->cacheDir->isFile()) {
+            throw new BootphpException('Unable to create cache directory as a file already exists: ' . $this->cacheDir->getRealPath());
         }
 
         // Check the read status of the directory
-        if (!$this->_cache_dir->isReadable()) {
-            throw new Cache_Exception('Unable to read from the cache directory :resource', array(':resource' => $this->_cache_dir->getRealPath()));
+        if (!$this->cacheDir->isReadable()) {
+            throw new BootphpException('Unable to read from the cache directory ' . $this->cacheDir->getRealPath());
         }
 
         // Check the write status of the directory
-        if (!$this->_cache_dir->isWritable()) {
-            throw new Cache_Exception('Unable to write to the cache directory :resource', array(':resource' => $this->_cache_dir->getRealPath()));
+        if (!$this->cacheDir->isWritable()) {
+            throw new BootphpException('Unable to write to the cache directory ' . $this->cacheDir->getRealPath());
         }
     }
 
@@ -113,15 +107,15 @@ class FileDriver extends \Bootphp\Cache\Cache
      *     // Retrieve cache entry from file group and return 'bar' if miss
      *     $data = Cache::instance('file')->get('foo', 'bar');
      *
-     * @param   string   $id       id of cache to entry
-     * @param   string   $default  default value to return if cache miss
+     * @param   string  $id         Id of cache to entry
+     * @param   string  $default    Default value to return if cache miss
      * @return  mixed
-     * @throws  Cache_Exception
+     * @throws  BootphpException
      */
     public function get($id, $default = null)
     {
-        $filename = self::filename($this->_sanitize_id($id));
-        $directory = $this->_resolve_directory($filename);
+        $filename = self::filename($this->sanitizeId($id));
+        $directory = $this->resolveDirectory($filename);
 
         // Wrap operations in try/catch to handle notices
         try {
@@ -134,7 +128,7 @@ class FileDriver extends \Bootphp\Cache\Cache
                 return $default;
             } else {
                 // Test the expiry
-                if ($this->_is_expired($file)) {
+                if ($this->isExpired($file)) {
                     // Delete the file
                     $this->_delete_file($file, false, true);
                     return $default;
@@ -158,7 +152,7 @@ class FileDriver extends \Bootphp\Cache\Cache
         } catch (ErrorException $e) {
             // Handle ErrorException caused by failed unserialization
             if ($e->getCode() === E_NOTICE) {
-                throw new Cache_Exception(__METHOD__ . ' failed to unserialize cached object with message : ' . $e->getMessage());
+                throw new BootphpException(__METHOD__ . ' failed to unserialize cached object with message : ' . $e->getMessage());
             }
 
             // Otherwise throw the exception
@@ -184,13 +178,13 @@ class FileDriver extends \Bootphp\Cache\Cache
      */
     public function set($id, $data, $lifetime = null)
     {
-        $filename = self::filename($this->_sanitize_id($id));
-        $directory = $this->_resolve_directory($filename);
+        $filename = self::filename($this->sanitizeId($id));
+        $directory = $this->resolveDirectory($filename);
 
         // If lifetime is null
         if ($lifetime === null) {
             // Set to the default expiry
-            $lifetime = isset($this->_config['default_expire']) ? $this->_config['default_expire'] : \Bootphp\Cache\Cache::DEFAULT_EXPIRE;
+            $lifetime = isset($this->config['default_expire']) ? $this->config['default_expire'] : \Bootphp\Cache\Cache::DEFAULT_EXPIRE;
         }
 
         // Open directory
@@ -198,7 +192,7 @@ class FileDriver extends \Bootphp\Cache\Cache
 
         // If the directory path is not a directory
         if (!$dir->isDir()) {
-            $this->_make_directory($directory, 0777, true);
+            $this->makeDirectory($directory, 0777, true);
         }
 
         // Open file to inspect
@@ -213,7 +207,7 @@ class FileDriver extends \Bootphp\Cache\Cache
             // If serialize through an error exception
             if ($e->getCode() === E_NOTICE) {
                 // Throw a caching error
-                throw new Cache_Exception(__METHOD__ . ' failed to serialize data for caching with message : ' . $e->getMessage());
+                throw new BootphpException(__METHOD__ . ' failed to serialize data for caching with message : ' . $e->getMessage());
             }
 
             // Else rethrow the error exception
@@ -222,18 +216,18 @@ class FileDriver extends \Bootphp\Cache\Cache
     }
 
     /**
-     * Delete a cache entry based on id
+     * Delete a cache entry based on id.
      *
      *     // Delete 'foo' entry from the file group
      *     Cache::instance('file')->delete('foo');
      *
-     * @param   string   $id  id to remove from cache
+     * @param   string  $id Id to remove from cache
      * @return  boolean
      */
     public function delete($id)
     {
-        $filename = self::filename($this->_sanitize_id($id));
-        $directory = $this->_resolve_directory($filename);
+        $filename = self::filename($this->sanitizeId($id));
+        $directory = $this->resolveDirectory($filename);
 
         return $this->_delete_file(new \SplFileInfo($directory . $filename), false, true);
     }
@@ -241,18 +235,17 @@ class FileDriver extends \Bootphp\Cache\Cache
     /**
      * Delete all cache entries.
      *
-     * Beware of using this method when
-     * using shared memory cache systems, as it will wipe every
-     * entry within the system for all clients.
+     * Beware of using this method when using shared memory cache systems, as it
+     * will wipe every entry within the system for all clients.
      *
      *     // Delete all cache entries in the file group
-     *     Cache::instance('file')->delete_all();
+     *     Cache::instance('file')->deleteAll();
      *
      * @return  boolean
      */
-    public function delete_all()
+    public function deleteAll()
     {
-        return $this->_delete_file($this->_cache_dir, true);
+        return $this->_delete_file($this->cacheDir, true);
     }
 
     /**
@@ -261,9 +254,9 @@ class FileDriver extends \Bootphp\Cache\Cache
      *
      * @return  void
      */
-    public function garbage_collect()
+    public function garbageCollect()
     {
-        $this->_delete_file($this->_cache_dir, true, false, true);
+        $this->_delete_file($this->cacheDir, true, false, true);
         return;
     }
 
@@ -273,12 +266,12 @@ class FileDriver extends \Bootphp\Cache\Cache
      *     // Delete a file or folder whilst retaining parent directory and ignore all errors
      *     $this->_delete_file($folder, true, true);
      *
-     * @param   SplFileInfo  $file                     file
-     * @param   boolean      $retain_parent_directory  retain the parent directory
-     * @param   boolean      $ignore_errors            ignore_errors to prevent all exceptions interrupting exec
-     * @param   boolean      $only_expired             only expired files
+     * @param   SplFileInfo $file                   File
+     * @param   boolean     $retainParentDirectory  Retain the parent directory
+     * @param   boolean     $ignoreErrors           Ignore_errors to prevent all exceptions interrupting exec
+     * @param   boolean     $onlyExpired            Only expired files
      * @return  boolean
-     * @throws  Cache_Exception
+     * @throws  BootphpException
      */
     protected function _delete_file(\SplFileInfo $file, $retain_parent_directory = false, $ignore_errors = false, $only_expired = false)
     {
@@ -299,7 +292,7 @@ class FileDriver extends \Bootphp\Cache\Cache
                     // Otherwise...
                     else {
                         // Assess the file expiry to flag it for deletion
-                        $delete = $this->_is_expired($file);
+                        $delete = $this->isExpired($file);
                     }
 
                     // If the delete flag is set delete file
@@ -310,7 +303,7 @@ class FileDriver extends \Bootphp\Cache\Cache
                 } catch (\ErrorException $e) {
                     // Catch any delete file warnings
                     if ($e->getCode() === E_WARNING) {
-                        throw new Cache_Exception(__METHOD__ . ' failed to delete file : :file', array(':file' => $file->getRealPath()));
+                        throw new BootphpException(__METHOD__ . ' failed to delete file : :file', array(':file' => $file->getRealPath()));
                     }
                 }
             }
@@ -351,7 +344,7 @@ class FileDriver extends \Bootphp\Cache\Cache
                 } catch (ErrorException $e) {
                     // Catch any delete directory warnings
                     if ($e->getCode() === E_WARNING) {
-                        throw new \Bootphp\BootphpException(__METHOD__ . ' failed to delete directory: '.$file->getRealPath() . '.');
+                        throw new \Bootphp\BootphpException(__METHOD__ . ' failed to delete directory: ' . $file->getRealPath() . '.');
                     }
                     throw $e;
                 }
@@ -376,14 +369,14 @@ class FileDriver extends \Bootphp\Cache\Cache
      * Resolves the cache directory real path from the filename
      *
      *      // Get the realpath of the cache folder
-     *      $realpath = $this->_resolve_directory($filename);
+     *      $realpath = $this->resolveDirectory($filename);
      *
      * @param   string  $filename  filename to resolve
      * @return  string
      */
-    protected function _resolve_directory($filename)
+    protected function resolveDirectory($filename)
     {
-        return $this->_cache_dir->getRealPath() . DIRECTORY_SEPARATOR . $filename[0] . $filename[1] . DIRECTORY_SEPARATOR;
+        return $this->cacheDir->getRealPath() . DIRECTORY_SEPARATOR . $filename[0] . $filename[1] . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -396,18 +389,16 @@ class FileDriver extends \Bootphp\Cache\Cache
      * @param   boolean   $recursive    allows nested directories creation
      * @param   resource  $context      a stream context
      * @return  SplFileInfo
-     * @throws  Cache_Exception
+     * @throws  BootphpException
      */
-    protected function _make_directory($directory, $mode = 0777, $recursive = false, $context = null)
+    protected function makeDirectory($directory, $mode = 0777, $recursive = false, $context = null)
     {
         // call mkdir according to the availability of a passed $context param
-        $mkdir_result = $context ?
-                mkdir($directory, $mode, $recursive, $context) :
-                mkdir($directory, $mode, $recursive);
+        $mkdirResult = $context ? mkdir($directory, $mode, $recursive, $context) : mkdir($directory, $mode, $recursive);
 
         // throw an exception if unsuccessful
-        if (!$mkdir_result) {
-            throw new Cache_Exception('Failed to create the defined cache directory : :directory', array(':directory' => $directory));
+        if (!$mkdirResult) {
+            throw new BootphpException('Failed to create the defined cache directory: ' . $directory);
         }
 
         // chmod to solve potential umask issues
@@ -417,12 +408,12 @@ class FileDriver extends \Bootphp\Cache\Cache
     }
 
     /**
-     * Test if cache file is expired
+     * Test if cache file is expired.
      *
-     * @param SplFileInfo $file the cache file
-     * @return boolean true if expired false otherwise
+     * @param   SplFileInfo $file   The cache file
+     * @return  boolean     True if expired false otherwise
      */
-    protected function _is_expired(\SplFileInfo $file)
+    protected function isExpired(\SplFileInfo $file)
     {
         // Open the file and parse data
         $created = $file->getMTime();
@@ -431,14 +422,14 @@ class FileDriver extends \Bootphp\Cache\Cache
 
         // If we're at the EOF at this point, corrupted!
         if ($data->eof()) {
-            throw new Cache_Exception(__METHOD__ . ' corrupted cache file!');
+            throw new BootphpException(__METHOD__ . ' corrupted cache file!');
         }
 
-        //close file
+        // Close file
         $data = null;
 
-        // test for expiry and return
-        return (($lifetime !== 0) AND ( ($created + $lifetime) < time()));
+        // Test for expiry and return
+        return $lifetime !== 0 && $created + $lifetime < time();
     }
 
 }

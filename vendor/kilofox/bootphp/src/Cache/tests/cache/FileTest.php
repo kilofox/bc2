@@ -31,18 +31,18 @@ class Kohana_Cache_FileTest extends Kohana_CacheBasicMethodsTest
 
         if (!Core::$config->load('cache.file')) {
             Core::$config->load('cache')
-                    ->set(
-                            'file', array(
-                        'driver' => 'file',
-                        'cache_dir' => APPPATH . 'cache',
-                        'default_expire' => 3600,
-                        'ignore_on_delete' => array(
-                            'file_we_want_to_keep.cache',
-                            '.gitignore',
-                            '.git',
-                            '.svn'
-                        )
-                            )
+                ->set(
+                    'file', array(
+                    'driver' => 'file',
+                    'cache_dir' => APPPATH . 'cache',
+                    'default_expire' => 3600,
+                    'ignore_on_delete' => array(
+                        'file_we_want_to_keep.cache',
+                        '.gitignore',
+                        '.git',
+                        '.svn'
+                    )
+                    )
             );
         }
 
@@ -161,5 +161,3 @@ class Kohana_Cache_FileTest extends Kohana_CacheBasicMethodsTest
     }
 
 }
-
-// End Kohana_SqliteTest

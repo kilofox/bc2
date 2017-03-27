@@ -33,7 +33,7 @@ class SqliteDriver extends Cache implements CacheTagging, CacheGarbageCollect
     {
         parent::__construct($config);
 
-        $database = Arr::get($this->_config, 'database', null);
+        $database = Arr::get($this->config, 'database', null);
 
         if ($database === null) {
             throw new Cache_Exception('Database path not available in Kohana Cache configuration');
@@ -47,7 +47,7 @@ class SqliteDriver extends Cache implements CacheTagging, CacheGarbageCollect
 
         // If there is no table, create a new one
         if (0 == count($result)) {
-            $database_schema = Arr::get($this->_config, 'schema', null);
+            $database_schema = Arr::get($this->config, 'schema', null);
 
             if ($database_schema === null) {
                 throw new Cache_Exception('Database schema not found in Kohana Cache configuration');
@@ -55,7 +55,7 @@ class SqliteDriver extends Cache implements CacheTagging, CacheGarbageCollect
 
             try {
                 // Create the caches table
-                $this->_db->query(Arr::get($this->_config, 'schema', null));
+                $this->_db->query(Arr::get($this->config, 'schema', null));
             } catch (PDOException $e) {
                 throw new Cache_Exception('Failed to create new SQLite caches table with the following error : :error', array(':error' => $e->getMessage()));
             }
@@ -183,7 +183,7 @@ class SqliteDriver extends Cache implements CacheTagging, CacheGarbageCollect
 
         // Setup lifetime
         if ($lifetime === null) {
-            $lifetime = (0 === Arr::get($this->_config, 'default_expire', null)) ? 0 : (Arr::get($this->_config, 'default_expire', Cache::DEFAULT_EXPIRE) + time());
+            $lifetime = (0 === Arr::get($this->config, 'default_expire', null)) ? 0 : (Arr::get($this->config, 'default_expire', Cache::DEFAULT_EXPIRE) + time());
         } else {
             $lifetime = (0 === $lifetime) ? 0 : ($lifetime + time());
         }

@@ -37,9 +37,9 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function after()
     {
-        $this->view->set('user', $this->user);
-        $this->view->set('menu', $this->menu($this->request->controller()));
-        $this->view->set('title', $this->title);
+        $this->view->set('user', $this->user)
+            ->set('menu', $this->menu($this->request->controller()))
+            ->set('title', $this->title);
 
         parent::after();
     }
@@ -50,7 +50,7 @@ class AdministrationController extends \Bootphp\Controller
     final public function menu($default = '')
     {
         $menu = ORM::factory('menu')->menu($default);
-        //print_r($menu);
+
         return $menu;
     }
 
@@ -59,9 +59,10 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function commonList($list)
     {
-        $this->assign('keyList', $this->keyList);
-        $this->assign('list', $list);
-        $this->template = 'commonList';
+        $this->view ->templatePath(APP_PATH . '/View/admin/')
+            ->template('commonList')
+            ->set('keyList', $this->keyList)
+            ->set('list', $list);
     }
 
     /**
@@ -69,10 +70,10 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function commonEdit($node)
     {
-        $this->assign('keyList', $this->keyList);
-        $this->assign('node', $node);
-        $this->assign('updateUrl', $this->updateUrl);
-        $this->template = 'commonEdit';
+        $this->view->set('keyList', $this->keyList)
+            ->set('node', $node)
+            ->set('updateUrl', $this->updateUrl)
+            ->template('commonEdit');
     }
 
 }
