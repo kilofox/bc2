@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp;
+namespace Bootphp\Pagination;
 
 /**
  * Pagination links generator.
@@ -22,7 +22,7 @@ class Pagination
         'currentPage' => ['source' => 'query_string', 'key' => 'page'],
         'totalItems' => 0,
         'itemsPerPage' => 10,
-        'view' => 'pagination/basic',
+        'view' => 'default',
         'autoHide' => false,
         'firstPageInUrl' => false,
     ];
@@ -98,7 +98,7 @@ class Pagination
     protected $lastPage;
 
     /**
-     * Query offset
+     * Query offset.
      *
      * @var integer
      */
@@ -124,14 +124,14 @@ class Pagination
     public function __construct(array $config = [])
     {
         // Overwrite system defaults with application defaults
-        $this->config = $this->config_group() + $this->config;
+        $this->config = $this->configGroup() + $this->config;
+
         // Pagination setup
         $this->setup($config);
     }
 
     /**
-     * Retrieves a pagination config group from the config file. One config group can
-     * refer to another as its parent, which will be recursively loaded.
+     * Retrieves a pagination config group from the config file.
      *
      * @param   string  $group  Pagination config group. "default" if none given.
      * @return  array   Config settings
@@ -139,21 +139,14 @@ class Pagination
     public function configGroup($group = 'default')
     {
         // Load the pagination config file
-        $config_file = Core::$config('pagination');
-        // Initialize the $config array
-        $config['group'] = (string) $group;
-        // Recursively load requested config groups
-        while (isset($config['group']) && isset($config_file->$config['group'])) {
-            // Temporarily store config group name
-            $group = $config['group'];
-            unset($config['group']);
-            // Add config group values, not overwriting existing keys
-            $config += $config_file->$group;
+        $config = \Bootphp\Core::$config->load('pagination');
+
+        // Load requested config group
+        if (isset($config[$group])) {
+            return $config[$group];
         }
-        // Get rid of possible stray config group names
-        unset($config['group']);
-        // Return the merged config group settings
-        return $config;
+
+        return [];
     }
 
     /**
@@ -165,11 +158,6 @@ class Pagination
      */
     public function setup(array $config = [])
     {
-        if (isset($config['group'])) {
-            // Recursively load requested config groups
-            $config += $this->config_group($config['group']);
-        }
-
         // Overwrite the current config settings
         $this->config = $config + $this->config;
 
@@ -189,6 +177,7 @@ class Pagination
                         break;
                 }
             }
+
             // Calculate and clean all pagination variables
             $this->totalItems = (int) max(0, $this->config['totalItems']);
             $this->itemsPerPage = (int) max(1, $this->config['itemsPerPage']);
@@ -197,9 +186,9 @@ class Pagination
             $this->currentFirstItem = (int) min((($this->currentPage - 1) * $this->itemsPerPage) + 1, $this->totalItems);
             $this->currentLastItem = (int) min($this->currentFirstItem + $this->itemsPerPage - 1, $this->totalItems);
             $this->previousPage = $this->currentPage > 1 ? $this->currentPage - 1 : false;
-            $this->nextPage = ($this->currentPage < $this->totalPages) ? $this->currentPage + 1 : false;
-            $this->firstPage = ($this->currentPage === 1) ? false : 1;
-            $this->lastPage = ($this->currentPage >= $this->totalPages) ? false : $this->totalPages;
+            $this->nextPage = $this->currentPage < $this->totalPages ? $this->currentPage + 1 : false;
+            $this->firstPage = $this->currentPage === 1 ? false : 1;
+            $this->lastPage = $this->currentPage >= $this->totalPages ? false : $this->totalPages;
             $this->offset = (int) (($this->currentPage - 1) * $this->itemsPerPage);
         }
 
@@ -246,24 +235,36 @@ class Pagination
     /**
      * Renders the pagination links.
      *
-     * @param   mixed   $view   String of the view to use, or a View object
+     * @param   string  $template   String of the template file to use
+     * @param   string  $path       Template path.
      * @return  string  Pagination output (HTML)
      */
-    public function render($view = null)
+    public function render($template = null, $path = 'application')
     {
         // Automatically hide pagination whenever it is superfluous
         if ($this->config['autoHide'] === false && $this->totalPages <= 1)
             return '';
-        if ($view === null) {
+
+        if ($template === null) {
             // Use the view from config
-            $view = $this->config['view'];
+            $template = $this->config['view'];
         }
-        if (!$view instanceof View) {
-            // Load the view file
-            $view = View::factory($view);
+
+        // Load the view file
+        $view = new \Bootphp\View($template);
+
+        if ($path === 'application') {
+            $path = APP_PATH . '/View/';
+        } elseif ($path === 'system') {
+            $path = SYS_PATH . '/Pagination/View/';
         }
+
         // Pass on the whole Pagination object
-        return $view->set(get_object_vars($this))->set('page', $this)->render();
+        return $view->layout(false)
+                ->templatePath($path)
+                ->set(get_object_vars($this))
+                ->set('page', $this)
+                ->render();
     }
 
     /**
@@ -276,7 +277,7 @@ class Pagination
         try {
             return $this->render();
         } catch (\Exception $e) {
-            BootphpException::handler($e);
+            \Bootphp\BootphpException::handler($e);
 
             return '';
         }

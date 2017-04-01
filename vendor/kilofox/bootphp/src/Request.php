@@ -3,6 +3,7 @@
 namespace Bootphp;
 
 use Bootphp\Request\Client;
+use Bootphp\BootphpException;
 
 /**
  * Request. Uses the [Route] class to determine what [Controller] to send the request to.
@@ -735,14 +736,12 @@ class Request
         }
 
         if (!$this->_route instanceof Route) {
-            return HTTP_Exception::factory(404, 'Unable to find a route to match the URI: :uri', array(
-                        ':uri' => $this->_uri,
-                    ))->request($this)
-                    ->get_response();
+            return HTTP\HTTPException::factory('Unable to find a route to match the URI: :uri', [':uri' => $this->_uri], 404)
+                    ->getResponse();
         }
 
         if (!$this->_client instanceof Client) {
-            throw new \Bootphp\BootphpException('Unable to execute ' . $this->_uri . ' without a Bootphp\Request\Client.');
+            throw new BootphpException('Unable to execute ' . $this->_uri . ' without a Bootphp\Request\Client.');
         }
 
         return $this->_client->execute($this);

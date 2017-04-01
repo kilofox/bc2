@@ -2,21 +2,22 @@
 
 namespace Bootphp\HTTP;
 
-abstract class HTTPException extends \Bootphp\BootphpException
+use Bootphp\BootphpException;
+
+//abstract
+class HTTPException extends BootphpException
 {
     /**
      * Creates an HTTPException of the specified type.
      *
-     * @param   integer $code       the http status code
-     * @param   string  $message    status message, custom content to display with error
-     * @param   array   $variables  translation variables
-     * @return  HTTP_Exception
+     * @param   string  $message    Status message, custom content to display with error
+     * @param   array   $variables  Translation variables
+     * @param   integer $code       The http status code
+     * @return  HTTPException
      */
-    public static function factory($code, $message = null, array $variables = null, Exception $previous = null)
+    public static function factory($message = null, array $variables = null, $code = 0)
     {
-        $class = 'Bootphp\\HTTP\\Exception\HTTPExceptionExpected';
-
-        return new $class($message, $variables, $previous);
+        return new self($message, $variables, $code);
     }
 
     /**
@@ -35,13 +36,16 @@ abstract class HTTPException extends \Bootphp\BootphpException
      *     throw new Kohana_Exception('Something went terrible wrong, :user',
      *         array(':user' => $user));
      *
-     * @param   string  $message    status message, custom content to display with error
-     * @param   array   $variables  translation variables
+     * @param   string  $message    Status message, custom content to display with error
+     * @param   array   $variables  Translation variables
+     * @param   integer $code       The http status code
      * @return  void
      */
-    public function __construct($message = null, array $variables = null, Exception $previous = null)
+    public function __construct($message = null, array $variables = null, $code)
     {
-        parent::__construct($message, $variables, $this->_code, $previous);
+        $message = \Bootphp\I18n::get($message, $variables);
+
+        parent::__construct($message, $variables, $code);
     }
 
     /**
@@ -61,14 +65,14 @@ abstract class HTTPException extends \Bootphp\BootphpException
     }
 
     /**
-     * Generate a Response for the current Exception
+     * Generate a Response for the current Exception.
      *
-     * @uses   Kohana_Exception::response()
      * @return Response
+     * @uses   Bootphp\ootphpException::response()
      */
-    public function get_response()
+    public function getResponse()
     {
-        return Kohana_Exception::response($this);
+        return BootphpException::response($this);
     }
 
 }

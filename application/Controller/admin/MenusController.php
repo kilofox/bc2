@@ -4,6 +4,8 @@ namespace App\Controller\admin;
 
 use App\Controller\admin\AdministrationController;
 use Bootphp\ORM\ORM;
+use Bootphp\I18n;
+use Bootphp\URL;
 
 /**
  * 后台菜单控制器。
@@ -23,6 +25,7 @@ class MenusController extends AdministrationController
         parent::before();
 
         $this->model = ORM::factory('menu');
+        \Bootphp\I18n::lang('zh-cn');
     }
 
     /**
@@ -41,9 +44,37 @@ class MenusController extends AdministrationController
         if ($this->request->method() === 'POST') {
             $this->creationAction();
         }
+
         $menus = $this->model->where('parent_id', '=', 0)->orderBy('sort')->findAll();
-        $this->view->set('nodes', $menus);
-        $this->commonList($menus);
+        foreach ($menus as &$node) {
+            $node->operation = '<a href="' . $this->baseUrl . 'admin/menus/' . $node->id . '/edit">Edit</a>';
+        }
+        $pager = \Bootphp\Pagination\Pagination::factory();
+
+        $list = [
+            'data' => $menus,
+            'pager' => $pager->render('admin/pagination/metro')
+        ];
+
+        $this->keyList = [
+            'id' => [
+                'alias' => I18n::get('ID')
+            ],
+            'title' => [
+                'alias' => I18n::get('Title')
+            ],
+            'parent_id' => [
+                'alias' => I18n::get('Category')
+            ],
+            'sort' => [
+                'alias' => I18n::get('Order')
+            ],
+            'operation' => [
+                'alias' => I18n::get('Operation')
+            ]
+        ];
+
+        $this->commonList($list);
     }
 
     /*
@@ -136,8 +167,11 @@ class MenusController extends AdministrationController
             }
             $this->ajaxReturn($status, $info);
         }
+
         $this->tab = 'menus';
-        $this->assign('node', $item);
+        $this->view->set('node', $item);
+
+        $this->commonEdit($item);
     }
 
 }

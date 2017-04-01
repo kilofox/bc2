@@ -37,8 +37,9 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function after()
     {
-        $this->view->set('user', $this->user)
-            ->set('menu', $this->menu($this->request->controller()))
+        $this->view->templatePath(APP_PATH . '/View/admin/')
+            ->set('user', $this->user)
+            ->set('menu', $this->menu($this->request->action()))
             ->set('title', $this->title);
 
         parent::after();
@@ -59,10 +60,11 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function commonList($list)
     {
-        $this->view ->templatePath(APP_PATH . '/View/admin/')
-            ->template('commonList')
+        $allSelect = false;
+        $this->view->template('commonList')
             ->set('keyList', $this->keyList)
-            ->set('list', $list);
+            ->set('list', $list)
+            ->set('allSelect', $allSelect);
     }
 
     /**
@@ -70,10 +72,10 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function commonEdit($node)
     {
-        $this->view->set('keyList', $this->keyList)
+        $this->view->template('commonEdit')
+            ->set('keyList', $this->keyList)
             ->set('node', $node)
-            ->set('updateUrl', $this->updateUrl)
-            ->template('commonEdit');
+            ->set('updateUrl', $this->updateUrl);
     }
 
 }

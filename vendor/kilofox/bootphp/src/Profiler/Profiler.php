@@ -408,7 +408,8 @@ class Profiler
             ->set([
                 'groups' => $groups,
                 'groupStats' => $groupStats,
-                'application' => $application]
+                'application' => $application
+                ]
         );
         echo $view->render();
     }

@@ -6,14 +6,11 @@ namespace Bootphp;
  * Internationalization (i18n) class. Provides language loading and translation
  * methods without dependencies on [gettext](http://php.net/gettext).
  *
- * Typically this class would never be used directly, but used via the __()
- * function, which loads the message and replaces parameters:
- *
  *     // Display a translated message
- *     echo __('Hello, world');
+ *     echo I18n::get('Hello, world');
  *
  *     // With parameter replacement
- *     echo __('Hello, :user', array(':user' => $username));
+ *     echo I18n::get('Hello, :user', [':user' => $username]);
  *
  * @package    Bootphp
  * @category   Base
@@ -24,19 +21,18 @@ namespace Bootphp;
 class I18n
 {
     /**
-     * @var  string   target language: en-us, zh-cn, etc
+     * Target language: en-us, zh-cn, etc.
+     *
+     * @var string
      */
     public static $lang = 'en-us';
 
     /**
-     * @var  string  source language: en-us, zh-cn, etc
+     * Translattion table.
+     *
+     * @var string
      */
-    public static $source = 'en-us';
-
-    /**
-     * @var  array  cache of loaded languages
-     */
-    protected static $_cache = array();
+    public static $table = [];
 
     /**
      * Get and set the target language.
@@ -44,116 +40,80 @@ class I18n
      *     // Get the current language
      *     $lang = I18n::lang();
      *
-     *     // Change the current language to Spanish
-     *     I18n::lang('es-es');
+     *     // Change the current language to Chinese-Simplified
+     *     I18n::lang('zh-cn');
      *
-     * @param   string  $lang   new language setting
+     * @param   string  $lang   New language setting
      * @return  string
-     * @since   3.0.2
      */
     public static function lang($lang = null)
     {
         if ($lang) {
             // Normalize the language
-            I18n::$lang = strtolower(str_replace(array(' ', '_'), '-', $lang));
+            self::$lang = strtolower($lang);
         }
 
-        return I18n::$lang;
-    }
-
-    /**
-     * Returns translation of a string. If no translation exists, the original
-     * string will be returned. No parameters are replaced.
-     *
-     *     $hello = I18n::get('Hello friends, my name is :name');
-     *
-     * @param   string  $string text to translate
-     * @param   string  $lang   target language
-     * @return  string
-     */
-    public static function get($string, $lang = null)
-    {
-        if (!$lang) {
-            // Use the global target language
-            $lang = I18n::$lang;
-        }
-
-        // Load the translation table for this language
-        $table = I18n::load($lang);
-
-        // Return the translated string if it exists
-        return isset($table[$string]) ? $table[$string] : $string;
+        return self::$lang;
     }
 
     /**
      * Returns the translation table for a given language.
      *
-     *     // Get all defined Spanish messages
-     *     $messages = I18n::load('es-es');
+     *     // Get all defined Chinese-Simplified messages in "file.php"
+     *     $messages = I18n::load('file', 'zh-cn');
      *
-     * @param   string  $lang   language to load
+     * @param   string  $langFile   Language file name to load
+     * @param   string  $lang       Language to load from
      * @return  array
      */
-    public static function load($lang)
+    public static function load($langFile, $lang = null)
     {
-        if (isset(I18n::$_cache[$lang])) {
-            return I18n::$_cache[$lang];
+        if ($lang) {
+            self::lang($lang);
+        } else {
+            $lang = self::$lang;
         }
 
         // New translation table
-        $table = array();
+        $table[$lang] = [];
 
-        // Split the language: language, region, locale, etc
-        $parts = explode('-', $lang);
+        if (is_file($file = APP_PATH . '/I18n/' . $lang . '/' . $langFile . '.php')) {
+            // Append the table
+            $table[$lang] += require $file;
 
-        do {
-            // Create a path for this set of parts
-            $path = implode(DIRECTORY_SEPARATOR, $parts);
+            self::$table = $table;
 
-            if ($files = Core::find_file('i18n', $path, null, true)) {
-                $t = array();
-                foreach ($files as $file) {
-                    // Merge the language strings into the sub table
-                    $t = array_merge($t, Core::load($file));
-                }
+            return true;
+        }
 
-                // Append the sub table, preventing less specific language
-                // files from overloading more specific files
-                $table += $t;
-            }
-
-            // Remove the last part
-            array_pop($parts);
-        } while ($parts);
-
-        // Cache the translation table locally
-        return I18n::$_cache[$lang] = $table;
+        return false;
     }
 
-}
-
-if (!function_exists('__')) {
-
     /**
-     * Kohana translation/internationalization function. The PHP function
-     * [strtr](http://php.net/strtr) is used for replacing parameters.
+     * Returns translation of a string. If no translation exists, the original
+     * string will be returned. The PHP function [strtr](http://php.net/strtr)
+     * is used for replacing parameters.
      *
-     *    __('Welcome back, :user', array(':user' => $username));
+     *     $hello = I18n::get('Welcome back, :user', [':user' => $username]);
      *
-     * [!!] The target language is defined by [I18n::$lang].
-     *
-     * @uses    I18n::get
-     * @param   string  $string text to translate
-     * @param   array   $values values to replace in the translated text
-     * @param   string  $lang   source language
+     * @param   string  $string     Text to translate
+     * @param   array   $values     Values to replace in the translated text
+     * @param   string  $lang       Target language
      * @return  string
      */
-    function __($string, array $values = null, $lang = 'en-us')
+    public static function get($string, array $values = null, $lang = null)
     {
-        if ($lang !== I18n::$lang) {
-            // The message and target languages are different
-            // Get the translation for this message
-            $string = I18n::get($string);
+        // The message and target languages are different. Get the translation for this message.
+        if ($lang !== self::$lang) {
+            if (!$lang) {
+                // Use the global target language
+                $lang = self::$lang;
+            }
+
+            // Get the translated string if it exists
+            if (isset(self::$table[$lang][$string])) {
+                $string = self::$table[$lang][$string];
+            }
         }
 
         return empty($values) ? $string : strtr($string, $values);

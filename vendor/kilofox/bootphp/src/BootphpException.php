@@ -3,10 +3,10 @@
 namespace Bootphp;
 
 /**
- * Kohana exception class.
+ * Bootphp exception class.
  *
  * @package    Bootphp
- * @category   Exceptions
+ * @category   Base
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
@@ -14,9 +14,11 @@ namespace Bootphp;
 class BootphpException extends \Exception
 {
     /**
-     * @var  array  PHP error code => human readable name
+     * PHP error code => human readable name.
+     *
+     * @var array
      */
-    public static $phpErrors = array(
+    public static $phpErrors = [
         E_ERROR => 'Fatal Error',
         E_USER_ERROR => 'User Error',
         E_PARSE => 'Parse Error',
@@ -26,17 +28,15 @@ class BootphpException extends \Exception
         E_NOTICE => 'Notice',
         E_RECOVERABLE_ERROR => 'Recoverable Error',
         E_DEPRECATED => 'Deprecated',
-    );
+    ];
 
     /**
      * Creates a new exception.
      *
      *     throw new BootphpException('Something went terrible wrong.');
      *
-     * @param   string          $message    error message
-     * @param   array           $variables  translation variables
-     * @param   integer|string  $code       the exception code
-     * @param   Exception       $previous   Previous exception
+     * @param   string      $message    Error message
+     * @param   integer     $code       The exception code
      * @return  void
      */
     public function __construct($message = '', $code = 0)
@@ -100,8 +100,8 @@ class BootphpException extends \Exception
      * Logs an exception.
      *
      * @uses    BootphpException::text
-     * @param   Exception  $e
-     * @param   int        $level
+     * @param   Exception   $e
+     * @param   integer     $level
      * @return  void
      */
     public static function log(\Exception $e, $level = Log::EMERGENCY)
@@ -123,7 +123,7 @@ class BootphpException extends \Exception
      *
      * Error [ Code ]: Message ~ File [ Line ]
      *
-     * @param   Exception  $e
+     * @param   Exception   $e
      * @return  string
      */
     public static function text(\Exception $e)
@@ -134,9 +134,9 @@ class BootphpException extends \Exception
     /**
      * Get a Response object representing the exception
      *
-     * @uses    BootphpException::text
-     * @param   Exception  $e
+     * @param   Exception   $e
      * @return  Response
+     * @uses    BootphpException::text
      */
     public static function response(\Exception $e)
     {

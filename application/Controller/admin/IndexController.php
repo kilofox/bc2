@@ -4,9 +4,7 @@ namespace App\Controller\admin;
 
 use Bootphp\ORM\ORM;
 use Bootphp\Database\DB;
-use Bootphp\View;
 use App\Controller\admin\AdministrationController;
-use App\Model\UserModel;
 
 /**
  * 后台首页控制器。
@@ -14,7 +12,7 @@ use App\Model\UserModel;
  * @package	BootCMS
  * @category	控制器
  * @author		Tinsh <kilofox2000@gmail.com>
- * @copyright	(C) 2005-2016 Kilofox Studio
+ * @copyright	(C) 2005-2017 Kilofox Studio
  */
 class IndexController extends AdministrationController
 {
