@@ -117,11 +117,13 @@ abstract class Controller
     {
         // Loads the [View] object.
         if ($this->autoRender === true) {
+            $directory = $this->request->directory() ? $this->request->directory() . '/' : '';
+
             $this->baseUrl = URL::base();
             $this->view = new \Bootphp\View();
-            $this->view->layoutPath(APP_PATH . '/View/' . $this->request->directory() . '/layout/')
+            $this->view->layoutPath(APP_PATH . '/View/' . $directory . 'layout/')
                 ->layout('default')
-                ->templatePath(APP_PATH . '/View/' . $this->request->directory() . '/' . $this->request->controller() . '/')
+                ->templatePath(APP_PATH . '/View/')
                 ->template($this->request->action())
                 ->set('baseUrl', $this->baseUrl)
                 ->set('controller', $this->request->controller());

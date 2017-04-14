@@ -65,7 +65,7 @@ class IndexController extends AdministrationController
         $this->view->set('articles', $articles)
             ->set('comments', $comments)
             ->set('dbVersion', $dbVersion)
-            ->template('index');
+            ->template('index/index');
     }
 
 }

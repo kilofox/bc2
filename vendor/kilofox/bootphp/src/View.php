@@ -77,8 +77,6 @@ class View
             // Add the values to the current data
             $this->data = $data + $this->data;
         }
-
-        //if (self::$autoLayout)
     }
 
     /**

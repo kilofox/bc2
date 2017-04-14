@@ -6,6 +6,7 @@ use App\Controller\admin\AdministrationController;
 use Bootphp\ORM\ORM;
 use Bootphp\I18n;
 use Bootphp\URL;
+use Bootphp\Validation\ValidationException;
 
 /**
  * 后台菜单控制器。
@@ -113,7 +114,7 @@ class MenusController extends AdministrationController
                     $status = 5;
                     $info = '菜单创建失败。';
                 }
-            } catch (Validation_Exception $e) {
+            } catch (ValidationException $e) {
                 $errors = $e->errors('models');
                 foreach ($errors as $ev) {
                     $status = 4;
@@ -132,7 +133,7 @@ class MenusController extends AdministrationController
     {
         $itemId = (int) $this->request->param('id');
         $item = $this->model->find($itemId);
-        if ($this->request->method() == 'PUT') {
+        if ($this->request->method() === 'put') {
             $status = 0;
             $info = '您没有足够的权限进行此项操作。';
             if (!$item) {
@@ -157,7 +158,7 @@ class MenusController extends AdministrationController
                     $status = 5;
                     $info = '菜单没有更新。';
                 }
-            } catch (Validation_Exception $e) {
+            } catch (ValidationException $e) {
                 $errors = $e->errors('models');
                 foreach ($errors as $ev) {
                     $status = 4;

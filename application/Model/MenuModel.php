@@ -25,11 +25,11 @@ class MenuModel extends \Bootphp\ORM\ORM
         $defaultId = 0;
         $subMenu = [];
         foreach ($menus as $node) {
-            if ($node->parent_id == 0) {
+            if ($node->parent_id === 0) {
                 $menu['tabs'][$node->id] = $node;
                 $menu['tabs'][$node->id]->apps[] = $node->application;
                 $menu['tabs'][$node->id]->subMenu = [];
-                if ($node->controller == $current)
+                if ($node->controller === $current)
                     $menu['default'] = $node->id;
             } else {
                 $subMenu[] = $node;

@@ -37,9 +37,11 @@ class AdministrationController extends \Bootphp\Controller
      */
     public function after()
     {
+        $menu = ORM::factory('menu')->menu($this->request->controller());
+
         $this->view->templatePath(APP_PATH . '/View/admin/')
             ->set('user', $this->user)
-            ->set('menu', $this->menu($this->request->action()))
+            ->set('menu', $menu)
             ->set('title', $this->title);
 
         parent::after();

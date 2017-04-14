@@ -4,14 +4,14 @@
 		<meta charset="UTF-8" />
 		<meta name="robots" content="noindex, nofollow" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-		<title><?php echo $baseUrl; ?></title>
-		<link rel="shortcut icon" type="image/x-icon" href="<?php echo $baseUrl; ?>favicon.ico" />
-		<link href="<?php echo $baseUrl; ?>assets/system/css/metro.css" rel="stylesheet" />
-		<link href="<?php echo $baseUrl; ?>assets/system/css/metro-icons.css" rel="stylesheet" />
-		<link href="<?php echo $baseUrl; ?>assets/system/css/metro-responsive.css" rel="stylesheet" />
-		<script src="<?php echo $baseUrl; ?>assets/system/js/jquery-2.2.1.min.js"></script>
+		<title><?=$baseUrl?></title>
+		<link rel="shortcut icon" type="image/x-icon" href="<?=$baseUrl?>favicon.ico" />
+		<link href="<?=$baseUrl?>assets/system/css/metro.css" rel="stylesheet" />
+		<link href="<?=$baseUrl?>assets/system/css/metro-icons.css" rel="stylesheet" />
+		<link href="<?=$baseUrl?>assets/system/css/metro-responsive.css" rel="stylesheet" />
+		<script src="<?=$baseUrl?>assets/system/js/jquery-2.2.1.min.js"></script>
 		<script>window.METRO_CURRENT_LOCALE = 'znCN';</script>
-		<script src="<?php echo $baseUrl; ?>assets/system/js/metro.js"></script>
+		<script src="<?=$baseUrl?>assets/system/js/metro.js"></script>
 		<style>
 			html, body {
 				height: 100%;
@@ -53,7 +53,7 @@
 				});
 				return false;
 			}
-			var baseUrl = '<?php echo $baseUrl; ?>';
+			var baseUrl = '<?=$baseUrl?>';
 			$(function() {
 				$('.sidebar').on('click', 'li', function() {
 					if (!$(this).hasClass('active')) {
@@ -66,12 +66,12 @@
 	</head>
 	<body class="bg-steel">
 		<div class="app-bar fixed-top darcula" data-role="appbar">
-			<a href="<?php echo $baseUrl; ?>system" class="app-bar-element branding">网站管理</a>
+			<a href="<?=$baseUrl?>system" class="app-bar-element branding">网站管理</a>
 			<span class="app-bar-divider"></span>
 			<ul class="app-bar-menu">
 				<?php foreach ($menu['tabs'] as $node): ?>
 				<li<?php if (in_array($controller, [$node->controller])): ?> class="active"<?php endif; ?>>
-					<a href="<?php echo $baseUrl; ?><?php echo $node->application; ?>/<?php echo $node->controller; ?>/<?php echo $node->action; ?>"><?php echo $node->title; ?></a>
+					<a href="<?=$baseUrl?><?=$node->application?>/<?=$node->controller?>/<?=$node->action?>"><?=$node->title?></a>
 				</li>
 				<?php endforeach; ?>
 				<li>
@@ -86,11 +86,11 @@
 			</ul>
 			<ul class="app-bar-menu place-right">
 				<li>
-					<a class="dropdown-toggle"><span class="mif-cog"></span> <?php echo $user->nickname; ?></a>
+					<a class="dropdown-toggle"><span class="mif-cog"></span> <?=$user->nickname?></a>
 					<ul class="d-menu place-right" data-role="dropdown">
-						<li><a href="<?php echo $baseUrl; ?>system/public/edit_user">个人资料</a></li>
+						<li><a href="<?=$baseUrl?>system/public/edit_user">个人资料</a></li>
 						<li><a href="javascript:void(0);" onclick="pushMessage('info')">安全</a></li>
-						<li><a href="<?php echo $baseUrl; ?>admin/logout">退出</a></li>
+						<li><a href="<?=$baseUrl?>admin/logout">退出</a></li>
 					</ul>
 				</li>
 			</ul>
@@ -101,16 +101,16 @@
 					<div class="cell size-x200" id="cell-sidebar" style="background-color: #71b1d1;">
 						<ul class="sidebar">
 							<?php foreach ($menu['tabs'][$menu['default']]->subMenu as $node): ?>
-							<li<?php if ($node->controller == $controller): ?> class="active"<?php endif; ?>>
-								<a href="<?php echo $baseUrl; ?><?php echo $node->application; ?>/<?php echo $node->controller; ?>/<?php echo $node->action; ?>">
-									<span class="mif-<?php echo $node->icon; ?> icon"></span>
-									<span class="title"><?php echo $node->title; ?></span>
+							<li<?php if ($node->controller === $controller): ?> class="active"<?php endif; ?>>
+								<a href="<?=$baseUrl?><?=$node->application?>/<?=$node->controller?>/<?=$node->action?>">
+									<span class="mif-<?=$node->icon?> icon"></span>
+									<span class="title"><?=$node->title?></span>
 								</a>
 							</li>
 							<?php endforeach; ?>
 						</ul>
 					</div>
-					<?php echo $yield; ?>
+					<?=$yield?>
 				</div><?php \Bootphp\Profiler\Profiler::display(); ?>
 			</div>
 		</div>

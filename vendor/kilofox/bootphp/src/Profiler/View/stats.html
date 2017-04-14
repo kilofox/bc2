@@ -31,11 +31,11 @@
     <?php foreach ($groups as $group => $benchmarks): ?>
 	<table class="profiler">
 		<tr class="group">
-			<th class="name" rowspan="2"><?php echo ucfirst($group); ?></th>
-			<td class="time" colspan="4"><?php echo $groupStats[$group]['total']['time']; ?> <abbr title="seconds">s</abbr></td>
+			<th class="name" rowspan="2"><?=ucfirst($group)?></th>
+			<td class="time" colspan="4"><?=$groupStats[$group]['total']['time']?> <abbr title="seconds">s</abbr></td>
 		</tr>
 		<tr class="group">
-			<td class="memory" colspan="4"><?php echo $groupStats[$group]['total']['memory']; ?> <abbr title="kilobyte">kB</abbr></td>
+			<td class="memory" colspan="4"><?=$groupStats[$group]['total']['memory']?> <abbr title="kilobyte">kB</abbr></td>
 		</tr>
 		<tr class="headers">
 			<th class="name">Benchmark</th>
@@ -47,68 +47,68 @@
 		<?php foreach ($benchmarks as $name => $tokens): ?>
 		<tr class="mark time">
 			<?php $stats = Bootphp\Profiler\Profiler::stats($tokens); ?>
-			<th class="name" rowspan="2" scope="rowgroup"><?php echo \Bootphp\HTML::chars($name), ' (', count($tokens), ')'; ?></th>
+			<th class="name" rowspan="2" scope="rowgroup"><?=\Bootphp\HTML::chars($name), ' (', count($tokens), ')'?></th>
 			<td class="min">
 				<div>
-					<div class="value"><?php echo $stats['min']['time']; ?> <abbr title="seconds">s</abbr></div>
+					<div class="value"><?=$stats['min']['time']?> <abbr title="seconds">s</abbr></div>
 				</div>
 			</td>
 			<td class="max">
 				<div>
-					<div class="value"><?php echo $stats['max']['time']; ?> <abbr title="seconds">s</abbr></div>
+					<div class="value"><?=$stats['max']['time']?> <abbr title="seconds">s</abbr></div>
 				</div>
 			</td>
 			<td class="average">
 				<div>
-					<div class="value"><?php echo $stats['average']['time']; ?> <abbr title="seconds">s</abbr></div>
+					<div class="value"><?=$stats['average']['time']?> <abbr title="seconds">s</abbr></div>
 				</div>
 			</td>
 			<td class="total">
 				<div>
-					<div class="value"><?php echo $stats['total']['time']; ?> <abbr title="seconds">s</abbr></div>
-					<div class="graph" style="left: <?php echo $groupStats[$group]['max']['time'] ? max(0, 100 - $stats['total']['time'] / $groupStats[$group]['max']['time'] * 100) : '0' ?>%"></div>
+					<div class="value"><?=$stats['total']['time']?> <abbr title="seconds">s</abbr></div>
+					<div class="graph" style="left: <?=$groupStats[$group]['max']['time'] ? max(0, 100 - $stats['total']['time'] / $groupStats[$group]['max']['time'] * 100) : '0' ?>%"></div>
 				</div>
 			</td>
 		</tr>
 		<tr class="mark memory">
 			<td class="min">
 				<div>
-					<div class="value"><?php echo $stats['min']['memory']; ?> <abbr title="kilobyte">kB</abbr></div>
+					<div class="value"><?=$stats['min']['memory']?> <abbr title="kilobyte">kB</abbr></div>
 				</div>
 			</td>
 			<td class="max">
 				<div>
-					<div class="value"><?php echo $stats['max']['memory']; ?> <abbr title="kilobyte">kB</abbr></div>
+					<div class="value"><?=$stats['max']['memory']?> <abbr title="kilobyte">kB</abbr></div>
 				</div>
 			</td>
 			<td class="average">
 				<div>
-					<div class="value"><?php echo $stats['average']['memory']; ?> <abbr title="kilobyte">kB</abbr></div>
+					<div class="value"><?=$stats['average']['memory']?> <abbr title="kilobyte">kB</abbr></div>
 				</div>
 			</td>
 			<td class="total">
 				<div>
-					<div class="value"><?php echo $stats['total']['memory']; ?> <abbr title="kilobyte">kB</abbr></div>
-					<div class="graph" style="left: <?php echo $groupStats[$group]['max']['memory'] ? max(0, 100 - $stats['total']['memory'] / $groupStats[$group]['max']['memory'] * 100) : '0'; ?>%"></div>
+					<div class="value"><?=$stats['total']['memory']?> <abbr title="kilobyte">kB</abbr></div>
+					<div class="graph" style="left: <?=$groupStats[$group]['max']['memory'] ? max(0, 100 - $stats['total']['memory'] / $groupStats[$group]['max']['memory'] * 100) : '0'?>%"></div>
 				</div>
 			</td>
 		</tr>
 		<?php endforeach; ?>
 	</table>
-    <?php endforeach ?>
+    <?php endforeach; ?>
     <table class="profiler">
         <tr class="final mark time">
-            <th class="name" rowspan="2" scope="rowgroup">Application Execution (<?php echo $application['count']; ?>)</th>
-            <td class="min"><?php echo $application['min']['time']; ?> <abbr title="seconds">s</abbr></td>
-            <td class="max"><?php echo $application['max']['time']; ?> <abbr title="seconds">s</abbr></td>
-            <td class="average"><?php echo $application['average']['time']; ?> <abbr title="seconds">s</abbr></td>
-            <td class="current"><?php echo $application['current']['time']; ?> <abbr title="seconds">s</abbr></td>
+            <th class="name" rowspan="2" scope="rowgroup">Application Execution (<?=$application['count']?>)</th>
+            <td class="min"><?=$application['min']['time']?> <abbr title="seconds">s</abbr></td>
+            <td class="max"><?=$application['max']['time']?> <abbr title="seconds">s</abbr></td>
+            <td class="average"><?=$application['average']['time']?> <abbr title="seconds">s</abbr></td>
+            <td class="current"><?=$application['current']['time']?> <abbr title="seconds">s</abbr></td>
         </tr>
         <tr class="final mark memory">
-            <td class="min"><?php echo $application['min']['memory']; ?> <abbr title="kilobyte">kB</abbr></td>
-            <td class="max"><?php echo $application['max']['memory']; ?> <abbr title="kilobyte">kB</abbr></td>
-            <td class="average"><?php echo $application['average']['memory']; ?> <abbr title="kilobyte">kB</abbr></td>
-            <td class="current"><?php echo $application['current']['memory']; ?> <abbr title="kilobyte">kB</abbr></td>
+            <td class="min"><?=$application['min']['memory']?> <abbr title="kilobyte">kB</abbr></td>
+            <td class="max"><?=$application['max']['memory']?> <abbr title="kilobyte">kB</abbr></td>
+            <td class="average"><?=$application['average']['memory']?> <abbr title="kilobyte">kB</abbr></td>
+            <td class="current"><?=$application['current']['memory']?> <abbr title="kilobyte">kB</abbr></td>
         </tr>
     </table>
 </div>
