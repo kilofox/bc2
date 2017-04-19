@@ -133,7 +133,7 @@ class MenusController extends AdministrationController
     {
         $itemId = (int) $this->request->param('id');
         $item = $this->model->find($itemId);
-        if ($this->request->method() === 'put') {
+        if ($this->request->method() === 'PUT') {
             $status = 0;
             $info = '您没有足够的权限进行此项操作。';
             if (!$item) {
@@ -169,8 +169,22 @@ class MenusController extends AdministrationController
             $this->ajaxReturn($status, $info);
         }
 
-        $this->tab = 'menus';
-        $this->view->set('node', $item);
+        $this->keyList = [
+            'id' => [
+                'alias' => I18n::get('ID')
+            ],
+            'title' => [
+                'alias' => I18n::get('Title')
+            ],
+            'parent_id' => [
+                'alias' => I18n::get('Category')
+            ],
+            'sort' => [
+                'alias' => I18n::get('Order')
+            ]
+        ];
+
+        $this->updateUrl = URL::site('admin/menus/' . $itemId . '/edit');
 
         $this->commonEdit($item);
     }

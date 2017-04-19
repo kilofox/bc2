@@ -21,19 +21,22 @@ class MenuModel extends \Bootphp\ORM\ORM
     {
         $menus = $this->orderBy('sort')->findAll();
 
-        $menu = ['tabs' => [], 'default' => 0];
-        $defaultId = 0;
+        $menu = ['tabs' => [], 'default' => null];
         $subMenu = [];
         foreach ($menus as $node) {
             if ($node->parent_id === 0) {
                 $menu['tabs'][$node->id] = $node;
                 $menu['tabs'][$node->id]->apps[] = $node->application;
                 $menu['tabs'][$node->id]->subMenu = [];
-                if ($node->controller === $current)
-                    $menu['default'] = $node->id;
+                if ($node->controller === $current) {
+                    $menu['default'] = $node;
+                }
             } else {
                 $subMenu[] = $node;
             }
+        }
+        if ($menu['default'] === null) {
+            $menu['default'] = $menus[0];
         }
         foreach ($subMenu as $node) {
             if (isset($menu['tabs'][$node->parent_id])) {

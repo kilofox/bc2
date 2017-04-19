@@ -51,12 +51,17 @@ class LoginController extends \Bootphp\Controller
                 $caption = '登录成功';
                 $content = '您已经成功登录。';
             }
-            exit(json_encode(['status' => $status, 'info' => [$caption, $content], 'data' => $this->baseUrl . 'admin/index']));
+
+            exit(json_encode([
+                'status' => $status,
+                'info' => [$caption, $content],
+                'data' => $this->baseUrl . 'admin/index'
+            ]));
         }
 
         Auth::instance()->logout();
         $this->view->layout(false)
-            ->template('login');
+            ->template('admin/login/login');
     }
 
 }
