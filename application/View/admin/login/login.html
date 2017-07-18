@@ -79,7 +79,7 @@
                         return false;
                     $.ajax({
                         url: baseUrl + 'admin/login',
-                        type: 'post',
+                        type: 'put',
                         dataType: 'json',
                         data: $('#login').serialize(),
                         success: function (data) {

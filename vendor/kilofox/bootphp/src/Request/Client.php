@@ -103,12 +103,12 @@ abstract class Client
         if ($this->callback_depth() > $this->max_callback_depth())
             throw new Request_Client_Recursion_Exception(
             "Could not execute request to :uri - too many recursions after :depth requests", array(
-        ':uri' => $request->uri(),
-        ':depth' => $this->callback_depth() - 1,
+            ':uri' => $request->uri(),
+            ':depth' => $this->callback_depth() - 1,
             ));
 
         // Execute the request and pass the currently used protocol
-        $orig_response = $response = Response::factory(array('_protocol' => $request->protocol()));
+        $orig_response = $response = Response::factory(array('_protocol' => 'HTTP/' . $request->getProtocolVersion()));
 
         if (($cache = $this->cache()) instanceof HTTP_Cache)
             return $cache->execute($this, $request, $response);
@@ -150,7 +150,6 @@ abstract class Client
      * @param   Request   $request   request to execute by client
      * @param   Response  $response
      * @return  Response
-     * @since   3.2.0
      */
     abstract public function execute_request(Request $request, Response $response);
     /**
@@ -398,8 +397,8 @@ abstract class Client
             $follow_headers = \Arr::extract($orig_headers, $follow_header_keys);
 
             $follow_request = Request::factory($response->headers('Location'))
-                    ->method($follow_method)
-                    ->headers($follow_headers);
+                ->method($follow_method)
+                ->headers($follow_headers);
 
             if ($follow_method !== Request::GET) {
                 $follow_request->body($request->body());

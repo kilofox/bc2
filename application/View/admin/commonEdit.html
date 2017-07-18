@@ -14,7 +14,7 @@
 					<lable><?=$kv['alias']?></lable>
 					<?php if (!isset($kv['tag'])): ?>
 					<div class="input-control text full-size">
-						<input type="text" name="<=$kk?>" value="<?=$node->$kk?>"<?php if (isset($kv['disabled'])): ?> disabled="disabled"<?php endif; ?>/>
+						<input type="text" name="<?=$kk?>" value="<?=$node->$kk?>"<?php if (isset($kv['disabled'])): ?> disabled="disabled"<?php endif; ?>/>
 					</div>
 					<?php elseif ($kv['tag'] == 'textarea'): ?>
 					<div class="input-control textarea full-size">

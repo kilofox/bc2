@@ -44,7 +44,7 @@ class LoginController extends \Bootphp\Controller
             $auth->logout();
 
             // 尝试登录
-            $auth->login(strtolower($this->request->post('username')), $this->request->post('password'), false);
+            $auth->login(strtolower($this->request->data('username')), $this->request->data('password'), false);
             $this->user = $auth->getUser();
             if ($this->user) {
                 $status = 1;

@@ -165,11 +165,12 @@ class Response
     {
         if ($protocol) {
             $this->_protocol = strtoupper($protocol);
+
             return $this;
         }
 
         if ($this->_protocol === null) {
-            $this->_protocol = HTTP::$protocol;
+            $this->_protocol = \Bootphp\Http\Http::$protocol;
         }
 
         return $this->_protocol;

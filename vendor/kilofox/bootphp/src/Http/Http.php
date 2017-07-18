@@ -1,6 +1,6 @@
 <?php
 
-namespace Bootphp;
+namespace Bootphp\Http;
 
 /**
  * Contains the most low-level helpers methods in Bootphp:
@@ -16,7 +16,7 @@ namespace Bootphp;
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
  */
-abstract class HTTP
+abstract class Http
 {
     /**
      * @var  The default protocol to use if it cannot be detected
@@ -137,16 +137,16 @@ abstract class HTTP
      * representation of the HTTP request.
      *
      *      // Get http headers into the request
-     *      $request->headers = HTTP::request_headers();
+     *      $request->headers = HTTP::requestHeaders();
      *
-     * @return  HTTP_Header
+     * @return  HTTP\Header
      */
-    public static function request_headers()
+    public static function requestHeaders()
     {
         // If running on apache server
         if (function_exists('apache_request_headers')) {
             // Return the much faster method
-            return new HTTP_Header(apache_request_headers());
+            return new Header(apache_request_headers());
         }
         // If the PECL HTTP tools are installed
         elseif (extension_loaded('http')) {
@@ -154,7 +154,7 @@ abstract class HTTP
             $headers = version_compare(phpversion('http'), '2.0.0', '>=') ?
                     \http\Env::getRequestHeader() :
                     http_get_request_headers();
-            return new HTTP_Header($headers);
+            return new HTTP\Header($headers);
         }
 
         // Setup the output

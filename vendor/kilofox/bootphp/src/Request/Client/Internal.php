@@ -14,7 +14,6 @@ use Bootphp\Profiler\Profiler;
  * @author     Tinsh <kilofox2000@gmail.com>
  * @copyright  (C) 2005-2017 Kilofox Studio
  * @license    http://kilofox.net/license
- * @since      3.1.0
  */
 class Internal extends \Bootphp\Request\Client
 {
@@ -50,11 +49,11 @@ class Internal extends \Bootphp\Request\Client
 
         if (\Bootphp\Core::$profiling) {
             // Set the benchmark name
-            $benchmark = '"' . $request->uri() . '"';
+            $benchmark = '"' . $request->getUri() . '"';
 
             if ($request !== Request::$initial && Request::$current) {
                 // Add the parent request uri
-                $benchmark .= ' « "' . Request::$current->uri() . '"';
+                $benchmark .= ' « "' . Request::$current->getUri() . '"';
             }
 
             // Start benchmarking
@@ -74,7 +73,7 @@ class Internal extends \Bootphp\Request\Client
 
         try {
             if (!class_exists($controller)) {
-                throw new \Bootphp\BootphpException('The requested URL ' . $request->uri() . ' was not found on this server.', 404);
+                throw new \Bootphp\BootphpException('The requested URL ' . $request->getUri() . ' was not found on this server.', 404);
             }
 
             // Load the controller using reflection

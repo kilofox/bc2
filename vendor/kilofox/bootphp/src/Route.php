@@ -384,7 +384,7 @@ class Route
     public function matches(Request $request)
     {
         // Get the URI from the Request
-        $uri = trim($request->uri(), '/');
+        $uri = trim($request->getUri(), '/');
 
         if (!preg_match($this->_route_regex, $uri, $matches))
             return false;

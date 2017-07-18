@@ -110,16 +110,11 @@ abstract class External extends Bootphp\Request\Client
                 ->headers('content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
         }
 
-        $request->headers('content-length', (string) $request->content_length());
-
-        // If Kohana expose, set the user-agent
-        if (Core::$expose) {
-            $request->headers('user-agent', Core::version());
-        }
+        $request->headers('content-length', (string) $request->contentLength());
 
         try {
             $response = $this->_send_message($request, $response);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Restore the previous request
             Request::$current = $previous;
 

@@ -32,6 +32,7 @@ class MenuModel extends \Bootphp\ORM\ORM
                     $menu['default'] = $node;
                 }
             } else {
+                $node->subMenu = [];
                 $subMenu[] = $node;
             }
         }

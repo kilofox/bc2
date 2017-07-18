@@ -56,8 +56,8 @@ if (PHP_SAPI == 'cli') { // Try and load minion
      * Execute the main request. A source of the URI can be passed, eg: $_SERVER['PATH_INFO'].
      * If no source is specified, the URI will be automatically detected.
      */
-    echo \Bootphp\Request::factory(true, array(), false)
-            ->execute()
-            ->send_headers(true)
-            ->body();
+    echo \Bootphp\Request::factory(true, [], false)
+        ->execute()
+        ->send_headers(true)
+        ->body();
 }

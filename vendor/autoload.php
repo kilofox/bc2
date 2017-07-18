@@ -22,6 +22,9 @@ class AutoloaderInit
         spl_autoload_unregister(['AutoloaderInit', 'loadClassLoader']);
 
         $loader->set('Bootphp', __DIR__ . '/kilofox/bootphp/src');
+        $loader->set('Psr\\Http\\Message', __DIR__ . '/psr/http-message/src');
+        $loader->set('Psr\\Log', __DIR__ . '/psr/log/Psr/Log');
+        $loader->set('Psr\\Cache', __DIR__ . '/psr/cache/src');
         $loader->set('App', __DIR__ . '/../application');
         $loader->set('Michelf', __DIR__ . '/Michelf');
 

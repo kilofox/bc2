@@ -290,7 +290,7 @@ abstract class Session
     {
         $data = null;
 
-       // try {
+        try {
             if (is_string($data = $this->_read($id))) {
                 if ($this->encrypted) {
                     // Decrypt the data using the default key
@@ -305,10 +305,10 @@ abstract class Session
             } else {
                 // Ignore these, session is valid, likely no data though.
             }
-       // } catch (\Exception $e) {
+        } catch (\Exception $e) {
             // Error reading the session, usually a corrupt session.
-        //    throw new BootphpException('Error reading session data.', 1);
-        //}
+            throw new BootphpException('Error reading session data.', 1);
+        }
 
         if (is_array($data)) {
             // Load the data locally

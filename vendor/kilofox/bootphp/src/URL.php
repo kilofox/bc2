@@ -49,7 +49,7 @@ class URL
         if ($protocol instanceof Request) {
             if (!$protocol->secure()) {
                 // Use the current protocol
-                list($protocol) = explode('/', strtolower($protocol->protocol()));
+                list($protocol) = explode('/', strtolower($protocol->getProtocolVersion()));
             } else {
                 $protocol = 'https';
             }

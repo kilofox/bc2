@@ -83,7 +83,7 @@ class MenusController extends AdministrationController
      */
     public function submenusAction()
     {
-        $parentId = (int) $this->request->param('id');
+        $parentId = (int) $this->request->getAttribute('id');
         $menus = Model::factory('menu', 'system')->where('parent_id', '=', $parentId)->orderBy('sort')->findAll();
         $this->assign('nodes', $menus);
         $this->template = 'menus';
@@ -131,7 +131,7 @@ class MenusController extends AdministrationController
      */
     public function editAction()
     {
-        $itemId = (int) $this->request->param('id');
+        $itemId = (int) $this->request->getParam('id');
         $item = $this->model->find($itemId);
         if ($this->request->method() === 'PUT') {
             $status = 0;
@@ -142,16 +142,14 @@ class MenusController extends AdministrationController
                 $this->ajaxReturn($status, $info);
             }
             try {
-                $update = [
-                    'title' => $this->request->put('title'),
-                    'parent_id' => $this->request->put('parent_id'),
-                    'sort' => $this->request->put('sort'),
-                    'application' => $this->request->put('application'),
-                    'controller' => $this->request->put('controller'),
-                    'action' => $this->request->put('action'),
-                    'icon' => $this->request->put('icon')
-                ];
-                if ($this->model->update($update, ['id', '=', $item->id])) {
+                $this->model->title = $this->request->data('title');
+                $this->model->parent_id = $this->request->data('parent_id');
+                $this->model->sort = $this->request->data('sort');
+               // $this->model->application = $this->request->data('application');
+              //  $this->model->controller = $this->request->data('controller');
+               // $this->model->action = $this->request->data('action');
+              //  $this->model->icon = $this->request->data('icon');
+                if ($this->model->update()) {
                     $status = 1;
                     $info = '菜单已经更新成功。';
                 } else {
@@ -166,6 +164,7 @@ class MenusController extends AdministrationController
                     break;
                 }
             }
+            exit(json_encode(array('status' => $status, 'info' => $info, 'data' => '')));
             $this->ajaxReturn($status, $info);
         }
 
