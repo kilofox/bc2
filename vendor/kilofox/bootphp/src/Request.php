@@ -770,6 +770,9 @@ class Request implements ServerRequestInterface {
 
             // Params cannot be changed once matched
             $this->params = $params;
+            foreach ($params as $key => $attr) {
+                $this->withAttribute($key, $attr);
+            }
         }
 
         if (!$this->route instanceof Route) {
