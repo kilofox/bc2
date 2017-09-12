@@ -118,7 +118,7 @@ class Response
      */
     public function __construct(array $config = [])
     {
-        $this->_header = new \Bootphp\HTTP\Header;
+        $this->_header = new \Bootphp\Http\Header;
 
         foreach ($config as $key => $value) {
             if (property_exists($this, $key)) {
