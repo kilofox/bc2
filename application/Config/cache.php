@@ -60,7 +60,7 @@ return [
     ],
     'file' => [
         'driver' => 'file',
-        'cacheDir' => APP_PATH . '/Cache',
+        'cacheDir' => APP_PATH . '/cache',
         'defaultExpire' => 3600,
         'ignoreOnDelete' => [
             '.gitignore',

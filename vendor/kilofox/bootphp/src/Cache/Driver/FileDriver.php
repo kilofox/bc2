@@ -15,7 +15,7 @@ use Bootphp\BootphpException;
  *     return [
  *         'file' => [ // File driver group
  *             'driver' => 'file', // Using File driver
- *             'cacheDir' => APP_PATH . '/Cache', // Cache location
+ *             'cacheDir' => APP_PATH . '/cache', // Cache location
  *         ]
  *     ];
  *
