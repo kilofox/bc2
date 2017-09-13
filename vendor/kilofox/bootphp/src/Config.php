@@ -36,7 +36,7 @@ class Config
 
         $config = [];
 
-        $file = ($directory === null ? APP_PATH . '/Config/' : (string) $directory) . $group . '.php';
+        $file = ($directory === null ? APP_PATH . '/config/' : (string) $directory) . $group . '.php';
         if (is_file($file)) {
             $config = require $file;
         }

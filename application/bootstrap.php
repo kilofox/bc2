@@ -18,7 +18,7 @@ date_default_timezone_set('UTC');
  * - boolean	profile		Enable or disable internal profiling				true
  */
 \Bootphp\Core::init([
-    'baseUrl' => '/bootcms2/',
+    'baseUrl' => '/bootcms/',
     'cacheDir' => APP_PATH . '/cache',
     'cacheLife' => 60,
     'errors' => true,

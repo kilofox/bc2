@@ -122,7 +122,7 @@ abstract class Controller
             $this->baseUrl = URL::base();
             $this->view = new \Bootphp\View();
             $this->view->template($this->request->action())
-                ->templatePath(APP_PATH . '/View/')
+                ->templatePath(APP_PATH . '/views/')
                 ->set('baseUrl', $this->baseUrl)
                 ->set('controller', $this->request->controller());
         }

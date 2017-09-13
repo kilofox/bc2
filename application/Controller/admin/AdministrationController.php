@@ -40,8 +40,8 @@ class AdministrationController extends \Bootphp\Controller
         $menu = ORM::factory('menu')->menu($this->request->controller());
 
         $this->view->layout('layout')
-            ->layoutPath(APP_PATH . '/View/admin/')
-            ->templatePath(APP_PATH . '/View/admin/')
+            ->layoutPath(APP_PATH . '/views/admin/')
+            ->templatePath(APP_PATH . '/views/admin/')
             ->set('user', $this->user)
             ->set('menu', $menu)
             ->set('title', $this->title);
